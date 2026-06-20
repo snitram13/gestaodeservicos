@@ -1,0 +1,66 @@
+import Link from "next/link"
+import { MapPin, MessageCircle, Phone, Plus } from "lucide-react"
+
+import { cn } from "@/lib/utils"
+import { buttonVariants } from "@/components/ui/button"
+import { telLink } from "@/lib/formatters/phone"
+import { mapsLink } from "@/lib/maps"
+import { waLink } from "@/lib/whatsapp"
+
+type Props = {
+  cliente: {
+    id: string
+    nome: string
+    telefone: string
+    morada: string | null
+    cidade: string | null
+  }
+}
+
+export function ClienteQuickActions({ cliente }: Props) {
+  const itemCls = cn(
+    buttonVariants({ variant: "outline" }),
+    "h-auto flex-col gap-1 py-3"
+  )
+
+  return (
+    <div className="grid grid-cols-4 gap-2">
+      <a
+        href={telLink(cliente.telefone)}
+        className={itemCls}
+        aria-label="Ligar"
+      >
+        <Phone className="size-5" />
+        <span className="text-xs">Ligar</span>
+      </a>
+      <a
+        href={waLink(cliente.telefone, `Olá ${cliente.nome}, `)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={itemCls}
+        aria-label="WhatsApp"
+      >
+        <MessageCircle className="size-5" />
+        <span className="text-xs">WhatsApp</span>
+      </a>
+      <a
+        href={mapsLink(cliente.morada, cliente.cidade)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={itemCls}
+        aria-label="Ver no mapa"
+      >
+        <MapPin className="size-5" />
+        <span className="text-xs">Mapa</span>
+      </a>
+      <Link
+        href={`/visitas/novo?cliente=${cliente.id}`}
+        className={itemCls}
+        aria-label="Nova visita"
+      >
+        <Plus className="size-5" />
+        <span className="text-xs">Visita</span>
+      </Link>
+    </div>
+  )
+}
