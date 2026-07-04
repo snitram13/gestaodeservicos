@@ -2,6 +2,7 @@ import Link from "next/link"
 import { MapPin, MessageCircle, Phone, Plus } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { rotulosServico } from "@/lib/constants/modulos"
 import { buttonVariants } from "@/components/ui/button"
 import { telLink } from "@/lib/formatters/phone"
 import { mapsLink } from "@/lib/maps"
@@ -15,9 +16,11 @@ type Props = {
     morada: string | null
     cidade: string | null
   }
+  temServicos?: boolean
 }
 
-export function ClienteQuickActions({ cliente }: Props) {
+export function ClienteQuickActions({ cliente, temServicos }: Props) {
+  const r = rotulosServico(!!temServicos)
   const itemCls = cn(
     buttonVariants({ variant: "outline" }),
     "h-auto flex-col gap-1 py-3"
@@ -56,10 +59,10 @@ export function ClienteQuickActions({ cliente }: Props) {
       <Link
         href={`/visitas/novo?cliente=${cliente.id}`}
         className={itemCls}
-        aria-label="Nova visita"
+        aria-label={r.novo}
       >
         <Plus className="size-5" />
-        <span className="text-xs">Visita</span>
+        <span className="text-xs">{r.Singular}</span>
       </Link>
     </div>
   )

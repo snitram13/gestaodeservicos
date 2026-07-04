@@ -1,11 +1,11 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { cliente } from "@/db/schema"
-import { requireUser } from "@/lib/auth"
+import { requireEmpresa } from "@/lib/auth"
 import { clienteSchema, type ClienteFormValues } from "@/lib/validations/cliente"
 
 type Resultado =
@@ -31,13 +31,13 @@ function valores(d: ClienteFormValues) {
 }
 
 export async function criarCliente(input: ClienteFormValues): Promise<Resultado> {
-  await requireUser()
+  const { empresaId } = await requireEmpresa()
   const parsed = clienteSchema.safeParse(input)
   if (!parsed.success) return { ok: false, message: "Dados inválidos." }
 
   const [row] = await db
     .insert(cliente)
-    .values(valores(parsed.data))
+    .values({ ...valores(parsed.data), empresaId })
     .returning({ id: cliente.id })
 
   revalidatePath("/clientes")
@@ -48,14 +48,14 @@ export async function atualizarCliente(
   id: string,
   input: ClienteFormValues
 ): Promise<Resultado> {
-  await requireUser()
+  const { empresaId } = await requireEmpresa()
   const parsed = clienteSchema.safeParse(input)
   if (!parsed.success) return { ok: false, message: "Dados inválidos." }
 
   await db
     .update(cliente)
     .set({ ...valores(parsed.data), atualizadoEm: new Date() })
-    .where(eq(cliente.id, id))
+    .where(and(eq(cliente.id, id), eq(cliente.empresaId, empresaId)))
 
   revalidatePath("/clientes")
   revalidatePath(`/clientes/${id}`)
@@ -65,9 +65,11 @@ export async function atualizarCliente(
 export async function apagarCliente(
   id: string
 ): Promise<{ ok: true } | { ok: false; message: string }> {
-  await requireUser()
+  const { empresaId } = await requireEmpresa()
   try {
-    await db.delete(cliente).where(eq(cliente.id, id))
+    await db
+      .delete(cliente)
+      .where(and(eq(cliente.id, id), eq(cliente.empresaId, empresaId)))
   } catch {
     return {
       ok: false,

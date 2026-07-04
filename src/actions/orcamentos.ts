@@ -1,11 +1,13 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { orcamento, orcamentoItem } from "@/db/schema"
-import { requireUser } from "@/lib/auth"
+import { requireEmpresa } from "@/lib/auth"
+import { proximoNumeroOrcamento } from "@/lib/numeracao"
+import { clientePertence, visitaPertence } from "@/lib/ownership"
 import { parseEuro } from "@/lib/formatters/currency"
 import type { EstadoOrcamento } from "@/lib/constants/enums"
 import {
@@ -53,21 +55,32 @@ export async function criarOrcamento(
   input: OrcamentoFormValues,
   visitaId?: string
 ): Promise<Resultado> {
-  await requireUser()
+  const { empresaId } = await requireEmpresa()
   const parsed = orcamentoSchema.safeParse(input)
   if (!parsed.success) return { ok: false, message: "Dados inválidos." }
+  if (!(await clientePertence(empresaId, parsed.data.clienteId)))
+    return { ok: false, message: "Cliente inválido." }
+  // Só ligamos a uma visita que seja da própria empresa (evita FK cruzada).
+  const visitaLigada =
+    visitaId && (await visitaPertence(empresaId, visitaId)) ? visitaId : null
 
   const c = calcular(parsed.data)
+  const numero = await proximoNumeroOrcamento(empresaId)
   const [row] = await db
     .insert(orcamento)
-    .values({ ...cabecalho(parsed.data, c), visitaId: visitaId ?? null })
+    .values({
+      ...cabecalho(parsed.data, c),
+      empresaId,
+      numero,
+      visitaId: visitaLigada,
+    })
     .returning({ id: orcamento.id })
 
   await db
     .insert(orcamentoItem)
-    .values(c.itens.map((it) => ({ ...it, orcamentoId: row.id })))
+    .values(c.itens.map((it) => ({ ...it, empresaId, orcamentoId: row.id })))
 
-  if (visitaId) revalidatePath(`/visitas/${visitaId}`)
+  if (visitaLigada) revalidatePath(`/visitas/${visitaLigada}`)
   revalidatePath("/orcamentos")
   return { ok: true, id: row.id }
 }
@@ -76,20 +89,29 @@ export async function atualizarOrcamento(
   id: string,
   input: OrcamentoFormValues
 ): Promise<Resultado> {
-  await requireUser()
+  const { empresaId } = await requireEmpresa()
   const parsed = orcamentoSchema.safeParse(input)
   if (!parsed.success) return { ok: false, message: "Dados inválidos." }
+  if (!(await clientePertence(empresaId, parsed.data.clienteId)))
+    return { ok: false, message: "Cliente inválido." }
 
   const c = calcular(parsed.data)
   await db
     .update(orcamento)
     .set({ ...cabecalho(parsed.data, c), atualizadoEm: new Date() })
-    .where(eq(orcamento.id, id))
+    .where(and(eq(orcamento.id, id), eq(orcamento.empresaId, empresaId)))
 
-  await db.delete(orcamentoItem).where(eq(orcamentoItem.orcamentoId, id))
+  await db
+    .delete(orcamentoItem)
+    .where(
+      and(
+        eq(orcamentoItem.orcamentoId, id),
+        eq(orcamentoItem.empresaId, empresaId)
+      )
+    )
   await db
     .insert(orcamentoItem)
-    .values(c.itens.map((it) => ({ ...it, orcamentoId: id })))
+    .values(c.itens.map((it) => ({ ...it, empresaId, orcamentoId: id })))
 
   revalidatePath("/orcamentos")
   revalidatePath(`/orcamentos/${id}`)
@@ -100,7 +122,7 @@ export async function atualizarEstadoOrcamento(
   id: string,
   estado: EstadoOrcamento
 ): Promise<{ ok: true } | { ok: false; message: string }> {
-  await requireUser()
+  const { empresaId } = await requireEmpresa()
   await db
     .update(orcamento)
     .set({
@@ -109,7 +131,7 @@ export async function atualizarEstadoOrcamento(
       ...(estado === "ENVIADO" ? { enviadoEm: new Date() } : {}),
       ...(estado === "ACEITE" ? { aceiteEm: new Date() } : {}),
     })
-    .where(eq(orcamento.id, id))
+    .where(and(eq(orcamento.id, id), eq(orcamento.empresaId, empresaId)))
 
   revalidatePath("/orcamentos")
   revalidatePath(`/orcamentos/${id}`)
@@ -119,8 +141,10 @@ export async function atualizarEstadoOrcamento(
 export async function apagarOrcamento(
   id: string
 ): Promise<{ ok: true } | { ok: false; message: string }> {
-  await requireUser()
-  await db.delete(orcamento).where(eq(orcamento.id, id))
+  const { empresaId } = await requireEmpresa()
+  await db
+    .delete(orcamento)
+    .where(and(eq(orcamento.id, id), eq(orcamento.empresaId, empresaId)))
   revalidatePath("/orcamentos")
   return { ok: true }
 }

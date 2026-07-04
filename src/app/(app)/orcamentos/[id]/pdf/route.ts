@@ -1,10 +1,10 @@
 import { createElement } from "react"
 import { renderToBuffer } from "@react-pdf/renderer"
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { orcamento } from "@/db/schema"
-import { requireUser } from "@/lib/auth"
+import { requireEmpresa } from "@/lib/auth"
 import { getConfiguracao } from "@/lib/configuracao"
 import { OrcamentoPDF } from "@/components/orcamentos/orcamento-pdf"
 
@@ -12,11 +12,11 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await requireUser()
+  const { empresaId } = await requireEmpresa()
   const { id } = await params
 
   const o = await db.query.orcamento.findFirst({
-    where: eq(orcamento.id, id),
+    where: and(eq(orcamento.id, id), eq(orcamento.empresaId, empresaId)),
     with: { cliente: true, itens: true },
   })
   if (!o) return new Response("Orçamento não encontrado", { status: 404 })

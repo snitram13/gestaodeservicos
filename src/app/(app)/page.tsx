@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import {
   addDays,
   addMonths,
@@ -21,6 +22,9 @@ import {
   type Visita,
 } from "@/db/schema"
 import type { CategoriaServico } from "@/lib/constants/enums"
+import { isSuperAdmin, requireEmpresa } from "@/lib/auth"
+import { temModuloAtual } from "@/lib/modulos"
+import { MODULOS, rotulosServico } from "@/lib/constants/modulos"
 import { hojeKey } from "@/lib/agenda"
 import {
   chaveDia,
@@ -43,6 +47,10 @@ type VisitaRow = Visita & {
 }
 
 export default async function DashboardPage() {
+  const { empresaId, email } = await requireEmpresa()
+  // O dono da plataforma não usa a app de negócio — vai para o painel de controlo.
+  if (isSuperAdmin(email)) redirect("/admin")
+  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO))
   const hoje = hojeKey()
   const inicioMes = `${hoje.slice(0, 7)}-01`
   const fimMes = format(addMonths(parseISO(inicioMes), 1), "yyyy-MM-dd")
@@ -60,15 +68,23 @@ export default async function DashboardPage() {
         .from(transacaoFinanceira)
         .where(
           and(
+            eq(transacaoFinanceira.empresaId, empresaId),
             eq(transacaoFinanceira.tipo, "ENTRADA"),
             gte(transacaoFinanceira.data, inicioMes),
             lt(transacaoFinanceira.data, fimMes)
           )
         ),
-      db.$count(cliente),
-      db.$count(orcamento, inArray(orcamento.estado, ["RASCUNHO", "ENVIADO"])),
+      db.$count(cliente, eq(cliente.empresaId, empresaId)),
+      db.$count(
+        orcamento,
+        and(
+          eq(orcamento.empresaId, empresaId),
+          inArray(orcamento.estado, ["RASCUNHO", "ENVIADO"])
+        )
+      ),
       db.query.visita.findMany({
         where: and(
+          eq(visita.empresaId, empresaId),
           gte(visita.agendadoPara, janelaIni),
           lt(visita.agendadoPara, janelaFim)
         ),
@@ -80,6 +96,7 @@ export default async function DashboardPage() {
       }),
       db.query.visita.findFirst({
         where: and(
+          eq(visita.empresaId, empresaId),
           gte(visita.agendadoPara, new Date()),
           eq(visita.estado, "AGENDADO")
         ),
@@ -94,6 +111,7 @@ export default async function DashboardPage() {
         .from(transacaoFinanceira)
         .where(
           and(
+            eq(transacaoFinanceira.empresaId, empresaId),
             eq(transacaoFinanceira.tipo, "ENTRADA"),
             gte(transacaoFinanceira.data, seisMesesAtras)
           )
@@ -134,7 +152,7 @@ export default async function DashboardPage() {
           href="/financeiro"
         />
         <StatCard
-          label="Visitas hoje"
+          label={r.hoje}
           value={String(visitasHoje.length)}
           icon={CalendarClock}
           href="/agenda?view=dia"
@@ -158,12 +176,12 @@ export default async function DashboardPage() {
           <CardContent className="flex items-center gap-3">
             <CategoriaChip categoria={prox.servicos[0]?.categoria ?? "OUTROS"} />
             <div className="min-w-0 flex-1">
-              <p className="text-muted-foreground text-xs">Próxima visita</p>
+              <p className="text-muted-foreground text-xs">{r.proximo}</p>
               <Link
                 href={`/visitas/${prox.id}`}
                 className="block truncate font-medium"
               >
-                {prox.titulo || `Visita #${prox.numero}`}
+                {prox.titulo || `${r.Singular} #${prox.numero}`}
               </Link>
               <p className="text-muted-foreground truncate text-sm">
                 {prox.cliente?.nome} · {formatData(prox.agendadoPara)} às{" "}
@@ -188,7 +206,7 @@ export default async function DashboardPage() {
           <CardContent>
             {visitasHoje.length === 0 ? (
               <p className="text-muted-foreground py-6 text-center text-sm">
-                Sem visitas agendadas para hoje.
+                {r.semHoje}
               </p>
             ) : (
               <div className="divide-y">
@@ -203,7 +221,7 @@ export default async function DashboardPage() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">
-                        {v.titulo || `Visita #${v.numero}`}
+                        {v.titulo || `${r.Singular} #${v.numero}`}
                       </p>
                       <p className="text-muted-foreground truncate text-sm">
                         {v.cliente?.nome ?? "—"}

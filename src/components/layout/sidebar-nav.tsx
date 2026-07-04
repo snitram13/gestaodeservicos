@@ -3,15 +3,25 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { NAV_ITEMS, isActiveHref } from "@/lib/navigation"
+import { ADMIN_NAV_ITEMS, isActiveHref, navNegocio } from "@/lib/navigation"
 import { cn } from "@/lib/utils"
 
-export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+export function SidebarNav({
+  onNavigate,
+  showAdmin,
+  temServicos,
+}: {
+  onNavigate?: () => void
+  showAdmin?: boolean
+  temServicos?: boolean
+}) {
   const pathname = usePathname()
+  // O super-admin vê a navegação de controlador da plataforma, não a de negócio.
+  const items = showAdmin ? ADMIN_NAV_ITEMS : navNegocio(!!temServicos)
 
   return (
     <nav className="flex flex-col gap-1">
-      {NAV_ITEMS.map((item) => {
+      {items.map((item) => {
         const active = isActiveHref(pathname, item.href)
         const Icon = item.icon
         return (

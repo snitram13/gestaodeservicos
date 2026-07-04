@@ -1,10 +1,14 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { ArrowLeft, FileText, MessageCircle, Pencil } from "lucide-react"
 
 import { db } from "@/db/client"
 import { visita } from "@/db/schema"
+import { requireEmpresa } from "@/lib/auth"
+import { temModuloAtual } from "@/lib/modulos"
+import { MODULOS, rotulosServico } from "@/lib/constants/modulos"
+import { BUCKET_SERVICO, urlAssinada, urlsAssinadas } from "@/lib/storage"
 import { CATEGORIA_META } from "@/lib/constants/categorias"
 import { cn } from "@/lib/utils"
 import { formatEuro } from "@/lib/formatters/currency"
@@ -17,6 +21,9 @@ import { DeleteVisitaButton } from "@/components/visitas/delete-visita-button"
 import { EstadoVisitaSelect } from "@/components/visitas/estado-select"
 import { EstadoOrcamentoBadge } from "@/components/orcamentos/estado-badge"
 import { RegistarPagamentoButton } from "@/components/financeiro/registar-pagamento-button"
+import { FotosSection } from "@/components/servicos/fotos-section"
+import { AssinaturaSection } from "@/components/servicos/assinatura-section"
+import { OrdemServicoAcoes } from "@/components/servicos/ordem-servico-acoes"
 
 export default async function VisitaDetailPage({
   params,
@@ -24,15 +31,34 @@ export default async function VisitaDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const { empresaId } = await requireEmpresa()
   const v = await db.query.visita.findFirst({
-    where: eq(visita.id, id),
-    with: { cliente: true, servicos: true, orcamentos: true },
+    where: and(eq(visita.id, id), eq(visita.empresaId, empresaId)),
+    with: { cliente: true, servicos: true, orcamentos: true, fotos: true },
   })
   if (!v) notFound()
 
+  // Módulo Ordens de Serviço: fotos, assinatura, PDF, WhatsApp.
+  const temServicos = await temModuloAtual(MODULOS.ORDENS_SERVICO)
+  const r = rotulosServico(temServicos)
+  let fotos: { id: string; tipo: "ANTES" | "DEPOIS"; url: string | null }[] = []
+  let assinaturaUrl: string | null = null
+  if (temServicos) {
+    const urls = await urlsAssinadas(
+      BUCKET_SERVICO,
+      v.fotos.map((f) => f.storagePath)
+    )
+    fotos = v.fotos.map((f) => ({
+      id: f.id,
+      tipo: f.tipo,
+      url: urls[f.storagePath] ?? null,
+    }))
+    assinaturaUrl = await urlAssinada(BUCKET_SERVICO, v.assinaturaPath)
+  }
+
   const servicos = [...v.servicos].sort((a, b) => a.ordem - b.ordem)
   const totalServicos = servicos.reduce((s, x) => s + Number(x.valor), 0)
-  const rotulo = v.titulo || `Visita #${v.numero}`
+  const rotulo = v.titulo || `${r.Singular} #${v.numero}`
 
   return (
     <div className="space-y-4">
@@ -41,7 +67,7 @@ export default async function VisitaDetailPage({
         className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
       >
         <ArrowLeft className="size-4" />
-        Visitas
+        {r.Plural}
       </Link>
 
       <div className="flex items-start justify-between gap-3">
@@ -150,6 +176,39 @@ export default async function VisitaDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {temServicos && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Ordem de serviço</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div>
+              <p className="text-muted-foreground mb-2 text-sm font-medium">
+                Fotos
+              </p>
+              <FotosSection visitaId={v.id} fotos={fotos} />
+            </div>
+            <div>
+              <p className="text-muted-foreground mb-2 text-sm font-medium">
+                Assinatura do cliente
+              </p>
+              <AssinaturaSection visitaId={v.id} url={assinaturaUrl} />
+            </div>
+            <div>
+              <p className="text-muted-foreground mb-2 text-sm font-medium">
+                Comprovativo
+              </p>
+              <OrdemServicoAcoes
+                visitaId={v.id}
+                numero={v.numero}
+                telefone={v.cliente?.telefone}
+                mensagem={`Olá ${v.cliente?.nome ?? ""}, segue a ordem de serviço #${v.numero} do serviço realizado. Obrigado!`}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {v.orcamentos.length > 0 && (
         <Card>

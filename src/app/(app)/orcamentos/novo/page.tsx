@@ -1,7 +1,10 @@
-import { asc, eq } from "drizzle-orm"
+import { and, asc, eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { cliente, visita } from "@/db/schema"
+import { requireEmpresa } from "@/lib/auth"
+import { temModuloAtual } from "@/lib/modulos"
+import { MODULOS, rotulosServico } from "@/lib/constants/modulos"
 import type {
   OrcamentoFormValues,
   OrcamentoItemValues,
@@ -16,6 +19,8 @@ export default async function NovoOrcamentoPage({
 }: {
   searchParams: Promise<{ cliente?: string; visita?: string }>
 }) {
+  const { empresaId } = await requireEmpresa()
+  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO))
   const { cliente: clienteId, visita: visitaId } = await searchParams
 
   const clientes = await db
@@ -25,6 +30,7 @@ export default async function NovoOrcamentoPage({
       telefone: cliente.telefone,
     })
     .from(cliente)
+    .where(eq(cliente.empresaId, empresaId))
     .orderBy(asc(cliente.nome))
 
   let prefill: Partial<OrcamentoFormValues> | undefined
@@ -33,7 +39,7 @@ export default async function NovoOrcamentoPage({
   // Pré-preencher a partir de uma visita (serviços + deslocação → linhas)
   if (visitaId) {
     const v = await db.query.visita.findFirst({
-      where: eq(visita.id, visitaId),
+      where: and(eq(visita.id, visitaId), eq(visita.empresaId, empresaId)),
       with: { servicos: true },
     })
     if (v) {
@@ -47,7 +53,7 @@ export default async function NovoOrcamentoPage({
         itens.push({ descricao: "Deslocação", quantidade: "1", precoUnit: v.deslocacao })
       if (itens.length === 0)
         itens.push({
-          descricao: v.titulo ?? `Visita #${v.numero}`,
+          descricao: v.titulo ?? `${r.Singular} #${v.numero}`,
           quantidade: "1",
           precoUnit: "0",
         })
@@ -55,7 +61,7 @@ export default async function NovoOrcamentoPage({
       prefill = {
         clienteId: v.clienteId,
         categoria: servicos[0]?.categoria ?? "OUTROS",
-        titulo: v.titulo ?? `Visita #${v.numero}`,
+        titulo: v.titulo ?? `${r.Singular} #${v.numero}`,
         descricao: v.descricao ?? "",
         itens,
       }

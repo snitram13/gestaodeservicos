@@ -3,7 +3,12 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { MOBILE_TABS, isActiveHref, type NavItem } from "@/lib/navigation"
+import {
+  ADMIN_MOBILE_TABS,
+  isActiveHref,
+  mobileTabsNegocio,
+  type NavItem,
+} from "@/lib/navigation"
 import { cn } from "@/lib/utils"
 import { QuickActionFab } from "./quick-actions"
 
@@ -25,10 +30,33 @@ function TabLink({ item, pathname }: { item: NavItem; pathname: string }) {
   )
 }
 
-export function MobileTabBar() {
+export function MobileTabBar({
+  showAdmin,
+  temServicos,
+}: {
+  showAdmin?: boolean
+  temServicos?: boolean
+}) {
   const pathname = usePathname()
-  const left = MOBILE_TABS.slice(0, 2)
-  const right = MOBILE_TABS.slice(2, 4)
+
+  // Controlador da plataforma: barra simples (sem ações rápidas de negócio).
+  if (showAdmin) {
+    return (
+      <nav className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur md:hidden">
+        <div className="grid grid-cols-2 items-center pb-[env(safe-area-inset-bottom)]">
+          {ADMIN_MOBILE_TABS.map((item) => (
+            <div key={item.href} className="h-16">
+              <TabLink item={item} pathname={pathname} />
+            </div>
+          ))}
+        </div>
+      </nav>
+    )
+  }
+
+  const tabs = mobileTabsNegocio(!!temServicos)
+  const left = tabs.slice(0, 2)
+  const right = tabs.slice(2, 4)
 
   return (
     <nav className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur md:hidden">

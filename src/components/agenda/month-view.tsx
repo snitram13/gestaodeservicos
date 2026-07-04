@@ -5,7 +5,10 @@ import { cn } from "@/lib/utils"
 import { rotuloDia } from "@/lib/agenda"
 import { ESTADO_VISITA_META } from "@/lib/constants/estados"
 
-type Row = Visita & { cliente: { nome: string } | null }
+type Row = Visita & {
+  cliente: { nome: string } | null
+  tecnico: { id: string; nome: string; corAgenda: string | null } | null
+}
 
 const DIAS_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
@@ -51,15 +54,20 @@ export function MonthView({
                 {r.dia}
               </span>
               <div className="mt-auto flex flex-wrap gap-0.5">
-                {lista.slice(0, 4).map((v) => (
-                  <span
-                    key={v.id}
-                    className={cn(
-                      "size-1.5 rounded-full",
-                      ESTADO_VISITA_META[v.estado].dot
-                    )}
-                  />
-                ))}
+                {lista.slice(0, 4).map((v) => {
+                  const cor = v.tecnico?.corAgenda ?? undefined
+                  return (
+                    <span
+                      key={v.id}
+                      title={v.tecnico?.nome}
+                      className={cn(
+                        "size-1.5 rounded-full",
+                        !cor && ESTADO_VISITA_META[v.estado].dot
+                      )}
+                      style={cor ? { backgroundColor: cor } : undefined}
+                    />
+                  )
+                })}
                 {lista.length > 4 && (
                   <span className="text-muted-foreground text-[0.6rem] leading-none">
                     +{lista.length - 4}

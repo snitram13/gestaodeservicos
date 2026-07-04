@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache"
 import { eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
-import { configuracao } from "@/db/schema"
-import { requireUser } from "@/lib/auth"
+import { empresa } from "@/db/schema"
+import { requireEmpresa } from "@/lib/auth"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import {
   configuracaoSchema,
@@ -14,29 +14,18 @@ import {
 
 type Ok = { ok: true } | { ok: false; message: string }
 
-async function obterId(): Promise<string> {
-  const row = await db.query.configuracao.findFirst({ columns: { id: true } })
-  if (row) return row.id
-  const [novo] = await db
-    .insert(configuracao)
-    .values({})
-    .returning({ id: configuracao.id })
-  return novo.id
-}
-
 export async function guardarConfiguracao(
   input: ConfiguracaoFormValues
 ): Promise<Ok> {
-  await requireUser()
+  const { empresaId } = await requireEmpresa()
   const parsed = configuracaoSchema.safeParse(input)
   if (!parsed.success) return { ok: false, message: "Dados inválidos." }
 
   const d = parsed.data
-  const id = await obterId()
   await db
-    .update(configuracao)
+    .update(empresa)
     .set({
-      nomeEmpresa: d.nomeEmpresa.trim(),
+      nome: d.nomeEmpresa.trim(),
       slogan: d.slogan.trim() || null,
       nif: d.nif.trim() || null,
       telefone: d.telefone.trim() || null,
@@ -45,7 +34,7 @@ export async function guardarConfiguracao(
       iban: d.iban.trim() || null,
       atualizadoEm: new Date(),
     })
-    .where(eq(configuracao.id, id))
+    .where(eq(empresa.id, empresaId))
 
   revalidatePath("/configuracoes")
   return { ok: true }
@@ -54,7 +43,7 @@ export async function guardarConfiguracao(
 export async function uploadLogo(
   formData: FormData
 ): Promise<{ ok: true; path: string } | { ok: false; message: string }> {
-  await requireUser()
+  const { empresaId } = await requireEmpresa()
   const file = formData.get("file")
   if (!(file instanceof File) || file.size === 0)
     return { ok: false, message: "Ficheiro inválido." }
@@ -69,30 +58,28 @@ export async function uploadLogo(
     .upload(path, file, { contentType: file.type, upsert: true })
   if (error) return { ok: false, message: error.message }
 
-  const id = await obterId()
   await db
-    .update(configuracao)
+    .update(empresa)
     .set({ logoPath: path, atualizadoEm: new Date() })
-    .where(eq(configuracao.id, id))
+    .where(eq(empresa.id, empresaId))
 
   revalidatePath("/configuracoes")
   return { ok: true, path }
 }
 
 export async function removerLogo(): Promise<Ok> {
-  await requireUser()
-  const id = await obterId()
-  const row = await db.query.configuracao.findFirst({
-    where: eq(configuracao.id, id),
+  const { empresaId } = await requireEmpresa()
+  const row = await db.query.empresa.findFirst({
+    where: eq(empresa.id, empresaId),
   })
   if (row?.logoPath) {
     const admin = createSupabaseAdminClient()
     await admin.storage.from("empresa").remove([row.logoPath])
   }
   await db
-    .update(configuracao)
+    .update(empresa)
     .set({ logoPath: null, atualizadoEm: new Date() })
-    .where(eq(configuracao.id, id))
+    .where(eq(empresa.id, empresaId))
 
   revalidatePath("/configuracoes")
   return { ok: true }

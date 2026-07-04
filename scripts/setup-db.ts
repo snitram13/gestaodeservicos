@@ -1,9 +1,11 @@
 /**
  * Configuração inicial da base de dados:
- *  1. Ativa RLS (Row Level Security) em todas as tabelas + política para
- *     utilizadores autenticados (rede de segurança; a app usa Drizzle que
- *     contorna o RLS, mas qualquer acesso via API pública fica protegido).
- *  2. Cria o utilizador dono (Supabase Auth) + linha em `utilizador`.
+ *  1. Ativa RLS (Row Level Security) em todas as tabelas de dados. NÃO cria
+ *     políticas permissivas — a isolação por empresa é feita em código (Drizzle
+ *     liga como dono e contorna o RLS). Com RLS ligado e sem políticas, qualquer
+ *     acesso via API pública (anon/authenticated) fica bloqueado por omissão.
+ *  2. Cria o utilizador dono (Supabase Auth) + linha em `utilizador`, associado
+ *     a uma empresa (tenant).
  *
  * Executar: npx tsx scripts/setup-db.ts
  */
@@ -16,8 +18,10 @@ import { createClient } from "@supabase/supabase-js"
 config({ path: ".env.local" })
 
 const TABELAS = [
+  "empresa",
   "utilizador",
   "cliente",
+  "visita",
   "orcamento",
   "orcamento_item",
   "servico",
@@ -33,13 +37,13 @@ async function aplicarRls() {
   const sql = postgres(process.env.MIGRATION_URL!, { prepare: false, max: 1 })
   for (const t of TABELAS) {
     await sql.unsafe(`alter table "${t}" enable row level security;`)
+    // Remove qualquer política permissiva antiga (anulava a isolação por
+    // empresa). NÃO recriar — sem política, o acesso via API pública fica
+    // bloqueado por omissão e o Drizzle (dono) continua a contornar o RLS.
     await sql.unsafe(`drop policy if exists "${t}_auth_all" on "${t}";`)
-    await sql.unsafe(
-      `create policy "${t}_auth_all" on "${t}" for all to authenticated using (true) with check (true);`
-    )
   }
   await sql.end()
-  console.log(`✓ RLS ativado em ${TABELAS.length} tabelas.`)
+  console.log(`✓ RLS ativado (sem políticas permissivas) em ${TABELAS.length} tabelas.`)
 }
 
 async function criarDono() {
@@ -79,9 +83,21 @@ async function criarDono() {
   if (!userId) throw new Error("Não foi possível obter o id do utilizador.")
 
   const sql = postgres(process.env.MIGRATION_URL!, { prepare: false, max: 1 })
+
+  // Empresa (tenant) à qual o dono fica associado. Usa a existente ou cria uma.
+  const existentes = await sql`select id from empresa limit 1`
+  let empresaId = existentes[0]?.id as string | undefined
+  if (!empresaId) {
+    const [nova] = await sql`
+      insert into empresa (nome) values ('PN REPARAÇÕES') returning id
+    `
+    empresaId = nova.id as string
+    console.log("✓ Empresa 'PN REPARAÇÕES' criada.")
+  }
+
   await sql.unsafe(
-    `insert into "utilizador" (id, nome, email, role)
-     values ('${userId}', 'PN Reparações', '${OWNER_EMAIL}', 'OWNER')
+    `insert into "utilizador" (id, empresa_id, nome, email, role)
+     values ('${userId}', '${empresaId}', 'PN Reparações', '${OWNER_EMAIL}', 'OWNER')
      on conflict (id) do nothing;`
   )
   await sql.end()

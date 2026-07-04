@@ -12,7 +12,7 @@ import { formatEuro } from "@/lib/formatters/currency"
 import { formatData } from "@/lib/formatters/date"
 import type {
   Cliente,
-  Configuracao,
+  Empresa,
   Orcamento,
   OrcamentoItem,
 } from "@/db/schema"
@@ -93,7 +93,7 @@ type Props = {
     cliente: Cliente | null
     itens: OrcamentoItem[]
   }
-  config: Configuracao
+  config: Empresa
 }
 
 export function OrcamentoPDF({ orcamento: o, config }: Props) {
@@ -101,13 +101,13 @@ export function OrcamentoPDF({ orcamento: o, config }: Props) {
   const logo = logoUrl(config.logoPath)
 
   return (
-    <Document title={`Orçamento ${o.numero}`} author={config.nomeEmpresa}>
+    <Document title={`Orçamento ${o.numero}`} author={config.nome}>
       <Page size="A4" style={styles.page}>
         {/* Cabeçalho */}
         <View style={styles.between}>
           <View style={styles.headerLeft}>
             {logo ? <Image src={logo} style={styles.logo} /> : null}
-            <Text style={styles.headerName}>{config.nomeEmpresa}</Text>
+            <Text style={styles.headerName}>{config.nome}</Text>
             {config.slogan ? (
               <Text style={styles.slogan}>{config.slogan}</Text>
             ) : null}
@@ -193,7 +193,7 @@ export function OrcamentoPDF({ orcamento: o, config }: Props) {
         {o.notas ? <Text style={styles.notas}>{o.notas}</Text> : null}
 
         <Text style={styles.footer} fixed>
-          {`${config.nomeEmpresa}${config.iban ? ` · IBAN ${config.iban}` : ""} · Obrigado pela preferência!`}
+          {`${config.nome}${config.iban ? ` · IBAN ${config.iban}` : ""} · Obrigado pela preferência!`}
         </Text>
       </Page>
     </Document>

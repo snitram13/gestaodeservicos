@@ -1,7 +1,10 @@
-import { asc, eq } from "drizzle-orm"
+import { and, asc, eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
-import { cliente, orcamento } from "@/db/schema"
+import { cliente, orcamento, utilizador } from "@/db/schema"
+import { requireEmpresa } from "@/lib/auth"
+import { temModuloAtual } from "@/lib/modulos"
+import { MODULOS, rotulosServico } from "@/lib/constants/modulos"
 import type { VisitaFormValues } from "@/lib/validations/visita"
 import { PageHeader } from "@/components/common/page-header"
 import { VisitaForm } from "@/components/visitas/visita-form"
@@ -13,6 +16,8 @@ export default async function NovaVisitaPage({
 }: {
   searchParams: Promise<{ cliente?: string; data?: string; orcamento?: string }>
 }) {
+  const { empresaId } = await requireEmpresa()
+  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO))
   const { cliente: clienteId, data, orcamento: orcamentoId } = await searchParams
 
   const clientes = await db
@@ -24,7 +29,18 @@ export default async function NovaVisitaPage({
       cidade: cliente.cidade,
     })
     .from(cliente)
+    .where(eq(cliente.empresaId, empresaId))
     .orderBy(asc(cliente.nome))
+
+  const tecnicos = await db
+    .select({
+      id: utilizador.id,
+      nome: utilizador.nome,
+      corAgenda: utilizador.corAgenda,
+    })
+    .from(utilizador)
+    .where(and(eq(utilizador.empresaId, empresaId), eq(utilizador.ativo, true)))
+    .orderBy(asc(utilizador.nome))
 
   let prefill: Partial<VisitaFormValues> = {}
   let orcamentoOrigemId: string | undefined
@@ -34,7 +50,7 @@ export default async function NovaVisitaPage({
   // Pré-preencher a partir de um orçamento (linhas → serviços)
   if (orcamentoId) {
     const o = await db.query.orcamento.findFirst({
-      where: eq(orcamento.id, orcamentoId),
+      where: and(eq(orcamento.id, orcamentoId), eq(orcamento.empresaId, empresaId)),
       with: { itens: true },
     })
     if (o) {
@@ -68,9 +84,10 @@ export default async function NovaVisitaPage({
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Nova visita" />
+      <PageHeader title={r.novo} />
       <VisitaForm
         clientes={clientes}
+        tecnicos={tecnicos}
         prefill={prefill}
         orcamentoOrigemId={orcamentoOrigemId}
       />

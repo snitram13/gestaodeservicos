@@ -1,5 +1,6 @@
 /** Cria um orçamento de exemplo (idempotente). npx tsx scripts/seed-orcamento.ts */
 import { config } from "dotenv"
+import { eq } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 
@@ -11,14 +12,32 @@ async function main() {
   const client = postgres(process.env.MIGRATION_URL!, { prepare: false, max: 1 })
   const db = drizzle(client, { schema })
 
-  const existentes = await db.select().from(schema.orcamento).limit(1)
+  // Empresa (tenant). Usa a existente ("PN REPARAÇÕES") ou cria uma.
+  let [emp] = await db.select().from(schema.empresa).limit(1)
+  if (!emp) {
+    ;[emp] = await db
+      .insert(schema.empresa)
+      .values({ nome: "PN REPARAÇÕES" })
+      .returning()
+    console.log("✓ Empresa 'PN REPARAÇÕES' criada.")
+  }
+
+  const existentes = await db
+    .select()
+    .from(schema.orcamento)
+    .where(eq(schema.orcamento.empresaId, emp.id))
+    .limit(1)
   if (existentes.length > 0) {
     console.log("ℹ Já existem orçamentos — seed ignorado.")
     await client.end()
     return
   }
 
-  const clientes = await db.select().from(schema.cliente).limit(1)
+  const clientes = await db
+    .select()
+    .from(schema.cliente)
+    .where(eq(schema.cliente.empresaId, emp.id))
+    .limit(1)
   if (clientes.length === 0) {
     console.log("ℹ Sem clientes — corra primeiro scripts/seed.ts.")
     await client.end()
@@ -33,9 +52,14 @@ async function main() {
   const validade = new Date()
   validade.setDate(validade.getDate() + 30)
 
+  // Número sequencial POR empresa (usa o contador atual da empresa).
+  const numero = emp.proxNumOrcamento
+
   const [o] = await db
     .insert(schema.orcamento)
     .values({
+      empresaId: emp.id,
+      numero,
       clienteId,
       categoria: "CANALIZACAO",
       estado: "ENVIADO",
@@ -53,6 +77,7 @@ async function main() {
 
   await db.insert(schema.orcamentoItem).values([
     {
+      empresaId: emp.id,
       orcamentoId: o.id,
       descricao: "Mão de obra (substituição de canalização)",
       quantidade: "1",
@@ -61,6 +86,7 @@ async function main() {
       ordem: 0,
     },
     {
+      empresaId: emp.id,
       orcamentoId: o.id,
       descricao: "Tubos e acessórios",
       quantidade: "1",
@@ -69,6 +95,7 @@ async function main() {
       ordem: 1,
     },
     {
+      empresaId: emp.id,
       orcamentoId: o.id,
       descricao: "Deslocação",
       quantidade: "1",
@@ -77,6 +104,12 @@ async function main() {
       ordem: 2,
     },
   ])
+
+  // Sincronizar o contador de numeração da empresa (próximo = numero+1).
+  await db
+    .update(schema.empresa)
+    .set({ proxNumOrcamento: numero + 1 })
+    .where(eq(schema.empresa.id, emp.id))
 
   console.log("✅ Orçamento de exemplo criado.")
   await client.end()

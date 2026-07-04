@@ -1,9 +1,10 @@
 import Link from "next/link"
-import { desc } from "drizzle-orm"
+import { desc, eq } from "drizzle-orm"
 import { FileText, Plus } from "lucide-react"
 
 import { db } from "@/db/client"
 import { orcamento, type Orcamento } from "@/db/schema"
+import { requireEmpresa } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import { EmptyState } from "@/components/common/empty-state"
@@ -15,7 +16,9 @@ export const metadata = { title: "Orçamentos" }
 type Row = Orcamento & { cliente: { nome: string } | null }
 
 export default async function OrcamentosPage() {
+  const { empresaId } = await requireEmpresa()
   const orcamentos = (await db.query.orcamento.findMany({
+    where: eq(orcamento.empresaId, empresaId),
     with: { cliente: { columns: { nome: true } } },
     orderBy: [desc(orcamento.criadoEm)],
   })) as Row[]

@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next"
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "PN Gestão de Serviços",
-    short_name: "PN Gestão",
+    name: "Gestão de Serviços",
+    short_name: "Gestão",
     description:
-      "Gestão de clientes, serviços, agenda, orçamentos e finanças da PN Reparações.",
+      "Gestão de clientes, serviços, agenda, orçamentos e finanças do seu negócio.",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

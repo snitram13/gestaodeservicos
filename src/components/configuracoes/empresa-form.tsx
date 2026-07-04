@@ -13,7 +13,7 @@ import {
   uploadLogo,
 } from "@/actions/configuracao"
 import { logoUrl } from "@/lib/logo"
-import type { Configuracao } from "@/db/schema"
+import type { Empresa } from "@/db/schema"
 import {
   configuracaoSchema,
   type ConfiguracaoFormValues,
@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 
-export function EmpresaForm({ configuracao: cfg }: { configuracao: Configuracao }) {
+export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
   const [logoPath, setLogoPath] = useState(cfg.logoPath)
@@ -39,7 +39,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Configuracao 
   const form = useForm<ConfiguracaoFormValues>({
     resolver: zodResolver(configuracaoSchema),
     defaultValues: {
-      nomeEmpresa: cfg.nomeEmpresa,
+      nomeEmpresa: cfg.nome,
       slogan: cfg.slogan ?? "",
       nif: cfg.nif ?? "",
       telefone: cfg.telefone ?? "",

@@ -15,19 +15,19 @@ const mono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "PN Gestão de Serviços",
-    template: "%s · PN Gestão",
+    default: "Gestão de Serviços",
+    template: "%s · Gestão de Serviços",
   },
   description:
-    "Gestão de clientes, serviços, agenda, orçamentos e finanças da PN Reparações.",
-  applicationName: "PN Gestão",
+    "Gestão de clientes, serviços, agenda, orçamentos e finanças do seu negócio.",
+  applicationName: "Gestão de Serviços",
   icons: {
     apple: "/icons/apple-touch-icon.png",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "PN Gestão",
+    title: "Gestão de Serviços",
   },
 }
 

@@ -6,6 +6,7 @@ import { Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { apagarVisita } from "@/actions/visitas"
+import { useRotulos } from "@/components/servicos/rotulos"
 import { Button } from "@/components/ui/button"
 import {
   AlertDialog,
@@ -21,6 +22,7 @@ import {
 
 export function DeleteVisitaButton({ id }: { id: string }) {
   const router = useRouter()
+  const r = useRotulos()
   const [loading, setLoading] = useState(false)
 
   async function onConfirm() {
@@ -31,7 +33,7 @@ export function DeleteVisitaButton({ id }: { id: string }) {
       toast.error("Não foi possível apagar", { description: res.message })
       return
     }
-    toast.success("Visita apagada")
+    toast.success(r.apagado)
     router.push("/visitas")
     router.refresh()
   }
@@ -40,18 +42,15 @@ export function DeleteVisitaButton({ id }: { id: string }) {
     <AlertDialog>
       <AlertDialogTrigger
         render={
-          <Button variant="outline" size="icon" aria-label="Apagar visita" />
+          <Button variant="outline" size="icon" aria-label={r.apagarAria} />
         }
       >
         <Trash2 className="size-4" />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Apagar visita?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Vai apagar a visita e os serviços associados. Esta ação não pode ser
-            anulada.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{r.apagarTitulo}</AlertDialogTitle>
+          <AlertDialogDescription>{r.apagarDesc}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>

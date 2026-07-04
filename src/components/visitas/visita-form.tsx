@@ -21,6 +21,7 @@ import {
 } from "@/lib/validations/visita"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useRotulos } from "@/components/servicos/rotulos"
 import { Combobox } from "@/components/common/combobox"
 import {
   NovoClienteDialog,
@@ -52,6 +53,15 @@ type ClienteOpt = {
   cidade: string | null
 }
 
+type TecnicoOpt = {
+  id: string
+  nome: string
+  corAgenda: string | null
+}
+
+// Valor sentinela para "sem técnico" (o Select não usa string vazia).
+const SEM_TECNICO = "__none__"
+
 function toLocalInput(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0")
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
@@ -65,6 +75,7 @@ function defaultsNovo(): VisitaFormValues {
   base.setHours(base.getHours() + 1)
   return {
     clienteId: "",
+    tecnicoId: "",
     estado: "AGENDADO",
     agendadoPara: toLocalInput(base),
     moradaServico: "",
@@ -78,16 +89,19 @@ function defaultsNovo(): VisitaFormValues {
 
 export function VisitaForm({
   clientes,
+  tecnicos = [],
   visita,
   prefill,
   orcamentoOrigemId,
 }: {
   clientes: ClienteOpt[]
+  tecnicos?: TecnicoOpt[]
   visita?: Visita & { servicos: Servico[] }
   prefill?: Partial<VisitaFormValues>
   orcamentoOrigemId?: string
 }) {
   const router = useRouter()
+  const r = useRotulos()
   const isEdit = Boolean(visita)
   const [clientesList, setClientesList] = useState(clientes)
 
@@ -95,6 +109,7 @@ export function VisitaForm({
     if (visita) {
       return {
         clienteId: visita.clienteId,
+        tecnicoId: visita.tecnicoId ?? "",
         estado: visita.estado,
         agendadoPara: toLocalInput(new Date(visita.agendadoPara)),
         moradaServico: visita.moradaServico ?? "",
@@ -166,7 +181,7 @@ export function VisitaForm({
       toast.error("Não foi possível guardar", { description: res.message })
       return
     }
-    toast.success(isEdit ? "Visita atualizada" : "Visita criada")
+    toast.success(isEdit ? r.atualizado : r.criado)
     router.push(`/visitas/${res.id}`)
     router.refresh()
   }
@@ -178,7 +193,7 @@ export function VisitaForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <Card>
           <CardHeader>
-            <CardTitle>Visita</CardTitle>
+            <CardTitle>{r.Singular}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <FormField
@@ -228,13 +243,56 @@ export function VisitaForm({
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="h-11 w-full">
-                        <SelectValue />
+                        <SelectValue>
+                          {(v) =>
+                            ESTADO_VISITA_OPCOES.find((o) => o.value === v)
+                              ?.label ?? ""
+                          }
+                        </SelectValue>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {ESTADO_VISITA_OPCOES.map((o) => (
                         <SelectItem key={o.value} value={o.value}>
                           {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="tecnicoId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Técnico</FormLabel>
+                  <Select
+                    value={field.value ? field.value : SEM_TECNICO}
+                    onValueChange={(v) =>
+                      field.onChange(v === SEM_TECNICO ? "" : (v ?? ""))
+                    }
+                  >
+                    <FormControl>
+                      <SelectTrigger className="h-11 w-full">
+                        <SelectValue placeholder="Sem técnico">
+                          {(v) =>
+                            !v || v === SEM_TECNICO
+                              ? "Sem técnico"
+                              : (tecnicos.find((t) => t.id === v)?.nome ??
+                                "Sem técnico")
+                          }
+                        </SelectValue>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={SEM_TECNICO}>Sem técnico</SelectItem>
+                      {tecnicos.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.nome}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -291,7 +349,7 @@ export function VisitaForm({
               name="descricao"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Notas da visita</FormLabel>
+                  <FormLabel>{r.notas}</FormLabel>
                   <FormControl>
                     <Textarea rows={2} placeholder="Observações gerais…" {...field} />
                   </FormControl>
@@ -325,7 +383,12 @@ export function VisitaForm({
                         >
                           <FormControl>
                             <SelectTrigger className="h-10 w-full">
-                              <SelectValue />
+                              <SelectValue>
+                                {(v) =>
+                                  CATEGORIA_OPCOES.find((o) => o.value === v)
+                                    ?.label ?? ""
+                                }
+                              </SelectValue>
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>

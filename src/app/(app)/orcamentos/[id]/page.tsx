@@ -1,10 +1,13 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { ArrowLeft, Download, MessageCircle, Pencil, Wrench } from "lucide-react"
 
 import { db } from "@/db/client"
 import { orcamento } from "@/db/schema"
+import { requireEmpresa } from "@/lib/auth"
+import { temModuloAtual } from "@/lib/modulos"
+import { MODULOS, rotulosServico } from "@/lib/constants/modulos"
 import { EstadoVisitaBadge } from "@/components/visitas/estado-badge"
 import { cn } from "@/lib/utils"
 import { formatData } from "@/lib/formatters/date"
@@ -20,12 +23,14 @@ export default async function OrcamentoDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const { empresaId } = await requireEmpresa()
   const { id } = await params
   const o = await db.query.orcamento.findFirst({
-    where: eq(orcamento.id, id),
+    where: and(eq(orcamento.id, id), eq(orcamento.empresaId, empresaId)),
     with: { cliente: true, itens: true, visita: true },
   })
   if (!o) notFound()
+  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO))
 
   const itens = [...o.itens].sort((a, b) => a.ordem - b.ordem)
 
@@ -148,7 +153,7 @@ export default async function OrcamentoDetailPage({
       {o.visita && (
         <Card>
           <CardHeader>
-            <CardTitle>Visita associada</CardTitle>
+            <CardTitle>{r.associada}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Link
@@ -158,7 +163,7 @@ export default async function OrcamentoDetailPage({
               <Wrench className="text-muted-foreground size-4 shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">
-                  {o.visita.titulo || `Visita #${o.visita.numero}`}
+                  {o.visita.titulo || `${r.Singular} #${o.visita.numero}`}
                 </p>
                 <p className="text-muted-foreground text-sm">
                   #{o.visita.numero} · {formatData(o.visita.agendadoPara)}

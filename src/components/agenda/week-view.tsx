@@ -4,19 +4,26 @@ import type { Visita } from "@/db/schema"
 import { cn } from "@/lib/utils"
 import { formatHora } from "@/lib/formatters/date"
 import { rotuloDia } from "@/lib/agenda"
+import { rotulosServico } from "@/lib/constants/modulos"
 import { ESTADO_VISITA_META } from "@/lib/constants/estados"
 
-type Row = Visita & { cliente: { nome: string } | null }
+type Row = Visita & {
+  cliente: { nome: string } | null
+  tecnico: { id: string; nome: string; corAgenda: string | null } | null
+}
 
 export function WeekView({
   dias,
   visitasPorDia,
   hoje,
+  temServicos,
 }: {
   dias: string[]
   visitasPorDia: Map<string, Row[]>
   hoje: string
+  temServicos?: boolean
 }) {
+  const rot = rotulosServico(!!temServicos)
   return (
     <div className="grid grid-cols-1 gap-2 md:h-[calc(100dvh-14rem)] md:grid-cols-7">
       {dias.map((dia) => {
@@ -53,11 +60,18 @@ export function WeekView({
               )}
             </Link>
             <div className="space-y-1 overflow-y-auto md:flex-1">
-              {lista.map((v) => (
+              {lista.map((v) => {
+                const cor = v.tecnico?.corAgenda ?? undefined
+                return (
                 <Link
                   key={v.id}
                   href={`/visitas/${v.id}`}
-                  className="hover:bg-muted bg-muted/40 block rounded-md px-1.5 py-1 text-xs"
+                  className={cn(
+                    "hover:bg-muted bg-muted/40 block rounded-md px-1.5 py-1 text-xs",
+                    cor && "border-l-2 pl-1"
+                  )}
+                  style={cor ? { borderLeftColor: cor } : undefined}
+                  title={v.tecnico?.nome}
                 >
                   <span className="flex items-center gap-1.5">
                     <span
@@ -71,7 +85,7 @@ export function WeekView({
                     </span>
                   </span>
                   <span className="mt-0.5 block truncate font-medium">
-                    {v.titulo || `Visita #${v.numero}`}
+                    {v.titulo || `${rot.Singular} #${v.numero}`}
                   </span>
                   {v.cliente?.nome && (
                     <span className="text-muted-foreground block truncate">
@@ -79,7 +93,8 @@ export function WeekView({
                     </span>
                   )}
                 </Link>
-              ))}
+                )
+              })}
             </div>
           </div>
         )

@@ -1,10 +1,13 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { desc, eq } from "drizzle-orm"
+import { and, desc, eq } from "drizzle-orm"
 import { ArrowLeft, FileText, Pencil, Wrench } from "lucide-react"
 
 import { db } from "@/db/client"
 import { cliente, orcamento, visita } from "@/db/schema"
+import { requireEmpresa } from "@/lib/auth"
+import { temModuloAtual } from "@/lib/modulos"
+import { MODULOS, rotulosServico } from "@/lib/constants/modulos"
 import { cn } from "@/lib/utils"
 import { formatData } from "@/lib/formatters/date"
 import { formatEuro } from "@/lib/formatters/currency"
@@ -27,18 +30,26 @@ export default async function ClienteDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const { empresaId } = await requireEmpresa()
   const { id } = await params
+  const temServicos = await temModuloAtual(MODULOS.ORDENS_SERVICO)
+  const r = rotulosServico(temServicos)
 
-  const c = await db.query.cliente.findFirst({ where: eq(cliente.id, id) })
+  const c = await db.query.cliente.findFirst({
+    where: and(eq(cliente.id, id), eq(cliente.empresaId, empresaId)),
+  })
   if (!c) notFound()
 
   const [visitas, orcamentos] = await Promise.all([
     db.query.visita.findMany({
-      where: eq(visita.clienteId, id),
+      where: and(eq(visita.clienteId, id), eq(visita.empresaId, empresaId)),
       orderBy: [desc(visita.agendadoPara)],
     }),
     db.query.orcamento.findMany({
-      where: eq(orcamento.clienteId, id),
+      where: and(
+        eq(orcamento.clienteId, id),
+        eq(orcamento.empresaId, empresaId)
+      ),
       orderBy: [desc(orcamento.criadoEm)],
     }),
   ])
@@ -75,11 +86,13 @@ export default async function ClienteDetailPage({
         </div>
       </div>
 
-      <ClienteQuickActions cliente={c} />
+      <ClienteQuickActions cliente={c} temServicos={temServicos} />
 
       <Tabs defaultValue="visitas" className="mt-2">
         <TabsList className="w-full">
-          <TabsTrigger value="visitas">Visitas ({visitas.length})</TabsTrigger>
+          <TabsTrigger value="visitas">
+            {r.Plural} ({visitas.length})
+          </TabsTrigger>
           <TabsTrigger value="orcamentos">
             Orçamentos ({orcamentos.length})
           </TabsTrigger>
@@ -89,7 +102,7 @@ export default async function ClienteDetailPage({
         <TabsContent value="visitas">
           {visitas.length === 0 ? (
             <p className="text-muted-foreground py-8 text-center text-sm">
-              Ainda não há visitas para este cliente.
+              Ainda não há {r.plural} para este cliente.
             </p>
           ) : (
             <Card className="gap-0 overflow-hidden p-0">
@@ -105,7 +118,7 @@ export default async function ClienteDetailPage({
                   <Wrench className="text-muted-foreground size-4 shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">
-                      {v.titulo || `Visita #${v.numero}`}
+                      {v.titulo || `${r.Singular} #${v.numero}`}
                     </p>
                     <p className="text-muted-foreground text-sm">
                       #{v.numero} · {formatData(v.agendadoPara)}

@@ -12,6 +12,7 @@ export const servicoLinhaSchema = z.object({
 
 export const visitaSchema = z.object({
   clienteId: z.string().min(1, "Selecione um cliente."),
+  tecnicoId: z.string().optional(),
   estado: z.enum(ESTADOS_VISITA),
   agendadoPara: z.string().min(1, "Indique a data e a hora."),
   moradaServico: z.string().trim(),

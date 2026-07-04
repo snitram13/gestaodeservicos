@@ -5,6 +5,7 @@ import type { CategoriaServico } from "@/lib/constants/enums"
 import type { Visita } from "@/db/schema"
 import { formatData, formatHora } from "@/lib/formatters/date"
 import { formatEuro } from "@/lib/formatters/currency"
+import { rotulosServico } from "@/lib/constants/modulos"
 import { Card } from "@/components/ui/card"
 import {
   Table,
@@ -19,17 +20,23 @@ import { EstadoVisitaBadge } from "./estado-badge"
 
 type Row = Visita & {
   cliente: { nome: string } | null
+  tecnico: { nome: string } | null
   servicos: { categoria: CategoriaServico }[]
 }
 
-function rotulo(v: Row) {
-  return v.titulo || `Visita #${v.numero}`
-}
 function categoriaPrincipal(v: Row): CategoriaServico {
   return v.servicos[0]?.categoria ?? "OUTROS"
 }
 
-export function VisitasList({ visitas }: { visitas: Row[] }) {
+export function VisitasList({
+  visitas,
+  temServicos,
+}: {
+  visitas: Row[]
+  temServicos?: boolean
+}) {
+  const r = rotulosServico(!!temServicos)
+  const rotulo = (v: Row) => v.titulo || `${r.Singular} #${v.numero}`
   return (
     <>
       {/* Telemóvel */}
@@ -63,7 +70,7 @@ export function VisitasList({ visitas }: { visitas: Row[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Visita</TableHead>
+              <TableHead>{r.Singular}</TableHead>
               <TableHead>Cliente</TableHead>
               <TableHead>Data</TableHead>
               <TableHead>Serviços</TableHead>
@@ -84,7 +91,14 @@ export function VisitasList({ visitas }: { visitas: Row[] }) {
                     {rotulo(v)}
                   </Link>
                 </TableCell>
-                <TableCell>{v.cliente?.nome ?? "—"}</TableCell>
+                <TableCell>
+                  {v.cliente?.nome ?? "—"}
+                  {v.tecnico?.nome && (
+                    <span className="text-muted-foreground block text-xs">
+                      {v.tecnico.nome}
+                    </span>
+                  )}
+                </TableCell>
                 <TableCell>
                   {formatData(v.agendadoPara)}, {formatHora(v.agendadoPara)}
                 </TableCell>

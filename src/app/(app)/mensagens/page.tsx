@@ -1,7 +1,8 @@
-import { asc } from "drizzle-orm"
+import { asc, eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { cliente } from "@/db/schema"
+import { requireEmpresa } from "@/lib/auth"
 import { TEMPLATES_WHATSAPP } from "@/lib/constants/mensagens-whatsapp"
 import { Card } from "@/components/ui/card"
 import { PageHeader } from "@/components/common/page-header"
@@ -10,6 +11,7 @@ import { EnviarMensagem } from "@/components/mensagens/enviar-mensagem"
 export const metadata = { title: "Mensagens" }
 
 export default async function MensagensPage() {
+  const { empresaId } = await requireEmpresa()
   const clientes = await db
     .select({
       id: cliente.id,
@@ -17,6 +19,7 @@ export default async function MensagensPage() {
       telefone: cliente.telefone,
     })
     .from(cliente)
+    .where(eq(cliente.empresaId, empresaId))
     .orderBy(asc(cliente.nome))
 
   return (

@@ -13,6 +13,7 @@ import {
 
 import { db } from "@/db/client"
 import { transacaoFinanceira, visita } from "@/db/schema"
+import { requireEmpresa } from "@/lib/auth"
 import { hojeKey } from "@/lib/agenda"
 import { cn } from "@/lib/utils"
 import { formatEuro } from "@/lib/formatters/currency"
@@ -30,6 +31,7 @@ export default async function FinanceiroPage({
 }: {
   searchParams: Promise<{ mes?: string }>
 }) {
+  const { empresaId } = await requireEmpresa()
   const { mes } = await searchParams
   const mesAtual = mes && /^\d{4}-\d{2}$/.test(mes) ? mes : hojeKey().slice(0, 7)
   const inicio = `${mesAtual}-01`
@@ -40,6 +42,7 @@ export default async function FinanceiroPage({
     .from(transacaoFinanceira)
     .where(
       and(
+        eq(transacaoFinanceira.empresaId, empresaId),
         gte(transacaoFinanceira.data, inicio),
         lt(transacaoFinanceira.data, fim)
       )
@@ -58,12 +61,18 @@ export default async function FinanceiroPage({
     db
       .select({ id: visita.id, valor: visita.valor })
       .from(visita)
-      .where(eq(visita.estado, "CONCLUIDO")),
+      .where(
+        and(
+          eq(visita.empresaId, empresaId),
+          eq(visita.estado, "CONCLUIDO")
+        )
+      ),
     db
       .selectDistinct({ visitaId: transacaoFinanceira.visitaId })
       .from(transacaoFinanceira)
       .where(
         and(
+          eq(transacaoFinanceira.empresaId, empresaId),
           eq(transacaoFinanceira.tipo, "ENTRADA"),
           isNotNull(transacaoFinanceira.visitaId)
         )

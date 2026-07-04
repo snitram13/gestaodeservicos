@@ -33,6 +33,7 @@ async function main() {
     `drop table if exists produto_estoque cascade`,
     `drop table if exists cliente cascade`,
     `drop table if exists utilizador cascade`,
+    `drop table if exists empresa cascade`,
     `drop type if exists estado_servico cascade`,
     `drop type if exists estado_visita cascade`,
     `drop type if exists categoria_servico cascade`,

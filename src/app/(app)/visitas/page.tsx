@@ -4,6 +4,9 @@ import { CalendarCheck, Plus } from "lucide-react"
 
 import { db } from "@/db/client"
 import { visita } from "@/db/schema"
+import { requireEmpresa } from "@/lib/auth"
+import { temModuloAtual } from "@/lib/modulos"
+import { MODULOS, rotulosServico } from "@/lib/constants/modulos"
 import type { CategoriaServico, EstadoVisita } from "@/lib/constants/enums"
 import type { Visita } from "@/db/schema"
 import { cn } from "@/lib/utils"
@@ -17,6 +20,7 @@ export const metadata = { title: "Visitas" }
 
 type Row = Visita & {
   cliente: { nome: string } | null
+  tecnico: { nome: string } | null
   servicos: { categoria: CategoriaServico }[]
 }
 
@@ -25,13 +29,19 @@ export default async function VisitasPage({
 }: {
   searchParams: Promise<{ estado?: string }>
 }) {
+  const { empresaId } = await requireEmpresa()
   const { estado } = await searchParams
-  const where = estado ? eq(visita.estado, estado as EstadoVisita) : undefined
+  const temServicos = await temModuloAtual(MODULOS.ORDENS_SERVICO)
+  const r = rotulosServico(temServicos)
 
   const visitas = (await db.query.visita.findMany({
-    where: where ? and(where) : undefined,
+    where: and(
+      eq(visita.empresaId, empresaId),
+      estado ? eq(visita.estado, estado as EstadoVisita) : undefined
+    ),
     with: {
       cliente: { columns: { nome: true } },
+      tecnico: { columns: { nome: true } },
       servicos: { columns: { categoria: true } },
     },
     orderBy: [desc(visita.agendadoPara)],
@@ -39,10 +49,13 @@ export default async function VisitasPage({
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Visitas" description={`${visitas.length} visita(s)`}>
+      <PageHeader
+        title={r.Plural}
+        description={`${visitas.length} ${visitas.length === 1 ? r.singular : r.plural}`}
+      >
         <Link href="/visitas/novo" className={cn(buttonVariants(), "h-10 gap-1.5")}>
           <Plus className="size-4" />
-          Nova
+          {r.novo}
         </Link>
       </PageHeader>
 
@@ -51,16 +64,20 @@ export default async function VisitasPage({
       {visitas.length === 0 ? (
         <EmptyState
           icon={CalendarCheck}
-          title={estado ? "Sem visitas com este estado" : "Ainda não há visitas"}
-          description="Crie uma visita e adicione os serviços realizados."
+          title={
+            estado
+              ? `Sem ${r.plural} com este estado`
+              : `Ainda não há ${r.plural}`
+          }
+          description="Registe aqui o trabalho realizado."
         >
           <Link href="/visitas/novo" className={cn(buttonVariants(), "gap-1.5")}>
             <Plus className="size-4" />
-            Nova visita
+            {r.novo}
           </Link>
         </EmptyState>
       ) : (
-        <VisitasList visitas={visitas} />
+        <VisitasList visitas={visitas} temServicos={temServicos} />
       )}
     </div>
   )

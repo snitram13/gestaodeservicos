@@ -6,6 +6,7 @@
 import { existsSync, readFileSync } from "node:fs"
 
 import { config } from "dotenv"
+import { eq } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 
@@ -41,6 +42,16 @@ async function main() {
   const client = postgres(process.env.MIGRATION_URL!, { prepare: false, max: 1 })
   const db = drizzle(client, { schema })
 
+  // 0. Empresa (tenant). Usa a existente ("PN REPARAÇÕES") ou cria uma.
+  let [emp] = await db.select().from(schema.empresa).limit(1)
+  if (!emp) {
+    ;[emp] = await db
+      .insert(schema.empresa)
+      .values({ nome: "PN REPARAÇÕES" })
+      .returning()
+    console.log("✓ Empresa 'PN REPARAÇÕES' criada.")
+  }
+
   // 1. Restaurar clientes do backup, se a tabela estiver vazia
   let clientes = await db.select().from(schema.cliente)
   if (clientes.length === 0 && existsSync("/tmp/clientes-backup.json")) {
@@ -53,6 +64,7 @@ async function main() {
         .values(
           backup.map((c) => ({
             id: c.id,
+            empresaId: emp.id,
             nome: c.nome,
             telefone: c.telefone,
             email: c.email,
@@ -73,6 +85,7 @@ async function main() {
   if (clientes.length === 0) {
     await db.insert(schema.cliente).values([
       {
+        empresaId: emp.id,
         nome: "Maria Silva",
         telefone: "912345678",
         email: "maria.silva@exemplo.pt",
@@ -81,6 +94,7 @@ async function main() {
         codigoPostal: "4000-447",
       },
       {
+        empresaId: emp.id,
         nome: "João Pereira",
         telefone: "936112233",
         morada: "Av. da República 45",
@@ -88,6 +102,7 @@ async function main() {
         codigoPostal: "4430-187",
       },
       {
+        empresaId: emp.id,
         nome: "Ana Costa",
         telefone: "925778899",
         morada: "Rua Brito Capelo 200",
@@ -109,19 +124,37 @@ async function main() {
 
   const [maria, joao, ana] = clientes
 
+  // Contador local para o `numero` sequencial das visitas (por empresa).
+  let proxNumVisita = 1
+
   async function criarVisita(
-    dados: typeof schema.visita.$inferInsert,
-    servicos: Omit<typeof schema.servico.$inferInsert, "visitaId">[]
+    dados: Omit<typeof schema.visita.$inferInsert, "empresaId" | "numero">,
+    servicos: Omit<
+      typeof schema.servico.$inferInsert,
+      "visitaId" | "empresaId"
+    >[]
   ) {
     const somaServicos = servicos.reduce((s, x) => s + Number(x.valor), 0)
     const total = somaServicos + Number(dados.deslocacao ?? 0)
     const [v] = await db
       .insert(schema.visita)
-      .values({ ...dados, valor: String(total) })
+      .values({
+        ...dados,
+        empresaId: emp.id,
+        numero: proxNumVisita++,
+        valor: String(total),
+      })
       .returning({ id: schema.visita.id })
     await db
       .insert(schema.servico)
-      .values(servicos.map((s, i) => ({ ...s, visitaId: v.id, ordem: i })))
+      .values(
+        servicos.map((s, i) => ({
+          ...s,
+          empresaId: emp.id,
+          visitaId: v.id,
+          ordem: i,
+        }))
+      )
     return v.id
   }
 
@@ -222,6 +255,7 @@ async function main() {
   // 4. Transações (uma visita concluída paga, outra por receber)
   await db.insert(schema.transacaoFinanceira).values([
     {
+      empresaId: emp.id,
       tipo: "ENTRADA",
       categoria: "SERVICO",
       valor: "85",
@@ -232,6 +266,7 @@ async function main() {
       metodoPagamento: "MBWAY",
     },
     {
+      empresaId: emp.id,
       tipo: "SAIDA",
       categoria: "COMBUSTIVEL",
       valor: "30",
@@ -241,6 +276,12 @@ async function main() {
   ])
   // v4 (Ana) fica concluída e por receber → aparece em "A receber"
   void v4
+
+  // 5. Sincronizar o contador de numeração da empresa (próximo = max+1).
+  await db
+    .update(schema.empresa)
+    .set({ proxNumVisita })
+    .where(eq(schema.empresa.id, emp.id))
 
   console.log("✅ Seed concluído: clientes + 4 visitas + serviços + transações.")
   await client.end()

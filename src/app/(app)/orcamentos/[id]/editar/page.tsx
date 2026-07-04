@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation"
-import { asc, eq } from "drizzle-orm"
+import { and, asc, eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { cliente, orcamento } from "@/db/schema"
+import { requireEmpresa } from "@/lib/auth"
 import { PageHeader } from "@/components/common/page-header"
 import { OrcamentoForm } from "@/components/orcamentos/orcamento-form"
 
@@ -13,9 +14,10 @@ export default async function EditarOrcamentoPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const { empresaId } = await requireEmpresa()
   const { id } = await params
   const o = await db.query.orcamento.findFirst({
-    where: eq(orcamento.id, id),
+    where: and(eq(orcamento.id, id), eq(orcamento.empresaId, empresaId)),
     with: { itens: true },
   })
   if (!o) notFound()
@@ -27,6 +29,7 @@ export default async function EditarOrcamentoPage({
       telefone: cliente.telefone,
     })
     .from(cliente)
+    .where(eq(cliente.empresaId, empresaId))
     .orderBy(asc(cliente.nome))
 
   return (

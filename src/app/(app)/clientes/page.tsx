@@ -1,9 +1,10 @@
 import Link from "next/link"
-import { asc, ilike, or } from "drizzle-orm"
+import { and, asc, eq, ilike, or } from "drizzle-orm"
 import { Plus, Users } from "lucide-react"
 
 import { db } from "@/db/client"
 import { cliente } from "@/db/schema"
+import { requireEmpresa } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import { EmptyState } from "@/components/common/empty-state"
@@ -18,11 +19,18 @@ export default async function ClientesPage({
 }: {
   searchParams: Promise<{ q?: string }>
 }) {
+  const { empresaId } = await requireEmpresa()
   const { q } = await searchParams
   const termo = (q ?? "").trim()
   const where = termo
-    ? or(ilike(cliente.nome, `%${termo}%`), ilike(cliente.telefone, `%${termo}%`))
-    : undefined
+    ? and(
+        eq(cliente.empresaId, empresaId),
+        or(
+          ilike(cliente.nome, `%${termo}%`),
+          ilike(cliente.telefone, `%${termo}%`)
+        )
+      )
+    : eq(cliente.empresaId, empresaId)
 
   const clientes = await db
     .select()

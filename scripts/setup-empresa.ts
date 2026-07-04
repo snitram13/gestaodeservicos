@@ -1,7 +1,11 @@
-/** Cria o bucket do logótipo, RLS e a linha de configuração. npx tsx scripts/setup-empresa.ts */
+/**
+ * Cria o bucket "empresa" do Storage (logótipo/imagens da empresa).
+ * O perfil da empresa vive agora na tabela `empresa` (criada pela migração e
+ * pelo registo), por isso este script já não mexe na base de dados.
+ * npx tsx scripts/setup-empresa.ts
+ */
 import { config } from "dotenv"
 import { createClient } from "@supabase/supabase-js"
-import postgres from "postgres"
 
 config({ path: ".env.local" })
 
@@ -18,23 +22,7 @@ async function main() {
   })
   console.log("bucket 'empresa':", be ? be.message : "criado")
 
-  const sql = postgres(process.env.MIGRATION_URL!, { prepare: false, max: 1 })
-  await sql.unsafe(`alter table "configuracao" enable row level security`)
-  await sql.unsafe(`drop policy if exists "configuracao_auth_all" on "configuracao"`)
-  await sql.unsafe(
-    `create policy "configuracao_auth_all" on "configuracao" for all to authenticated using (true) with check (true)`
-  )
-
-  const existing = await sql`select id from configuracao limit 1`
-  if (existing.length === 0) {
-    await sql`insert into configuracao (nome_empresa, slogan, email) values ('PN Reparações', 'Reparações ao domicílio · Grande Porto', 'andre.oliveira@sanches.io')`
-    console.log("✓ linha de configuração criada")
-  } else {
-    console.log("✓ configuração já existe")
-  }
-
-  await sql.end()
-  console.log("✅ Empresa configurada.")
+  console.log("✅ Bucket da empresa configurado.")
 }
 
 main().catch((e) => {

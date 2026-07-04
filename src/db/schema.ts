@@ -8,11 +8,11 @@ import {
   integer,
   numeric,
   pgEnum,
-  pgSequence,
   pgTable,
   smallint,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core"
 
@@ -41,28 +41,72 @@ export const tipoFotoEnum = pgEnum("tipo_foto", TIPOS_FOTO)
 export const metodoPagamentoEnum = pgEnum("metodo_pagamento", METODOS_PAGAMENTO)
 
 /* ------------------------------------------------------------------ */
-/* Sequências de numeração                                             */
+/* Empresa (TENANT) — raiz de isolação multi-empresa                   */
+/*                                                                     */
+/* Cada empresa é um negócio independente. TUDO pertence a uma empresa */
+/* (empresaId). Absorve também o perfil da empresa (antiga            */
+/* `configuracao`, agora 1 empresa = a sua configuração) usado no PDF  */
+/* e na marca. A numeração de visitas/orçamentos é POR empresa, via    */
+/* contadores atómicos (prox_num_*): cada empresa começa no #1.        */
 /* ------------------------------------------------------------------ */
 
-export const visitaNumeroSeq = pgSequence("visita_numero_seq", { startWith: 1 })
-export const orcamentoNumeroSeq = pgSequence("orcamento_numero_seq", {
-  startWith: 1,
+export const empresa = pgTable("empresa", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  nome: text("nome").notNull().default("A minha empresa"),
+  slogan: text("slogan"),
+  nif: text("nif"),
+  telefone: text("telefone"),
+  email: text("email"),
+  morada: text("morada"),
+  iban: text("iban"),
+  logoPath: text("logo_path"),
+  // Contadores de numeração por empresa (incrementados atomicamente).
+  proxNumVisita: integer("prox_num_visita").notNull().default(1),
+  proxNumOrcamento: integer("prox_num_orcamento").notNull().default(1),
+  ativo: boolean("ativo").notNull().default(true),
+  // Nº máximo de funcionários (lugares) que o cliente pode ter. A mensalidade é
+  // 29,90 + (funcionários ativos, não-OWNER) × 4,99.
+  limiteFuncionarios: integer("limite_funcionarios").notNull().default(0),
+  // Módulos opcionais ativos (chaves em src/lib/constants/modulos.ts). O
+  // super-admin liga/desliga por cliente no /admin.
+  modulos: text("modulos").array().notNull().default(sql`'{}'::text[]`),
+  // Data-limite de acesso (período gratuito / mensalidade). null = ilimitado
+  // (ex.: a empresa do próprio super-admin). Passada esta data, ninguém dessa
+  // empresa entra até o super-admin registar o pagamento (estende a data).
+  acessoAte: timestamp("acesso_ate", { withTimezone: true }),
+  criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+  atualizadoEm: timestamp("atualizado_em", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 })
 
 /* ------------------------------------------------------------------ */
 /* Utilizador                                                          */
+/*                                                                     */
+/* id = auth.users.id (Supabase Auth). Cada utilizador pertence a UMA  */
+/* empresa. O `role` só restringe a gestão de utilizadores/empresa —   */
+/* dentro da empresa o acesso aos dados de negócio é total.            */
 /* ------------------------------------------------------------------ */
 
-export const utilizador = pgTable("utilizador", {
-  id: uuid("id").primaryKey(),
-  nome: text("nome").notNull(),
-  email: text("email").notNull().unique(),
-  telefone: text("telefone"),
-  role: utilizadorRoleEnum("role").notNull().default("OWNER"),
-  ativo: boolean("ativo").notNull().default(true),
-  corAgenda: text("cor_agenda"),
-  criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
-})
+export const utilizador = pgTable(
+  "utilizador",
+  {
+    id: uuid("id").primaryKey(),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresa.id, { onDelete: "cascade" }),
+    nome: text("nome").notNull(),
+    email: text("email").notNull().unique(),
+    telefone: text("telefone"),
+    role: utilizadorRoleEnum("role").notNull().default("TECNICO"),
+    ativo: boolean("ativo").notNull().default(true),
+    corAgenda: text("cor_agenda"),
+    criadoEm: timestamp("criado_em", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("idx_utilizador_empresa").on(t.empresaId)]
+)
 
 /* ------------------------------------------------------------------ */
 /* Cliente                                                             */
@@ -72,6 +116,9 @@ export const cliente = pgTable(
   "cliente",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresa.id, { onDelete: "cascade" }),
     nome: text("nome").notNull(),
     telefone: text("telefone").notNull(),
     email: text("email"),
@@ -90,8 +137,8 @@ export const cliente = pgTable(
       .defaultNow(),
   },
   (t) => [
-    index("idx_cliente_nome").on(t.nome),
-    index("idx_cliente_cidade").on(t.cidade),
+    index("idx_cliente_empresa_nome").on(t.empresaId, t.nome),
+    index("idx_cliente_empresa_cidade").on(t.empresaId, t.cidade),
   ]
 )
 
@@ -103,10 +150,11 @@ export const visita = pgTable(
   "visita",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    numero: integer("numero")
+    empresaId: uuid("empresa_id")
       .notNull()
-      .unique()
-      .default(sql`nextval('visita_numero_seq')`),
+      .references(() => empresa.id, { onDelete: "cascade" }),
+    // Número sequencial POR empresa (alocado pela app via empresa.prox_num_visita).
+    numero: integer("numero").notNull(),
     clienteId: uuid("cliente_id")
       .notNull()
       .references(() => cliente.id, { onDelete: "restrict" }),
@@ -128,6 +176,8 @@ export const visita = pgTable(
     kmPercorridos: numeric("km_percorridos", { precision: 8, scale: 1 })
       .notNull()
       .default("0"),
+    // Assinatura do cliente (módulo Ordens de Serviço) — path no Storage.
+    assinaturaPath: text("assinatura_path"),
     criadoEm: timestamp("criado_em", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -136,10 +186,15 @@ export const visita = pgTable(
       .defaultNow(),
   },
   (t) => [
-    index("idx_visita_agendado").on(t.agendadoPara),
-    index("idx_visita_estado").on(t.estado),
+    uniqueIndex("uq_visita_empresa_numero").on(t.empresaId, t.numero),
+    index("idx_visita_empresa_agendado").on(t.empresaId, t.agendadoPara),
+    index("idx_visita_empresa_estado_agendado").on(
+      t.empresaId,
+      t.estado,
+      t.agendadoPara
+    ),
     index("idx_visita_cliente").on(t.clienteId),
-    index("idx_visita_estado_agendado").on(t.estado, t.agendadoPara),
+    index("idx_visita_tecnico").on(t.tecnicoId),
   ]
 )
 
@@ -151,6 +206,9 @@ export const servico = pgTable(
   "servico",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresa.id, { onDelete: "cascade" }),
     visitaId: uuid("visita_id")
       .notNull()
       .references(() => visita.id, { onDelete: "cascade" }),
@@ -166,7 +224,10 @@ export const servico = pgTable(
     valor: numeric("valor", { precision: 10, scale: 2 }).notNull().default("0"),
     ordem: integer("ordem").notNull().default(0),
   },
-  (t) => [index("idx_servico_visita").on(t.visitaId)]
+  (t) => [
+    index("idx_servico_visita").on(t.visitaId),
+    index("idx_servico_empresa").on(t.empresaId),
+  ]
 )
 
 /* ------------------------------------------------------------------ */
@@ -177,10 +238,11 @@ export const orcamento = pgTable(
   "orcamento",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    numero: integer("numero")
+    empresaId: uuid("empresa_id")
       .notNull()
-      .unique()
-      .default(sql`nextval('orcamento_numero_seq')`),
+      .references(() => empresa.id, { onDelete: "cascade" }),
+    // Número sequencial POR empresa (alocado via empresa.prox_num_orcamento).
+    numero: integer("numero").notNull(),
     clienteId: uuid("cliente_id")
       .notNull()
       .references(() => cliente.id, { onDelete: "restrict" }),
@@ -217,9 +279,10 @@ export const orcamento = pgTable(
       .defaultNow(),
   },
   (t) => [
+    uniqueIndex("uq_orcamento_empresa_numero").on(t.empresaId, t.numero),
+    index("idx_orcamento_empresa_estado").on(t.empresaId, t.estado),
     index("idx_orcamento_cliente").on(t.clienteId),
     index("idx_orcamento_visita").on(t.visitaId),
-    index("idx_orcamento_estado").on(t.estado),
   ]
 )
 
@@ -227,6 +290,9 @@ export const orcamentoItem = pgTable(
   "orcamento_item",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresa.id, { onDelete: "cascade" }),
     orcamentoId: uuid("orcamento_id")
       .notNull()
       .references(() => orcamento.id, { onDelete: "cascade" }),
@@ -253,6 +319,9 @@ export const foto = pgTable(
   "foto",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresa.id, { onDelete: "cascade" }),
     visitaId: uuid("visita_id")
       .notNull()
       .references(() => visita.id, { onDelete: "cascade" }),
@@ -274,6 +343,9 @@ export const avaliacao = pgTable(
   "avaliacao",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresa.id, { onDelete: "cascade" }),
     visitaId: uuid("visita_id")
       .notNull()
       .unique()
@@ -301,6 +373,9 @@ export const transacaoFinanceira = pgTable(
   "transacao_financeira",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresa.id, { onDelete: "cascade" }),
     tipo: tipoTransacaoEnum("tipo").notNull(),
     categoria: categoriaTransacaoEnum("categoria").notNull(),
     valor: numeric("valor", { precision: 10, scale: 2 }).notNull(),
@@ -318,8 +393,8 @@ export const transacaoFinanceira = pgTable(
       .defaultNow(),
   },
   (t) => [
-    index("idx_tx_data").on(t.data),
-    index("idx_tx_tipo_data").on(t.tipo, t.data),
+    index("idx_tx_empresa_data").on(t.empresaId, t.data),
+    index("idx_tx_empresa_tipo_data").on(t.empresaId, t.tipo, t.data),
     index("idx_tx_visita").on(t.visitaId),
   ]
 )
@@ -328,52 +403,99 @@ export const transacaoFinanceira = pgTable(
 /* Produto em estoque (Fase 3)                                         */
 /* ------------------------------------------------------------------ */
 
-export const produtoEstoque = pgTable("produto_estoque", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  nome: text("nome").notNull(),
-  sku: text("sku").unique(),
-  unidade: text("unidade").notNull().default("un"),
-  quantidade: numeric("quantidade", { precision: 10, scale: 2 })
-    .notNull()
-    .default("0"),
-  quantidadeMin: numeric("quantidade_min", { precision: 10, scale: 2 })
-    .notNull()
-    .default("0"),
-  custoUnit: numeric("custo_unit", { precision: 10, scale: 2 }),
-  precoVenda: numeric("preco_venda", { precision: 10, scale: 2 }),
-  fornecedor: text("fornecedor"),
-  criadoEm: timestamp("criado_em", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  atualizadoEm: timestamp("atualizado_em", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-})
+export const produtoEstoque = pgTable(
+  "produto_estoque",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresa.id, { onDelete: "cascade" }),
+    nome: text("nome").notNull(),
+    sku: text("sku"),
+    unidade: text("unidade").notNull().default("un"),
+    quantidade: numeric("quantidade", { precision: 10, scale: 2 })
+      .notNull()
+      .default("0"),
+    quantidadeMin: numeric("quantidade_min", { precision: 10, scale: 2 })
+      .notNull()
+      .default("0"),
+    custoUnit: numeric("custo_unit", { precision: 10, scale: 2 }),
+    precoVenda: numeric("preco_venda", { precision: 10, scale: 2 }),
+    fornecedor: text("fornecedor"),
+    criadoEm: timestamp("criado_em", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    atualizadoEm: timestamp("atualizado_em", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("idx_produto_empresa").on(t.empresaId),
+    uniqueIndex("uq_produto_empresa_sku").on(t.empresaId, t.sku),
+  ]
+)
 
 /* ------------------------------------------------------------------ */
-/* Configuração da empresa (linha única) — usada no PDF e na marca      */
+/* Pagamento (ledger da PLATAFORMA: mensalidades pagas pelos tenants)   */
+/*                                                                     */
+/* NÃO são dados de negócio do tenant — é o registo do aluguer que cada */
+/* empresa cliente paga ao dono da plataforma. Só o super-admin acede   */
+/* (via Drizzle). Cada `registarPagamento` insere uma linha.            */
 /* ------------------------------------------------------------------ */
 
-export const configuracao = pgTable("configuracao", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  nomeEmpresa: text("nome_empresa").notNull().default("PN Reparações"),
-  slogan: text("slogan"),
-  nif: text("nif"),
-  telefone: text("telefone"),
-  email: text("email"),
-  morada: text("morada"),
-  iban: text("iban"),
-  logoPath: text("logo_path"),
-  atualizadoEm: timestamp("atualizado_em", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-})
+export const pagamento = pgTable(
+  "pagamento",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresa.id, { onDelete: "cascade" }),
+    valor: numeric("valor", { precision: 10, scale: 2 }).notNull(),
+    data: date("data").notNull(),
+    // Data até à qual o acesso ficou válido após este pagamento (histórico).
+    periodoAte: timestamp("periodo_ate", { withTimezone: true }),
+    criadoEm: timestamp("criado_em", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("idx_pagamento_empresa").on(t.empresaId)]
+)
 
 /* ------------------------------------------------------------------ */
 /* Relações                                                            */
 /* ------------------------------------------------------------------ */
 
-export const clienteRelations = relations(cliente, ({ many }) => ({
+export const empresaRelations = relations(empresa, ({ many }) => ({
+  utilizadores: many(utilizador),
+  clientes: many(cliente),
+  visitas: many(visita),
+  orcamentos: many(orcamento),
+  transacoes: many(transacaoFinanceira),
+  produtos: many(produtoEstoque),
+  pagamentos: many(pagamento),
+}))
+
+export const pagamentoRelations = relations(pagamento, ({ one }) => ({
+  empresa: one(empresa, {
+    fields: [pagamento.empresaId],
+    references: [empresa.id],
+  }),
+}))
+
+export const utilizadorRelations = relations(utilizador, ({ one, many }) => ({
+  empresa: one(empresa, {
+    fields: [utilizador.empresaId],
+    references: [empresa.id],
+  }),
+  visitas: many(visita),
+  orcamentos: many(orcamento),
+}))
+
+export const clienteRelations = relations(cliente, ({ one, many }) => ({
+  empresa: one(empresa, {
+    fields: [cliente.empresaId],
+    references: [empresa.id],
+  }),
   visitas: many(visita),
   orcamentos: many(orcamento),
   avaliacoes: many(avaliacao),
@@ -381,6 +503,10 @@ export const clienteRelations = relations(cliente, ({ many }) => ({
 }))
 
 export const visitaRelations = relations(visita, ({ one, many }) => ({
+  empresa: one(empresa, {
+    fields: [visita.empresaId],
+    references: [empresa.id],
+  }),
   cliente: one(cliente, {
     fields: [visita.clienteId],
     references: [cliente.id],
@@ -397,6 +523,10 @@ export const visitaRelations = relations(visita, ({ one, many }) => ({
 }))
 
 export const servicoRelations = relations(servico, ({ one }) => ({
+  empresa: one(empresa, {
+    fields: [servico.empresaId],
+    references: [empresa.id],
+  }),
   visita: one(visita, {
     fields: [servico.visitaId],
     references: [visita.id],
@@ -404,6 +534,10 @@ export const servicoRelations = relations(servico, ({ one }) => ({
 }))
 
 export const orcamentoRelations = relations(orcamento, ({ one, many }) => ({
+  empresa: one(empresa, {
+    fields: [orcamento.empresaId],
+    references: [empresa.id],
+  }),
   cliente: one(cliente, {
     fields: [orcamento.clienteId],
     references: [cliente.id],
@@ -412,10 +546,18 @@ export const orcamentoRelations = relations(orcamento, ({ one, many }) => ({
     fields: [orcamento.visitaId],
     references: [visita.id],
   }),
+  tecnico: one(utilizador, {
+    fields: [orcamento.tecnicoId],
+    references: [utilizador.id],
+  }),
   itens: many(orcamentoItem),
 }))
 
 export const orcamentoItemRelations = relations(orcamentoItem, ({ one }) => ({
+  empresa: one(empresa, {
+    fields: [orcamentoItem.empresaId],
+    references: [empresa.id],
+  }),
   orcamento: one(orcamento, {
     fields: [orcamentoItem.orcamentoId],
     references: [orcamento.id],
@@ -423,6 +565,10 @@ export const orcamentoItemRelations = relations(orcamentoItem, ({ one }) => ({
 }))
 
 export const fotoRelations = relations(foto, ({ one }) => ({
+  empresa: one(empresa, {
+    fields: [foto.empresaId],
+    references: [empresa.id],
+  }),
   visita: one(visita, {
     fields: [foto.visitaId],
     references: [visita.id],
@@ -430,6 +576,10 @@ export const fotoRelations = relations(foto, ({ one }) => ({
 }))
 
 export const avaliacaoRelations = relations(avaliacao, ({ one }) => ({
+  empresa: one(empresa, {
+    fields: [avaliacao.empresaId],
+    references: [empresa.id],
+  }),
   visita: one(visita, {
     fields: [avaliacao.visitaId],
     references: [visita.id],
@@ -443,6 +593,10 @@ export const avaliacaoRelations = relations(avaliacao, ({ one }) => ({
 export const transacaoRelations = relations(
   transacaoFinanceira,
   ({ one }) => ({
+    empresa: one(empresa, {
+      fields: [transacaoFinanceira.empresaId],
+      references: [empresa.id],
+    }),
     visita: one(visita, {
       fields: [transacaoFinanceira.visitaId],
       references: [visita.id],
@@ -454,11 +608,21 @@ export const transacaoRelations = relations(
   })
 )
 
+export const produtoEstoqueRelations = relations(produtoEstoque, ({ one }) => ({
+  empresa: one(empresa, {
+    fields: [produtoEstoque.empresaId],
+    references: [empresa.id],
+  }),
+}))
+
 /* ------------------------------------------------------------------ */
 /* Tipos inferidos                                                     */
 /* ------------------------------------------------------------------ */
 
+export type Empresa = typeof empresa.$inferSelect
+export type NovaEmpresa = typeof empresa.$inferInsert
 export type Utilizador = typeof utilizador.$inferSelect
+export type NovoUtilizador = typeof utilizador.$inferInsert
 export type Cliente = typeof cliente.$inferSelect
 export type NovoCliente = typeof cliente.$inferInsert
 export type Visita = typeof visita.$inferSelect
@@ -470,4 +634,11 @@ export type Foto = typeof foto.$inferSelect
 export type Avaliacao = typeof avaliacao.$inferSelect
 export type TransacaoFinanceira = typeof transacaoFinanceira.$inferSelect
 export type ProdutoEstoque = typeof produtoEstoque.$inferSelect
-export type Configuracao = typeof configuracao.$inferSelect
+export type Pagamento = typeof pagamento.$inferSelect
+
+/**
+ * @deprecated A configuração da empresa passou a viver na tabela `empresa`
+ * (1 empresa = a sua configuração). Mantido como alias de tipo para
+ * compatibilidade de código antigo; usar `Empresa`.
+ */
+export type Configuracao = Empresa

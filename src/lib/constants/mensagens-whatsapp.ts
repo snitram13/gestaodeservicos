@@ -13,7 +13,7 @@ export const TEMPLATES_WHATSAPP: TemplateMensagem[] = [
     id: "confirmacao",
     titulo: "Confirmar agendamento",
     texto:
-      "Bom dia {nome}! Confirmo o serviço para {data} às {hora} em {morada}. Com os melhores cumprimentos, PN Reparações.",
+      "Bom dia {nome}! Confirmo o serviço para {data} às {hora} em {morada}. Com os melhores cumprimentos.",
   },
   {
     id: "a-caminho",

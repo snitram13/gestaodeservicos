@@ -8,6 +8,8 @@ import {
   MessageCircle,
   UserPlus,
   FilePlus,
+  Settings,
+  ClipboardList,
   type LucideIcon,
 } from "lucide-react"
 
@@ -32,6 +34,36 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const MOBILE_TABS = NAV_ITEMS.filter((i) => i.mobileTab)
 
+/**
+ * Navegação de negócio, com o item "Visitas" renomeado para "Serviços" quando o
+ * módulo Ordens de Serviço está ligado para a empresa.
+ */
+export function navNegocio(temServicos: boolean): NavItem[] {
+  if (!temServicos) return NAV_ITEMS
+  return NAV_ITEMS.map((i) =>
+    i.href === "/visitas"
+      ? { ...i, label: "Serviços", icon: ClipboardList }
+      : i
+  )
+}
+
+export function mobileTabsNegocio(temServicos: boolean): NavItem[] {
+  return navNegocio(temServicos).filter((i) => i.mobileTab)
+}
+
+/**
+ * Navegação do SUPER-ADMIN (controlador da plataforma de aluguer). Substitui a
+ * navegação de negócio — o dono da plataforma não usa clientes/visitas/agenda,
+ * gere os seus clientes/tenants e o financeiro do aluguer.
+ */
+export const ADMIN_NAV_ITEMS: NavItem[] = [
+  { href: "/admin", label: "Painel", icon: LayoutDashboard, mobileTab: true },
+  { href: "/admin/financeiro", label: "Financeiro", icon: Euro, mobileTab: true },
+  { href: "/admin/definicoes", label: "Definições", icon: Settings },
+]
+
+export const ADMIN_MOBILE_TABS = ADMIN_NAV_ITEMS.filter((i) => i.mobileTab)
+
 export type QuickAction = {
   href: string
   label: string
@@ -49,9 +81,9 @@ export function isActiveHref(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-export function tituloDaRota(pathname: string): string {
-  const item = [...NAV_ITEMS]
+export function tituloDaRota(pathname: string, temServicos = false): string {
+  const item = [...navNegocio(temServicos), ...ADMIN_NAV_ITEMS]
     .sort((a, b) => b.href.length - a.href.length)
     .find((i) => isActiveHref(pathname, i.href))
-  return item?.label ?? "PN Gestão"
+  return item?.label ?? "Gestão de Serviços"
 }

@@ -20,7 +20,7 @@ export default function LoginPage() {
         <div className="bg-primary text-primary-foreground mx-auto mb-2 flex size-12 items-center justify-center rounded-xl">
           <Wrench className="size-6" />
         </div>
-        <CardTitle className="text-xl">PN Gestão de Serviços</CardTitle>
+        <CardTitle className="text-xl">Gestão de Serviços</CardTitle>
         <CardDescription>Inicie sessão para continuar</CardDescription>
       </CardHeader>
       <CardContent>

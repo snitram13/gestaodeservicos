@@ -13,7 +13,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { SidebarNav } from "./sidebar-nav"
 
-export function MobileDrawer() {
+export function MobileDrawer({
+  showAdmin,
+  temServicos,
+}: {
+  showAdmin?: boolean
+  temServicos?: boolean
+}) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -35,10 +41,14 @@ export function MobileDrawer() {
           <div className="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-lg">
             <Wrench className="size-5" />
           </div>
-          <SheetTitle className="text-base">PN Gestão</SheetTitle>
+          <SheetTitle className="text-base">Gestão de Serviços</SheetTitle>
         </SheetHeader>
         <div className="p-3">
-          <SidebarNav onNavigate={() => setOpen(false)} />
+          <SidebarNav
+            showAdmin={showAdmin}
+            temServicos={temServicos}
+            onNavigate={() => setOpen(false)}
+          />
         </div>
       </SheetContent>
     </Sheet>
