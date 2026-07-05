@@ -23,7 +23,7 @@ import { EstadoOrcamentoBadge } from "@/components/orcamentos/estado-badge"
 import { RegistarPagamentoButton } from "@/components/financeiro/registar-pagamento-button"
 import { FotosSection } from "@/components/servicos/fotos-section"
 import { AssinaturaSection } from "@/components/servicos/assinatura-section"
-import { OrdemServicoAcoes } from "@/components/servicos/ordem-servico-acoes"
+import { PartilharPdf } from "@/components/common/partilhar-pdf"
 
 export default async function VisitaDetailPage({
   params,
@@ -108,7 +108,7 @@ export default async function VisitaDetailPage({
           <a
             href={waLink(
               v.cliente.telefone,
-              `Olá ${v.cliente.nome}, sobre a visita de ${formatData(v.agendadoPara)}: `
+              `Olá ${v.cliente.nome}! Sobre a marcação de ${formatData(v.agendadoPara)} às ${formatHora(v.agendadoPara)}${v.moradaServico ? `, em ${v.moradaServico}` : ""}${v.titulo ? ` — ${v.titulo}` : ""}. Fico ao dispor para qualquer questão. Obrigado!`
             )}
             target="_blank"
             rel="noopener noreferrer"
@@ -199,9 +199,10 @@ export default async function VisitaDetailPage({
               <p className="text-muted-foreground mb-2 text-sm font-medium">
                 Comprovativo
               </p>
-              <OrdemServicoAcoes
-                visitaId={v.id}
-                numero={v.numero}
+              <PartilharPdf
+                tipo="ordem-servico"
+                id={v.id}
+                pdfUrl={`/visitas/${v.id}/os-pdf`}
                 telefone={v.cliente?.telefone}
                 mensagem={`Olá ${v.cliente?.nome ?? ""}, segue a ordem de serviço #${v.numero} do serviço realizado. Obrigado!`}
               />

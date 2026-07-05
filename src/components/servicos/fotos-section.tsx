@@ -14,6 +14,41 @@ export type FotoUI = {
   url: string | null
 }
 
+/**
+ * Comprime a foto no browser (redimensiona a máx. 1280px, JPEG) antes de a
+ * enviar — uma foto de telemóvel (2–5 MB) passa a ~200–400 KB, bem abaixo do
+ * limite dos Server Actions (evita ficar "a processar" sem anexar).
+ */
+async function comprimir(file: File): Promise<File> {
+  try {
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const r = new FileReader()
+      r.onload = () => resolve(r.result as string)
+      r.onerror = reject
+      r.readAsDataURL(file)
+    })
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image()
+      i.onload = () => resolve(i)
+      i.onerror = reject
+      i.src = dataUrl
+    })
+    const max = 1280
+    const scale = Math.min(1, max / Math.max(img.width, img.height))
+    const canvas = document.createElement("canvas")
+    canvas.width = Math.round(img.width * scale)
+    canvas.height = Math.round(img.height * scale)
+    canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height)
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.72)
+    )
+    if (!blob) return file
+    return new File([blob], "foto.jpg", { type: "image/jpeg" })
+  } catch {
+    return file
+  }
+}
+
 export function FotosSection({
   visitaId,
   fotos,
@@ -55,10 +90,11 @@ function Galeria({
   const [loading, setLoading] = useState(false)
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
+    const original = e.target.files?.[0]
     e.target.value = ""
-    if (!file) return
+    if (!original) return
     setLoading(true)
+    const file = await comprimir(original)
     const fd = new FormData()
     fd.set("visitaId", visitaId)
     fd.set("tipo", tipo)

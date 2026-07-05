@@ -81,9 +81,9 @@ export default async function OrcamentoDetailPage({
       <div className="flex flex-wrap items-center gap-2">
         <EstadoOrcamentoSelect id={id} estado={o.estado} />
         <PartilharPdf
+          tipo="orcamento"
+          id={id}
           pdfUrl={`/orcamentos/${id}/pdf`}
-          nomeFicheiro={`orcamento-${o.numero}.pdf`}
-          titulo={`Orçamento #${o.numero}`}
           telefone={o.cliente?.telefone}
           mensagem={textoWhats}
         />

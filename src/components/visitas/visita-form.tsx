@@ -9,7 +9,6 @@ import { toast } from "sonner"
 
 import { atualizarVisita, criarVisita } from "@/actions/visitas"
 import { CATEGORIA_OPCOES } from "@/lib/constants/categorias"
-import { CIDADES } from "@/lib/constants/cidades"
 import { ESTADO_VISITA_OPCOES } from "@/lib/constants/estados"
 import { formatEuro, parseEuro } from "@/lib/formatters/currency"
 import { formatTelefone } from "@/lib/formatters/phone"
@@ -321,24 +320,10 @@ export function VisitaForm({
               name="cidade"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cidade</FormLabel>
-                  <Select
-                    value={field.value || undefined}
-                    onValueChange={(v) => field.onChange(v ?? "")}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="h-11 w-full">
-                        <SelectValue placeholder="Selecionar…" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {CIDADES.map((c) => (
-                        <SelectItem key={c} value={c}>
-                          {c}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Cidade / localidade</FormLabel>
+                  <FormControl>
+                    <Input className="h-11" placeholder="Localidade" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
