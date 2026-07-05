@@ -29,7 +29,6 @@ import {
 import {
   EmpresaAcoes,
   LimiteFuncionariosControl,
-  ModulosControl,
 } from "@/components/admin/admin-client"
 
 export const metadata = { title: "Cliente" }
@@ -161,15 +160,6 @@ export default async function AdminClientePage({
             empresaId={emp.id}
             limite={emp.limiteFuncionarios}
           />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Módulos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ModulosControl empresaId={emp.id} ativos={emp.modulos} />
         </CardContent>
       </Card>
 

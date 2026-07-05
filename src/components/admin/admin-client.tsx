@@ -20,10 +20,8 @@ import {
   criarCliente,
   definirEstadoEmpresa,
   definirLimiteFuncionarios,
-  definirModulo,
   registarPagamento,
 } from "@/actions/admin"
-import { MODULOS_META } from "@/lib/constants/modulos"
 import { PRECO_FUNCIONARIO_EUR } from "@/lib/constants/subscricao"
 import { formatEuro } from "@/lib/formatters/currency"
 import {
@@ -61,7 +59,6 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
 
 /* ------------------------------------------------------------------ */
 /* Novo cliente (empresa + dono)                                       */
@@ -474,50 +471,3 @@ export function LimiteFuncionariosControl({
   )
 }
 
-/* ------------------------------------------------------------------ */
-/* Módulos opcionais (ligar/desligar por cliente)                      */
-/* ------------------------------------------------------------------ */
-
-export function ModulosControl({
-  empresaId,
-  ativos,
-}: {
-  empresaId: string
-  ativos: string[]
-}) {
-  const router = useRouter()
-  const [pending, setPending] = useState<string | null>(null)
-
-  async function toggle(key: string, ativo: boolean) {
-    setPending(key)
-    const res = await definirModulo(empresaId, key, ativo)
-    setPending(null)
-    if (!res.ok) {
-      toast.error("Não foi possível guardar", { description: res.message })
-      return
-    }
-    toast.success(ativo ? "Módulo ativado" : "Módulo desativado")
-    router.refresh()
-  }
-
-  return (
-    <div className="space-y-4">
-      {MODULOS_META.map((m) => {
-        const on = ativos.includes(m.key)
-        return (
-          <div key={m.key} className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="font-medium">{m.nome}</p>
-              <p className="text-muted-foreground text-sm">{m.descricao}</p>
-            </div>
-            <Switch
-              checked={on}
-              disabled={pending === m.key}
-              onCheckedChange={(v) => toggle(m.key, v)}
-            />
-          </div>
-        )
-      })}
-    </div>
-  )
-}
