@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useFieldArray, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -163,6 +163,17 @@ export function VisitaForm({
     form.setValue("clienteId", c.id, { shouldValidate: true })
     autofill(c)
   }
+
+  // Cliente já pré-selecionado (ex.: criar serviço a partir do orçamento):
+  // preenche a morada/cidade logo, sem ter de reabrir o seletor.
+  useEffect(() => {
+    if (isEdit) return
+    const id = form.getValues("clienteId")
+    if (!id || form.getValues("moradaServico")) return
+    const c = clientesList.find((x) => x.id === id)
+    if (c) autofill(c)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const servicosW = form.watch("servicos")
   const deslocacaoW = form.watch("deslocacao")

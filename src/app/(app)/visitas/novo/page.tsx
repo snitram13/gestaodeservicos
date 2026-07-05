@@ -65,6 +65,10 @@ export default async function NovaVisitaPage({
         }))
       prefill = {
         clienteId: o.clienteId,
+        // Local da obra do orçamento tem prioridade; senão o formulário
+        // preenche a partir da morada do cliente.
+        ...(o.morada ? { moradaServico: o.morada } : {}),
+        ...(o.cidade ? { cidade: o.cidade } : {}),
         servicos:
           servicos.length > 0
             ? servicos
