@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useFieldArray, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -160,6 +160,17 @@ export function OrcamentoForm({
     form.setValue("clienteId", c.id, { shouldValidate: true })
     autofill(c)
   }
+
+  // Cliente já pré-selecionado (ex.: "Novo orçamento" a partir da ficha do
+  // cliente): preenche a morada/cidade logo, sem reabrir o seletor.
+  useEffect(() => {
+    if (isEdit) return
+    const id = form.getValues("clienteId")
+    if (!id || (form.getValues("morada") || "").trim()) return
+    const c = clientesList.find((x) => x.id === id)
+    if (c) autofill(c)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function onSubmit(values: OrcamentoFormValues) {
     const res = isEdit

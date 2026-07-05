@@ -67,6 +67,9 @@ export default async function NovoOrcamentoPage({
         categoria: servicos[0]?.categoria ?? "OUTROS",
         titulo: v.titulo ?? `${r.Singular} #${v.numero}`,
         descricao: v.descricao ?? "",
+        // Local da obra do serviço → orçamento (senão o form usa a do cliente).
+        ...(v.moradaServico ? { morada: v.moradaServico } : {}),
+        ...(v.cidade ? { cidade: v.cidade } : {}),
         itens,
       }
       visitaOrigemId = v.id
