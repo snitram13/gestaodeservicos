@@ -61,10 +61,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   title: { fontSize: 12, fontFamily: "Helvetica-Bold", marginBottom: 6 },
+  fotosGrid: { flexDirection: "row", gap: 12 },
+  fotosCol: { flex: 1 },
+  fotoLabel: {
+    color: C.muted,
+    fontFamily: "Helvetica-Bold",
+    fontSize: 9,
+    marginBottom: 4,
+  },
   fotoRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   foto: {
-    width: 150,
-    height: 112,
+    width: "100%",
+    height: 150,
     objectFit: "cover",
     borderRadius: 4,
     borderWidth: 1,
@@ -181,29 +189,32 @@ export function OrdemServicoPDF({
           </View>
         </View>
 
-        {/* Fotos */}
+        {/* Fotos — Antes e Depois lado a lado */}
         {(fotosAntes.length > 0 || fotosDepois.length > 0) && (
           <View style={styles.section} wrap={false}>
-            {fotosAntes.length > 0 && (
-              <>
-                <Text style={styles.title}>Fotos — Antes</Text>
-                <View style={styles.fotoRow}>
-                  {fotosAntes.map((u, i) => (
-                    <Image key={i} src={u} style={styles.foto} />
-                  ))}
+            <Text style={styles.title}>Fotos</Text>
+            <View style={styles.fotosGrid}>
+              {fotosAntes.length > 0 && (
+                <View style={styles.fotosCol}>
+                  <Text style={styles.fotoLabel}>ANTES</Text>
+                  <View style={styles.fotoRow}>
+                    {fotosAntes.map((u, i) => (
+                      <Image key={i} src={u} style={styles.foto} />
+                    ))}
+                  </View>
                 </View>
-              </>
-            )}
-            {fotosDepois.length > 0 && (
-              <>
-                <Text style={[styles.title, { marginTop: 12 }]}>Fotos — Depois</Text>
-                <View style={styles.fotoRow}>
-                  {fotosDepois.map((u, i) => (
-                    <Image key={i} src={u} style={styles.foto} />
-                  ))}
+              )}
+              {fotosDepois.length > 0 && (
+                <View style={styles.fotosCol}>
+                  <Text style={styles.fotoLabel}>DEPOIS</Text>
+                  <View style={styles.fotoRow}>
+                    {fotosDepois.map((u, i) => (
+                      <Image key={i} src={u} style={styles.foto} />
+                    ))}
+                  </View>
                 </View>
-              </>
-            )}
+              )}
+            </View>
           </View>
         )}
 
