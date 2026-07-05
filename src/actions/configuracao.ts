@@ -32,6 +32,7 @@ export async function guardarConfiguracao(
       email: d.email.trim() || null,
       morada: d.morada.trim() || null,
       iban: d.iban.trim() || null,
+      taxaIvaPadrao: d.taxaIvaPadrao.trim().replace(",", "."),
       atualizadoEm: new Date(),
     })
     .where(eq(empresa.id, empresaId))

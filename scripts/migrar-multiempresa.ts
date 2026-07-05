@@ -81,6 +81,10 @@ async function main() {
   // Local da obra no orçamento.
   await sql.unsafe(`alter table orcamento add column if not exists morada text`)
   await sql.unsafe(`alter table orcamento add column if not exists cidade text`)
+  // Taxa de IVA por omissão dos orçamentos (por empresa).
+  await sql.unsafe(
+    `alter table empresa add column if not exists taxa_iva_padrao numeric(4,2) not null default 23`
+  )
   console.log("✓ tabela empresa")
 
   // Ledger de pagamentos da plataforma (mensalidades pagas pelos tenants).

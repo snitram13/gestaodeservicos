@@ -3,6 +3,7 @@ import { and, asc, eq } from "drizzle-orm"
 import { db } from "@/db/client"
 import { cliente, visita } from "@/db/schema"
 import { requireEmpresa } from "@/lib/auth"
+import { getEmpresaAtual } from "@/lib/configuracao"
 import { temModuloAtual } from "@/lib/modulos"
 import { MODULOS, rotulosServico } from "@/lib/constants/modulos"
 import type {
@@ -21,6 +22,7 @@ export default async function NovoOrcamentoPage({
 }) {
   const { empresaId } = await requireEmpresa()
   const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO))
+  const emp = await getEmpresaAtual()
   const { cliente: clienteId, visita: visitaId } = await searchParams
 
   const clientes = await db
@@ -80,6 +82,7 @@ export default async function NovoOrcamentoPage({
         clientes={clientes}
         prefill={prefill}
         visitaOrigemId={visitaOrigemId}
+        taxaIvaPadrao={String(Number(emp.taxaIvaPadrao ?? 23))}
       />
     </div>
   )

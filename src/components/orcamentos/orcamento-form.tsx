@@ -56,11 +56,13 @@ export function OrcamentoForm({
   orcamento,
   prefill,
   visitaOrigemId,
+  taxaIvaPadrao,
 }: {
   clientes: ClienteOpt[]
   orcamento?: Orcamento & { itens: OrcamentoItem[] }
   prefill?: Partial<OrcamentoFormValues>
   visitaOrigemId?: string
+  taxaIvaPadrao?: string
 }) {
   const router = useRouter()
   const isEdit = Boolean(orcamento)
@@ -98,7 +100,7 @@ export function OrcamentoForm({
       morada: "",
       cidade: "",
       validade: validade.toISOString().slice(0, 10),
-      taxaIva: "23",
+      taxaIva: taxaIvaPadrao ?? "23",
       notas: "",
       itens: [{ ...ORCAMENTO_ITEM_VAZIO }],
       ...prefill,

@@ -14,6 +14,13 @@ export const configuracaoSchema = z.object({
     .refine((v) => v === "" || /^\S+@\S+\.\S+$/.test(v), "Email inválido."),
   morada: z.string().trim(),
   iban: z.string().trim(),
+  taxaIvaPadrao: z
+    .string()
+    .trim()
+    .refine(
+      (v) => /^\d{1,2}([.,]\d{1,2})?$/.test(v),
+      "Taxa de IVA inválida (ex.: 23 ou 0)."
+    ),
 })
 
 export type ConfiguracaoFormValues = z.infer<typeof configuracaoSchema>

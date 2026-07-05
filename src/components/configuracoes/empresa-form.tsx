@@ -46,6 +46,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
       email: cfg.email ?? "",
       morada: cfg.morada ?? "",
       iban: cfg.iban ?? "",
+      taxaIvaPadrao: String(Number(cfg.taxaIvaPadrao ?? 23)),
     },
   })
 
@@ -248,6 +249,28 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
                   <FormControl>
                     <Input className="h-11" placeholder="PT50 …" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="taxaIvaPadrao"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Taxa de IVA (%)</FormLabel>
+                  <FormControl>
+                    <Input
+                      className="h-11"
+                      inputMode="decimal"
+                      placeholder="23"
+                      {...field}
+                    />
+                  </FormControl>
+                  <p className="text-muted-foreground text-xs">
+                    Aplicada por omissão aos novos orçamentos. Use 0 se for
+                    isento (art. 53º).
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}

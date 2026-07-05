@@ -60,6 +60,10 @@ export const empresa = pgTable("empresa", {
   morada: text("morada"),
   iban: text("iban"),
   logoPath: text("logo_path"),
+  // Taxa de IVA por omissão dos novos orçamentos (0 se isento art. 53º).
+  taxaIvaPadrao: numeric("taxa_iva_padrao", { precision: 4, scale: 2 })
+    .notNull()
+    .default("23"),
   // Contadores de numeração por empresa (incrementados atomicamente).
   proxNumVisita: integer("prox_num_visita").notNull().default(1),
   proxNumOrcamento: integer("prox_num_orcamento").notNull().default(1),
