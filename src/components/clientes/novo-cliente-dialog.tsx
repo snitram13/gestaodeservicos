@@ -7,7 +7,7 @@ import { Loader2, UserPlus } from "lucide-react"
 import { toast } from "sonner"
 
 import { criarCliente } from "@/actions/clientes"
-import { CIDADES } from "@/lib/constants/cidades"
+import { procurarMorada } from "@/actions/morada"
 import {
   clienteSchema,
   CLIENTE_VAZIO,
@@ -32,13 +32,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 export type ClienteCriado = {
   id: string
@@ -54,10 +47,32 @@ export function NovoClienteDialog({
   onCreated: (c: ClienteCriado) => void
 }) {
   const [open, setOpen] = useState(false)
+  const [cpLoading, setCpLoading] = useState(false)
   const form = useForm<ClienteFormValues>({
     resolver: zodResolver(clienteSchema),
     defaultValues: CLIENTE_VAZIO,
   })
+
+  function formatCp(v: string) {
+    const d = v.replace(/\D/g, "").slice(0, 7)
+    return d.length > 4 ? `${d.slice(0, 4)}-${d.slice(4)}` : d
+  }
+
+  async function procurarCp(valor: string) {
+    if (valor.replace(/\D/g, "").length !== 7) return
+    setCpLoading(true)
+    const res = await procurarMorada(valor)
+    setCpLoading(false)
+    if (!res.ok) {
+      toast.error("Código postal", { description: res.message })
+      return
+    }
+    if (res.cidade) form.setValue("cidade", res.cidade, { shouldValidate: true })
+    if (res.morada && !(form.getValues("morada") || "").trim()) {
+      form.setValue("morada", res.morada, { shouldValidate: true })
+    }
+    toast.success("Morada preenchida a partir do código postal")
+  }
 
   async function onSubmit(values: ClienteFormValues) {
     const res = await criarCliente(values)
@@ -128,27 +143,31 @@ export function NovoClienteDialog({
               />
               <FormField
                 control={form.control}
-                name="cidade"
+                name="codigoPostal"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cidade</FormLabel>
-                    <Select
-                      value={field.value || undefined}
-                      onValueChange={(v) => field.onChange(v ?? "")}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="h-11 w-full">
-                          <SelectValue placeholder="—" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {CIDADES.map((c) => (
-                          <SelectItem key={c} value={c}>
-                            {c}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Código postal</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          className="h-11 pr-9"
+                          inputMode="numeric"
+                          placeholder="0000-000"
+                          name={field.name}
+                          ref={field.ref}
+                          value={field.value ?? ""}
+                          onBlur={field.onBlur}
+                          onChange={(e) => {
+                            const f = formatCp(e.target.value)
+                            field.onChange(f)
+                            if (f.replace(/\D/g, "").length === 7) procurarCp(f)
+                          }}
+                        />
+                        {cpLoading && (
+                          <Loader2 className="text-muted-foreground absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin" />
+                        )}
+                      </div>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -162,6 +181,19 @@ export function NovoClienteDialog({
                   <FormLabel>Morada</FormLabel>
                   <FormControl>
                     <Input className="h-11" placeholder="Rua, número…" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="cidade"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cidade / localidade</FormLabel>
+                  <FormControl>
+                    <Input className="h-11" placeholder="Localidade" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -7,7 +8,7 @@ import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { atualizarCliente, criarCliente } from "@/actions/clientes"
-import { CIDADES } from "@/lib/constants/cidades"
+import { procurarMorada } from "@/actions/morada"
 import {
   clienteSchema,
   CLIENTE_VAZIO,
@@ -24,13 +25,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 
 export function ClienteForm({
@@ -46,6 +40,29 @@ export function ClienteForm({
     resolver: zodResolver(clienteSchema),
     defaultValues: defaultValues ?? CLIENTE_VAZIO,
   })
+  const [cpLoading, setCpLoading] = useState(false)
+
+  function formatCp(v: string) {
+    const d = v.replace(/\D/g, "").slice(0, 7)
+    return d.length > 4 ? `${d.slice(0, 4)}-${d.slice(4)}` : d
+  }
+
+  // Procura a morada quando o código postal está completo (todo o Portugal).
+  async function procurarCp(valor: string) {
+    if (valor.replace(/\D/g, "").length !== 7) return
+    setCpLoading(true)
+    const res = await procurarMorada(valor)
+    setCpLoading(false)
+    if (!res.ok) {
+      toast.error("Código postal", { description: res.message })
+      return
+    }
+    if (res.cidade) form.setValue("cidade", res.cidade, { shouldValidate: true })
+    if (res.morada && !(form.getValues("morada") || "").trim()) {
+      form.setValue("morada", res.morada, { shouldValidate: true })
+    }
+    toast.success("Morada preenchida a partir do código postal")
+  }
 
   async function onSubmit(values: ClienteFormValues) {
     const res = isEdit
@@ -148,8 +165,29 @@ export function ClienteForm({
                 <FormItem>
                   <FormLabel>Código postal</FormLabel>
                   <FormControl>
-                    <Input className="h-11" placeholder="0000-000" {...field} />
+                    <div className="relative">
+                      <Input
+                        className="h-11 pr-9"
+                        inputMode="numeric"
+                        placeholder="0000-000"
+                        name={field.name}
+                        ref={field.ref}
+                        value={field.value ?? ""}
+                        onBlur={field.onBlur}
+                        onChange={(e) => {
+                          const f = formatCp(e.target.value)
+                          field.onChange(f)
+                          if (f.replace(/\D/g, "").length === 7) procurarCp(f)
+                        }}
+                      />
+                      {cpLoading && (
+                        <Loader2 className="text-muted-foreground absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin" />
+                      )}
+                    </div>
                   </FormControl>
+                  <p className="text-muted-foreground text-xs">
+                    Preenche a morada e a cidade automaticamente.
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}
@@ -178,24 +216,10 @@ export function ClienteForm({
               name="cidade"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cidade</FormLabel>
-                  <Select
-                    value={field.value || undefined}
-                    onValueChange={(v) => field.onChange(v ?? "")}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="h-11 w-full">
-                        <SelectValue placeholder="Selecionar…" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {CIDADES.map((c) => (
-                        <SelectItem key={c} value={c}>
-                          {c}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Cidade / localidade</FormLabel>
+                  <FormControl>
+                    <Input className="h-11" placeholder="Localidade" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
