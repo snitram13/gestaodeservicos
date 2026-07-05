@@ -7,7 +7,6 @@ import {
   View,
 } from "@react-pdf/renderer"
 
-import { logoUrl } from "@/lib/logo"
 import { formatEuro } from "@/lib/formatters/currency"
 import { formatData } from "@/lib/formatters/date"
 import type {
@@ -94,11 +93,11 @@ type Props = {
     itens: OrcamentoItem[]
   }
   config: Empresa
+  logo?: string | null
 }
 
-export function OrcamentoPDF({ orcamento: o, config }: Props) {
+export function OrcamentoPDF({ orcamento: o, config, logo = null }: Props) {
   const itens = [...o.itens].sort((a, b) => a.ordem - b.ordem)
-  const logo = logoUrl(config.logoPath)
 
   return (
     <Document title={`Orçamento ${o.numero}`} author={config.nome}>

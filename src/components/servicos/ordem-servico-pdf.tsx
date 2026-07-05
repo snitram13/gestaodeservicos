@@ -7,7 +7,6 @@ import {
   View,
 } from "@react-pdf/renderer"
 
-import { logoUrl } from "@/lib/logo"
 import { formatEuro } from "@/lib/formatters/currency"
 import { formatData, formatHora } from "@/lib/formatters/date"
 import { CATEGORIA_META } from "@/lib/constants/categorias"
@@ -95,6 +94,7 @@ const styles = StyleSheet.create({
 type Props = {
   visita: Visita & { cliente: Cliente | null; servicos: Servico[] }
   config: Empresa
+  logo: string | null
   fotosAntes: string[]
   fotosDepois: string[]
   assinaturaUrl: string | null
@@ -103,13 +103,13 @@ type Props = {
 export function OrdemServicoPDF({
   visita: v,
   config,
+  logo,
   fotosAntes,
   fotosDepois,
   assinaturaUrl,
 }: Props) {
   const servicos = [...v.servicos].sort((a, b) => a.ordem - b.ordem)
   const somaServicos = servicos.reduce((s, x) => s + Number(x.valor), 0)
-  const logo = logoUrl(config.logoPath)
 
   return (
     <Document title={`Ordem de Serviço ${v.numero}`} author={config.nome}>
