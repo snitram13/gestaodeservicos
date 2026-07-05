@@ -256,6 +256,9 @@ export const orcamento = pgTable(
     categoria: categoriaServicoEnum("categoria").notNull().default("OUTROS"),
     titulo: text("titulo").notNull(),
     descricao: text("descricao"),
+    // Local da obra (morada do serviço) — mostrado no PDF.
+    morada: text("morada"),
+    cidade: text("cidade"),
     validade: date("validade"),
     taxaIva: numeric("taxa_iva", { precision: 4, scale: 2 })
       .notNull()

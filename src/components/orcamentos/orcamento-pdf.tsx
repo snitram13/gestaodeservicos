@@ -152,6 +152,16 @@ export function OrcamentoPDF({ orcamento: o, config }: Props) {
           </Text>
         </View>
 
+        {/* Local da obra */}
+        {(o.morada || o.cidade) && (
+          <View style={styles.section}>
+            <Text style={styles.label}>LOCAL DA OBRA</Text>
+            <Text style={styles.desc}>
+              {[o.morada, o.cidade].filter(Boolean).join(", ")}
+            </Text>
+          </View>
+        )}
+
         {/* Título */}
         <Text style={styles.title}>{o.titulo}</Text>
         {o.descricao ? <Text style={styles.desc}>{o.descricao}</Text> : null}

@@ -78,6 +78,9 @@ async function main() {
   await sql.unsafe(
     `alter table visita add column if not exists assinatura_path text`
   )
+  // Local da obra no orçamento.
+  await sql.unsafe(`alter table orcamento add column if not exists morada text`)
+  await sql.unsafe(`alter table orcamento add column if not exists cidade text`)
   console.log("✓ tabela empresa")
 
   // Ledger de pagamentos da plataforma (mensalidades pagas pelos tenants).

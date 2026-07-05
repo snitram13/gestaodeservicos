@@ -42,6 +42,8 @@ function cabecalho(d: OrcamentoFormValues, c: ReturnType<typeof calcular>) {
     estado: d.estado,
     titulo: d.titulo.trim(),
     descricao: d.descricao.trim() || null,
+    morada: d.morada.trim() || null,
+    cidade: d.cidade.trim() || null,
     validade: d.validade || null,
     taxaIva: String(c.taxa),
     subtotal: String(c.subtotal),

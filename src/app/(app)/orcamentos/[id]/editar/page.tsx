@@ -27,6 +27,8 @@ export default async function EditarOrcamentoPage({
       id: cliente.id,
       nome: cliente.nome,
       telefone: cliente.telefone,
+      morada: cliente.morada,
+      cidade: cliente.cidade,
     })
     .from(cliente)
     .where(eq(cliente.empresaId, empresaId))

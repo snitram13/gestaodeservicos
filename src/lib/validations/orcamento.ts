@@ -14,6 +14,8 @@ export const orcamentoSchema = z.object({
   estado: z.enum(ESTADOS_ORCAMENTO),
   titulo: z.string().trim().min(2, "Indique um título para o orçamento."),
   descricao: z.string().trim(),
+  morada: z.string().trim(),
+  cidade: z.string().trim(),
   validade: z.string(),
   taxaIva: z.string(),
   notas: z.string().trim(),

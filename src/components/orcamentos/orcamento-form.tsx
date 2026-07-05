@@ -43,7 +43,13 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 
-type ClienteOpt = { id: string; nome: string; telefone: string }
+type ClienteOpt = {
+  id: string
+  nome: string
+  telefone: string
+  morada: string | null
+  cidade: string | null
+}
 
 export function OrcamentoForm({
   clientes,
@@ -67,6 +73,8 @@ export function OrcamentoForm({
         estado: orcamento.estado,
         titulo: orcamento.titulo,
         descricao: orcamento.descricao ?? "",
+        morada: orcamento.morada ?? "",
+        cidade: orcamento.cidade ?? "",
         validade: orcamento.validade ?? "",
         taxaIva: orcamento.taxaIva,
         notas: orcamento.notas ?? "",
@@ -87,6 +95,8 @@ export function OrcamentoForm({
       estado: "RASCUNHO",
       titulo: "",
       descricao: "",
+      morada: "",
+      cidade: "",
       validade: validade.toISOString().slice(0, 10),
       taxaIva: "23",
       notas: "",
@@ -121,13 +131,32 @@ export function OrcamentoForm({
     sub: formatTelefone(c.telefone),
   }))
 
+  function autofill(c: { morada: string | null; cidade: string | null }) {
+    if (!(form.getValues("morada") || "").trim())
+      form.setValue("morada", c.morada ?? "")
+    if (!(form.getValues("cidade") || "").trim())
+      form.setValue("cidade", c.cidade ?? "")
+  }
+  function onClienteChange(id: string) {
+    form.setValue("clienteId", id, { shouldValidate: true })
+    const c = clientesList.find((x) => x.id === id)
+    if (c) autofill(c)
+  }
   function onClienteCriado(c: ClienteCriado) {
     setClientesList((prev) =>
-      [...prev, { id: c.id, nome: c.nome, telefone: c.telefone }].sort((a, b) =>
-        a.nome.localeCompare(b.nome, "pt")
-      )
+      [
+        ...prev,
+        {
+          id: c.id,
+          nome: c.nome,
+          telefone: c.telefone,
+          morada: c.morada,
+          cidade: c.cidade,
+        },
+      ].sort((a, b) => a.nome.localeCompare(b.nome, "pt"))
     )
     form.setValue("clienteId", c.id, { shouldValidate: true })
+    autofill(c)
   }
 
   async function onSubmit(values: OrcamentoFormValues) {
@@ -164,7 +193,7 @@ export function OrcamentoForm({
                       <Combobox
                         options={clienteOptions}
                         value={field.value}
-                        onChange={field.onChange}
+                        onChange={onClienteChange}
                         placeholder="Selecionar cliente"
                         searchPlaceholder="Procurar cliente…"
                       />
@@ -261,6 +290,36 @@ export function OrcamentoForm({
                   <FormLabel>IVA (%)</FormLabel>
                   <FormControl>
                     <Input className="h-11" inputMode="decimal" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="morada"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2">
+                  <FormLabel>Local da obra (morada)</FormLabel>
+                  <FormControl>
+                    <Input
+                      className="h-11"
+                      placeholder="Rua, número…"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="cidade"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cidade / localidade</FormLabel>
+                  <FormControl>
+                    <Input className="h-11" placeholder="Localidade" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { and, eq } from "drizzle-orm"
-import { ArrowLeft, Download, MessageCircle, Pencil, Wrench } from "lucide-react"
+import { ArrowLeft, Pencil, Wrench } from "lucide-react"
 
 import { db } from "@/db/client"
 import { orcamento } from "@/db/schema"
@@ -12,9 +12,9 @@ import { EstadoVisitaBadge } from "@/components/visitas/estado-badge"
 import { cn } from "@/lib/utils"
 import { formatData } from "@/lib/formatters/date"
 import { formatEuro } from "@/lib/formatters/currency"
-import { waLink } from "@/lib/whatsapp"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { PartilharPdf } from "@/components/common/partilhar-pdf"
 import { DeleteOrcamentoButton } from "@/components/orcamentos/delete-orcamento-button"
 import { EstadoOrcamentoSelect } from "@/components/orcamentos/estado-select"
 
@@ -80,26 +80,13 @@ export default async function OrcamentoDetailPage({
 
       <div className="flex flex-wrap items-center gap-2">
         <EstadoOrcamentoSelect id={id} estado={o.estado} />
-        <a
-          href={`/orcamentos/${id}/pdf`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: "outline" }), "h-9 gap-1.5")}
-        >
-          <Download className="size-4" />
-          PDF
-        </a>
-        {o.cliente && (
-          <a
-            href={waLink(o.cliente.telefone, textoWhats)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(buttonVariants({ variant: "outline" }), "h-9 gap-1.5")}
-          >
-            <MessageCircle className="size-4" />
-            WhatsApp
-          </a>
-        )}
+        <PartilharPdf
+          pdfUrl={`/orcamentos/${id}/pdf`}
+          nomeFicheiro={`orcamento-${o.numero}.pdf`}
+          titulo={`Orçamento #${o.numero}`}
+          telefone={o.cliente?.telefone}
+          mensagem={textoWhats}
+        />
         <Link
           href={`/visitas/novo?orcamento=${id}`}
           className={cn(buttonVariants({ variant: "outline" }), "h-9 gap-1.5")}
