@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { FileText, Loader2, MessageCircle } from "lucide-react"
+import { FileText, Loader2, MessageCircle, Send } from "lucide-react"
 import { toast } from "sonner"
 
 import { linkOrcamentoPdf, linkOrdemServicoPdf } from "@/actions/partilha"
@@ -10,9 +10,11 @@ import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 
 /**
- * "Ver PDF" + "WhatsApp". No telemóvel, o botão WhatsApp partilha o PDF EM SI
- * pela partilha nativa (o ficheiro vai anexado). Onde não há suporte (ex.:
- * computador), recorre a enviar um LINK do PDF por WhatsApp.
+ * "Ver PDF" + "WhatsApp". No telemóvel envia o PDF EM SI pela partilha nativa:
+ * - Android: 1 toque.
+ * - iPhone: o gesto perde-se enquanto o PDF é preparado, por isso guardamos o
+ *   ficheiro e mostramos um 2º botão "Enviar PDF" (aí o iOS já deixa anexar).
+ * - Computador (sem suporte a anexar ficheiros): recorre a enviar um LINK.
  */
 export function PartilharPdf({
   tipo,
@@ -30,47 +32,88 @@ export function PartilharPdf({
   mostrarPdf?: boolean
 }) {
   const [loading, setLoading] = useState(false)
+  const [ficheiro, setFicheiro] = useState<File | null>(null)
 
-  // Tenta partilhar o ficheiro PDF em si. Devolve true se já tratou do envio
-  // (partilhou ou o utilizador cancelou); false para usar o recurso do link.
-  async function partilharFicheiro(): Promise<boolean> {
+  function suportaAnexar(): boolean {
     try {
-      const resp = await fetch(pdfUrl)
-      if (!resp.ok) return false
-      const blob = await resp.blob()
-      const nome = tipo === "orcamento" ? "orcamento" : "ordem-servico"
-      const file = new File([blob], `${nome}.pdf`, { type: "application/pdf" })
       const nav = navigator as Navigator & {
         canShare?: (data?: unknown) => boolean
       }
-      if (!nav.canShare?.({ files: [file] })) return false
-      await navigator.share({ files: [file], text: mensagem })
-      return true
-    } catch (e) {
-      // Utilizador fechou a folha de partilha → não fazer mais nada.
-      if (e instanceof Error && e.name === "AbortError") return true
+      const teste = new File(["x"], "t.pdf", { type: "application/pdf" })
+      return !!nav.canShare?.({ files: [teste] })
+    } catch {
       return false
     }
   }
 
-  async function enviarWhatsApp() {
-    setLoading(true)
-    // 1) Enviar o PDF em si pela partilha nativa (telemóvel).
-    if (await partilharFicheiro()) {
-      setLoading(false)
-      return
+  async function partilhar(file: File): Promise<"ok" | "cancelado" | "falhou"> {
+    try {
+      await navigator.share({ files: [file], text: mensagem })
+      return "ok"
+    } catch (e) {
+      if (e instanceof Error && e.name === "AbortError") return "cancelado"
+      return "falhou"
     }
-    // 2) Recurso (computador / sem suporte): link do PDF por WhatsApp.
+  }
+
+  async function enviarLink(comAviso = false) {
     const res =
       tipo === "orcamento"
         ? await linkOrcamentoPdf(id)
         : await linkOrdemServicoPdf(id)
-    setLoading(false)
     if (!res.ok) {
       toast.error("Não foi possível preparar o PDF", { description: res.message })
       return
     }
+    if (comAviso) {
+      toast.info("Este dispositivo não anexa ficheiros — enviei o link do PDF.")
+    }
     window.open(waLink(telefone, `${mensagem}\n\n${res.url}`), "_blank")
+  }
+
+  async function onClick() {
+    // 2º toque (iPhone): o ficheiro já está pronto → partilhar com gesto fresco.
+    if (ficheiro) {
+      const r = await partilhar(ficheiro)
+      setFicheiro(null)
+      if (r === "falhou") await enviarLink()
+      return
+    }
+
+    // Computador / sem suporte a anexar → link.
+    if (!suportaAnexar()) {
+      setLoading(true)
+      await enviarLink(true)
+      setLoading(false)
+      return
+    }
+
+    // Preparar o PDF (descarregar).
+    setLoading(true)
+    let file: File | null = null
+    try {
+      const resp = await fetch(pdfUrl)
+      if (resp.ok) {
+        const nome = tipo === "orcamento" ? "orcamento" : "ordem-servico"
+        file = new File([await resp.blob()], `${nome}.pdf`, {
+          type: "application/pdf",
+        })
+      }
+    } catch {
+      /* ignora — cai no link */
+    }
+    setLoading(false)
+    if (!file) {
+      await enviarLink()
+      return
+    }
+
+    // Tentar já (Android partilha; iPhone costuma perder o gesto).
+    const r = await partilhar(file)
+    if (r === "ok" || r === "cancelado") return
+    // Gesto perdido → guardar e pedir 2º toque.
+    setFicheiro(file)
+    toast.info('PDF pronto — toque em "Enviar PDF" para anexar no WhatsApp.')
   }
 
   return (
@@ -88,17 +131,19 @@ export function PartilharPdf({
       )}
       <Button
         type="button"
-        variant="outline"
+        variant={ficheiro ? "default" : "outline"}
         className="h-9 gap-1.5"
-        onClick={enviarWhatsApp}
+        onClick={onClick}
         disabled={loading}
       >
         {loading ? (
           <Loader2 className="size-4 animate-spin" />
+        ) : ficheiro ? (
+          <Send className="size-4" />
         ) : (
           <MessageCircle className="size-4" />
         )}
-        WhatsApp
+        {ficheiro ? "Enviar PDF" : "WhatsApp"}
       </Button>
     </>
   )
