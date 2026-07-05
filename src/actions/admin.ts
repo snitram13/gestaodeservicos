@@ -11,7 +11,7 @@ import { requireSuperAdmin } from "@/lib/auth"
 import { hojeKey } from "@/lib/agenda"
 import { contarFuncionarios } from "@/lib/funcionarios"
 import { fimDoTrial, mensalidadeDe } from "@/lib/subscricao"
-import { MODULOS_META, type ModuloKey } from "@/lib/constants/modulos"
+import { MODULOS, MODULOS_META, type ModuloKey } from "@/lib/constants/modulos"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import {
   criarClienteSchema,
@@ -71,10 +71,12 @@ export async function criarCliente(
     const [nova] = await db
       .insert(empresa)
       // Período gratuito de 45 dias + lugares de funcionário atribuídos.
+      // Módulo Ordens de Serviço ativo por omissão (disponível a todos).
       .values({
         nome: parsed.data.nomeEmpresa,
         acessoAte: fimDoTrial(),
         limiteFuncionarios: limite,
+        modulos: [MODULOS.ORDENS_SERVICO],
       })
       .returning({ id: empresa.id })
 

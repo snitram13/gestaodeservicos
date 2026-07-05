@@ -85,6 +85,13 @@ async function main() {
   await sql.unsafe(
     `alter table empresa add column if not exists taxa_iva_padrao numeric(4,2) not null default 23`
   )
+  // Ordens de Serviço disponível a todos: novo default + ativar nos existentes.
+  await sql.unsafe(
+    `alter table empresa alter column modulos set default '{ordens_servico}'::text[]`
+  )
+  await sql.unsafe(
+    `update empresa set modulos = array_append(modulos, 'ordens_servico') where not ('ordens_servico' = any(modulos))`
+  )
   console.log("✓ tabela empresa")
 
   // Ledger de pagamentos da plataforma (mensalidades pagas pelos tenants).

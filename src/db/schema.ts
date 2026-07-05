@@ -71,9 +71,13 @@ export const empresa = pgTable("empresa", {
   // Nº máximo de funcionários (lugares) que o cliente pode ter. A mensalidade é
   // 29,90 + (funcionários ativos, não-OWNER) × 4,99.
   limiteFuncionarios: integer("limite_funcionarios").notNull().default(0),
-  // Módulos opcionais ativos (chaves em src/lib/constants/modulos.ts). O
-  // super-admin liga/desliga por cliente no /admin.
-  modulos: text("modulos").array().notNull().default(sql`'{}'::text[]`),
+  // Módulos ativos (chaves em src/lib/constants/modulos.ts). Ordens de Serviço
+  // vem ativo por omissão (disponível a todos); o super-admin pode desligar por
+  // cliente no /admin.
+  modulos: text("modulos")
+    .array()
+    .notNull()
+    .default(sql`'{ordens_servico}'::text[]`),
   // Data-limite de acesso (período gratuito / mensalidade). null = ilimitado
   // (ex.: a empresa do próprio super-admin). Passada esta data, ninguém dessa
   // empresa entra até o super-admin registar o pagamento (estende a data).
