@@ -63,7 +63,7 @@ export function DeleteVisitaButton({ id }: { id: string }) {
             disabled={loading}
           >
             {loading && <Loader2 className="size-4 animate-spin" />}
-            Apagar
+            {t("Apagar")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
