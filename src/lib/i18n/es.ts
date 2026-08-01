@@ -413,4 +413,5 @@ export const ES: Record<string, string> = {
   "CLIENTE": "CLIENTE",
   "SERVIÇOS": "SERVICIOS",
   "DATA": "FECHA",
+  "nome@email.com": "nombre@email.com",
 }

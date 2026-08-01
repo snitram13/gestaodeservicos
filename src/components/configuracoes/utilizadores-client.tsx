@@ -227,7 +227,7 @@ export function NovoFuncionarioDialog() {
                       type="email"
                       inputMode="email"
                       autoComplete="off"
-                      placeholder="nome@email.com"
+                      placeholder={t("nome@email.com")}
                       {...field}
                     />
                   </FormControl>

@@ -419,4 +419,5 @@ export const FR: Record<string, string> = {
   "CLIENTE": "CLIENT",
   "SERVIÇOS": "PRESTATIONS",
   "DATA": "DATE",
+  "nome@email.com": "nom@email.com",
 }

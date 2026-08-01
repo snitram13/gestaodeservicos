@@ -143,7 +143,7 @@ export function ClienteForm({
                       className="h-11"
                       type="email"
                       inputMode="email"
-                      placeholder="nome@email.com"
+                      placeholder={t("nome@email.com")}
                       {...field}
                     />
                   </FormControl>

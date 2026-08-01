@@ -209,7 +209,7 @@ export function NovoClienteDialog() {
                           type="email"
                           inputMode="email"
                           autoComplete="off"
-                          placeholder="cliente@exemplo.pt"
+                          placeholder="cliente@email.com"
                           {...field}
                         />
                       </FormControl>
