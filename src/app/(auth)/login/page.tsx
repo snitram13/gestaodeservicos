@@ -8,15 +8,21 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { LoginForm } from "@/components/auth/login-form"
-import { SeletorIdioma } from "@/components/i18n/seletor-idioma"
-import { getIdioma, getT } from "@/lib/i18n"
+import { getT } from "@/lib/i18n"
 
 export const metadata = {
   title: "Entrar",
 }
 
+/**
+ * Ecrã de entrada. NÃO tem escolha de idioma: quem entra recebe logo o idioma
+ * do país da empresa (ou o que tiver escolhido nas Definições), por isso um
+ * seletor aqui não mudava nada depois do login. Este ecrã segue o idioma da
+ * última pessoa que entrou neste dispositivo (cookie); na primeira visita fica
+ * em português.
+ */
 export default async function LoginPage() {
-  const [t, idioma] = await Promise.all([getT(), getIdioma()])
+  const t = await getT()
   return (
     <Card className="w-full max-w-sm" size="default">
       <CardHeader className="items-center text-center">
@@ -26,12 +32,8 @@ export default async function LoginPage() {
         <CardTitle className="text-xl">{t("Gestão de Serviços")}</CardTitle>
         <CardDescription>{t("Inicie sessão para continuar")}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent>
         <LoginForm />
-        {/* Escolha do idioma antes de entrar (fica guardada no dispositivo). */}
-        <div className="border-t pt-4">
-          <SeletorIdioma atual={idioma} className="justify-center" />
-        </div>
       </CardContent>
     </Card>
   )

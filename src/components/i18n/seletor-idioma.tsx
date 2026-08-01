@@ -9,9 +9,10 @@ import { IDIOMAS, IDIOMAS_META, type Idioma } from "@/lib/constants/idiomas"
 import { cn } from "@/lib/utils"
 
 /**
- * Escolha do idioma da interface. Aparece no ecrã de login (guarda em cookie) e
- * nas Definições (guarda também na conta). Botões grandes, pensados para o
- * telemóvel.
+ * Escolha do idioma da interface, nas Definições. Guarda na conta (segue a
+ * pessoa para qualquer dispositivo) e também num cookie, que é o que faz o
+ * ecrã de login aparecer na língua certa da próxima vez neste telemóvel.
+ * Botões grandes, pensados para o telemóvel.
  */
 export function SeletorIdioma({
   atual,
