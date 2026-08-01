@@ -1,12 +1,25 @@
-const eur = new Intl.NumberFormat("pt-PT", {
-  style: "currency",
-  currency: "EUR",
-})
+/**
+ * Moeda. Os três países usam euro; muda só a forma de escrever (1.234,56 € em
+ * pt/es, 1 234,56 € em fr). O locale vem do país da empresa.
+ */
+const LOCALE_PADRAO = "pt-PT"
 
-const eurSemSimbolo = new Intl.NumberFormat("pt-PT", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-})
+const cache = new Map<string, Intl.NumberFormat>()
+
+function nf(locale: string, comSimbolo: boolean): Intl.NumberFormat {
+  const chave = `${locale}|${comSimbolo}`
+  let f = cache.get(chave)
+  if (!f) {
+    f = new Intl.NumberFormat(
+      locale,
+      comSimbolo
+        ? { style: "currency", currency: "EUR" }
+        : { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+    )
+    cache.set(chave, f)
+  }
+  return f
+}
 
 /**
  * Converte o valor (number ou string vinda da BD `numeric`) para um número.
@@ -20,13 +33,19 @@ export function paraNumero(
 }
 
 /** Formata em euros à portuguesa: 1 234,56 € */
-export function formatEuro(value: number | string | null | undefined): string {
-  return eur.format(paraNumero(value))
+export function formatEuro(
+  value: number | string | null | undefined,
+  locale: string = LOCALE_PADRAO
+): string {
+  return nf(locale, true).format(paraNumero(value))
 }
 
 /** Formata sem o símbolo €: 1 234,56 */
-export function formatValor(value: number | string | null | undefined): string {
-  return eurSemSimbolo.format(paraNumero(value))
+export function formatValor(
+  value: number | string | null | undefined,
+  locale: string = LOCALE_PADRAO
+): string {
+  return nf(locale, false).format(paraNumero(value))
 }
 
 /**

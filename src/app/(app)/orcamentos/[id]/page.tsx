@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getFormatos } from "@/lib/formatos"
 import { notFound } from "next/navigation"
 import { and, eq } from "drizzle-orm"
 import { ArrowLeft, Pencil, Wrench } from "lucide-react"
@@ -10,8 +11,6 @@ import { temModuloAtual } from "@/lib/modulos"
 import { MODULOS, rotulosServico } from "@/lib/constants/modulos"
 import { EstadoVisitaBadge } from "@/components/visitas/estado-badge"
 import { cn } from "@/lib/utils"
-import { formatData } from "@/lib/formatters/date"
-import { formatEuro } from "@/lib/formatters/currency"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PartilharPdf } from "@/components/common/partilhar-pdf"
@@ -24,6 +23,7 @@ export default async function OrcamentoDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { empresaId } = await requireEmpresa()
+  const f = await getFormatos()
   const { id } = await params
   const o = await db.query.orcamento.findFirst({
     where: and(eq(orcamento.id, id), eq(orcamento.empresaId, empresaId)),
@@ -34,7 +34,7 @@ export default async function OrcamentoDetailPage({
 
   const itens = [...o.itens].sort((a, b) => a.ordem - b.ordem)
 
-  const textoWhats = `Olá ${o.cliente?.nome ?? ""}, segue o orçamento "${o.titulo}" no valor de ${formatEuro(o.total)}. Fico a aguardar a sua confirmação. Obrigado!`
+  const textoWhats = `Olá ${o.cliente?.nome ?? ""}, segue o orçamento "${o.titulo}" no valor de ${f.euro(o.total)}. Fico a aguardar a sua confirmação. Obrigado!`
 
   return (
     <div className="space-y-4">
@@ -110,10 +110,10 @@ export default async function OrcamentoDetailPage({
                 <div className="min-w-0">
                   <p>{it.descricao}</p>
                   <p className="text-muted-foreground text-xs">
-                    {Number(it.quantidade)} × {formatEuro(it.precoUnit)}
+                    {Number(it.quantidade)} × {f.euro(it.precoUnit)}
                   </p>
                 </div>
-                <span className="font-medium">{formatEuro(it.totalLinha)}</span>
+                <span className="font-medium">{f.euro(it.totalLinha)}</span>
               </div>
             ))}
           </div>
@@ -121,17 +121,17 @@ export default async function OrcamentoDetailPage({
           <div className="mt-3 ml-auto grid max-w-xs gap-1 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Subtotal</span>
-              <span>{formatEuro(o.subtotal)}</span>
+              <span>{f.euro(o.subtotal)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">
                 IVA ({Number(o.taxaIva)}%)
               </span>
-              <span>{formatEuro(o.totalIva)}</span>
+              <span>{f.euro(o.totalIva)}</span>
             </div>
             <div className="flex justify-between border-t pt-1 text-base font-semibold">
               <span>Total</span>
-              <span>{formatEuro(o.total)}</span>
+              <span>{f.euro(o.total)}</span>
             </div>
           </div>
         </CardContent>
@@ -153,7 +153,7 @@ export default async function OrcamentoDetailPage({
                   {o.visita.titulo || `${r.Singular} #${o.visita.numero}`}
                 </p>
                 <p className="text-muted-foreground text-sm">
-                  #{o.visita.numero} · {formatData(o.visita.agendadoPara)}
+                  #{o.visita.numero} · {f.data(o.visita.agendadoPara)}
                 </p>
               </div>
               <EstadoVisitaBadge estado={o.visita.estado} />
@@ -168,7 +168,7 @@ export default async function OrcamentoDetailPage({
             {o.validade && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Válido até</span>
-                <span>{formatData(o.validade)}</span>
+                <span>{f.data(o.validade)}</span>
               </div>
             )}
             {o.descricao && (

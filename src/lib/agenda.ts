@@ -13,19 +13,34 @@ import {
   subMonths,
   subWeeks,
 } from "date-fns"
-import { pt } from "date-fns/locale"
+import { es, fr, pt, type Locale } from "date-fns/locale"
+
+import { IDIOMA_PADRAO, type Idioma } from "@/lib/constants/idiomas"
+
+/** Locale do date-fns para os nomes de dias e meses. */
+const LOCALES: Record<Idioma, Locale> = { pt, es, fr }
+function loc(idioma: Idioma = IDIOMA_PADRAO): Locale {
+  return LOCALES[idioma] ?? pt
+}
+/** Fuso por omissão (Portugal) — as páginas passam o da empresa. */
+const TZ_PADRAO = "Europe/Lisbon"
 
 export type Vista = "dia" | "semana" | "mes"
 
+// A semana começa à segunda nos três países.
 const SEMANA = { weekStartsOn: 1 as const, locale: pt }
 
-/** Dia de hoje (YYYY-MM-DD) no fuso de Lisboa. */
-export function hojeKey(): string {
+/**
+ * Dia de hoje (YYYY-MM-DD) no fuso indicado. Sem fuso assume Portugal — em
+ * Espanha/França o "hoje" muda 1h mais cedo, o que perto da meia-noite dá um
+ * dia diferente.
+ */
+export function hojeKey(tz: string = TZ_PADRAO): string {
   return new Intl.DateTimeFormat("en-CA", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-    timeZone: "Europe/Lisbon",
+    timeZone: tz,
   }).format(new Date())
 }
 
@@ -65,47 +80,56 @@ export function intervaloFetch(dias: string[]) {
   }
 }
 
-export function rotuloVista(vista: Vista, dateStr: string): string {
+export function rotuloVista(
+  vista: Vista,
+  dateStr: string,
+  idioma: Idioma = IDIOMA_PADRAO
+): string {
   const base = dataDe(dateStr)
+  const locale = loc(idioma)
   if (vista === "dia") {
-    return format(base, "EEEE, d 'de' MMMM", { locale: pt })
+    return format(base, "PPPP", { locale })
   }
   if (vista === "semana") {
     const ini = startOfWeek(base, SEMANA)
     const fim = endOfWeek(base, SEMANA)
-    return `${format(ini, "d MMM", { locale: pt })} – ${format(fim, "d MMM yyyy", { locale: pt })}`
+    return `${format(ini, "d MMM", { locale })} – ${format(fim, "d MMM yyyy", { locale })}`
   }
-  return format(base, "MMMM 'de' yyyy", { locale: pt })
+  return format(base, "LLLL yyyy", { locale })
 }
 
-export function navDatas(vista: Vista, dateStr: string) {
+export function navDatas(
+  vista: Vista,
+  dateStr: string,
+  tz: string = TZ_PADRAO
+) {
   const base = dataDe(dateStr)
   if (vista === "dia") {
     return {
       anterior: fmtKey(subDays(base, 1)),
       seguinte: fmtKey(addDays(base, 1)),
-      hoje: hojeKey(),
+      hoje: hojeKey(tz),
     }
   }
   if (vista === "semana") {
     return {
       anterior: fmtKey(subWeeks(base, 1)),
       seguinte: fmtKey(addWeeks(base, 1)),
-      hoje: hojeKey(),
+      hoje: hojeKey(tz),
     }
   }
   return {
     anterior: fmtKey(subMonths(base, 1)),
     seguinte: fmtKey(addMonths(base, 1)),
-    hoje: hojeKey(),
+    hoje: hojeKey(tz),
   }
 }
 
 /** Rótulos curtos do dia: { diaSemana: "seg", diaMes: "16", mesAno: false } */
-export function rotuloDia(dateStr: string) {
+export function rotuloDia(dateStr: string, idioma: Idioma = IDIOMA_PADRAO) {
   const d = dataDe(dateStr)
   return {
-    semana: format(d, "EEEEEE", { locale: pt }), // seg, ter…
+    semana: format(d, "EEEEEE", { locale: loc(idioma) }), // seg, ter…
     dia: format(d, "d"),
     mesNum: Number(format(d, "M")),
   }

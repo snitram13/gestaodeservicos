@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getFormatos } from "@/lib/formatos"
 import { notFound } from "next/navigation"
 import { and, desc, eq } from "drizzle-orm"
 import { ArrowLeft, FileText, Pencil, Wrench } from "lucide-react"
@@ -9,9 +10,6 @@ import { requireEmpresa } from "@/lib/auth"
 import { temModuloAtual } from "@/lib/modulos"
 import { MODULOS, rotulosServico } from "@/lib/constants/modulos"
 import { cn } from "@/lib/utils"
-import { formatData } from "@/lib/formatters/date"
-import { formatEuro } from "@/lib/formatters/currency"
-import { formatTelefone } from "@/lib/formatters/phone"
 import { buttonVariants } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
@@ -31,6 +29,7 @@ export default async function ClienteDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { empresaId } = await requireEmpresa()
+  const f = await getFormatos()
   const { id } = await params
   const temServicos = await temModuloAtual(MODULOS.ORDENS_SERVICO)
   const r = rotulosServico(temServicos)
@@ -70,7 +69,7 @@ export default async function ClienteDetailPage({
             {c.nome}
           </h2>
           <p className="text-muted-foreground">
-            {formatTelefone(c.telefone)}
+            {f.telefone(c.telefone)}
             {c.cidade ? ` · ${c.cidade}` : ""}
           </p>
         </div>
@@ -121,12 +120,12 @@ export default async function ClienteDetailPage({
                       {v.titulo || `${r.Singular} #${v.numero}`}
                     </p>
                     <p className="text-muted-foreground text-sm">
-                      #{v.numero} · {formatData(v.agendadoPara)}
+                      #{v.numero} · {f.data(v.agendadoPara)}
                     </p>
                   </div>
                   <EstadoVisitaBadge estado={v.estado} />
                   <span className="w-20 text-right text-sm font-medium">
-                    {formatEuro(v.valor)}
+                    {f.euro(v.valor)}
                   </span>
                 </Link>
               ))}
@@ -154,12 +153,12 @@ export default async function ClienteDetailPage({
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{o.titulo}</p>
                     <p className="text-muted-foreground text-sm">
-                      #{o.numero} · {formatData(o.criadoEm)}
+                      #{o.numero} · {f.data(o.criadoEm)}
                     </p>
                   </div>
                   <EstadoOrcamentoBadge estado={o.estado} />
                   <span className="w-20 text-right text-sm font-medium">
-                    {formatEuro(o.total)}
+                    {f.euro(o.total)}
                   </span>
                 </Link>
               ))}

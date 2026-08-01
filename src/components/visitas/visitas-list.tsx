@@ -1,10 +1,9 @@
 import Link from "next/link"
+import { getFormatos } from "@/lib/formatos"
 import { ChevronRight } from "lucide-react"
 
 import type { CategoriaServico } from "@/lib/constants/enums"
 import type { Visita } from "@/db/schema"
-import { formatData, formatHora } from "@/lib/formatters/date"
-import { formatEuro } from "@/lib/formatters/currency"
 import { rotulosServico } from "@/lib/constants/modulos"
 import { Card } from "@/components/ui/card"
 import {
@@ -28,13 +27,14 @@ function categoriaPrincipal(v: Row): CategoriaServico {
   return v.servicos[0]?.categoria ?? "OUTROS"
 }
 
-export function VisitasList({
+export async function VisitasList({
   visitas,
   temServicos,
 }: {
   visitas: Row[]
   temServicos?: boolean
 }) {
+  const f = await getFormatos()
   const r = rotulosServico(!!temServicos)
   const rotulo = (v: Row) => v.titulo || `${r.Singular} #${v.numero}`
   return (
@@ -49,14 +49,14 @@ export function VisitasList({
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{rotulo(v)}</p>
                   <p className="text-muted-foreground truncate text-sm">
-                    {v.cliente?.nome ?? "—"} · {formatData(v.agendadoPara)},{" "}
-                    {formatHora(v.agendadoPara)}
+                    {v.cliente?.nome ?? "—"} · {f.data(v.agendadoPara)},{" "}
+                    {f.hora(v.agendadoPara)}
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <EstadoVisitaBadge estado={v.estado} />
                   <span className="text-sm font-medium">
-                    {formatEuro(v.valor)}
+                    {f.euro(v.valor)}
                   </span>
                 </div>
               </div>
@@ -100,7 +100,7 @@ export function VisitasList({
                   )}
                 </TableCell>
                 <TableCell>
-                  {formatData(v.agendadoPara)}, {formatHora(v.agendadoPara)}
+                  {f.data(v.agendadoPara)}, {f.hora(v.agendadoPara)}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {v.servicos.length}
@@ -109,7 +109,7 @@ export function VisitasList({
                   <EstadoVisitaBadge estado={v.estado} />
                 </TableCell>
                 <TableCell className="text-right font-medium">
-                  {formatEuro(v.valor)}
+                  {f.euro(v.valor)}
                 </TableCell>
                 <TableCell>
                   <Link

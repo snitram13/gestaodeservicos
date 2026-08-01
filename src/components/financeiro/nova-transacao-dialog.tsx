@@ -8,7 +8,6 @@ import { Loader2, Plus } from "lucide-react"
 import { toast } from "sonner"
 
 import { criarTransacao } from "@/actions/financeiro"
-import { hojeKey } from "@/lib/agenda"
 import { METODOS_PAGAMENTO, type TipoTransacao } from "@/lib/constants/enums"
 import {
   CATEGORIA_TRANSACAO_LABEL,
@@ -20,6 +19,7 @@ import {
   transacaoSchema,
   type TransacaoFormValues,
 } from "@/lib/validations/transacao"
+import { useFormatos } from "@/components/i18n/idioma-provider"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -48,21 +48,23 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 
-const VAZIO = (): TransacaoFormValues => ({
+/** Valores iniciais — a data de hoje vem no fuso do país da empresa. */
+const VAZIO = (hoje: string): TransacaoFormValues => ({
   tipo: "ENTRADA",
   categoria: "SERVICO",
   valor: "",
-  data: hojeKey(),
+  data: hoje,
   descricao: "",
   metodoPagamento: "DINHEIRO",
 })
 
 export function NovaTransacaoDialog() {
+  const fm = useFormatos()
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const form = useForm<TransacaoFormValues>({
     resolver: zodResolver(transacaoSchema),
-    defaultValues: VAZIO(),
+    defaultValues: VAZIO(fm.hoje()),
   })
 
   const tipo = form.watch("tipo")
@@ -81,7 +83,7 @@ export function NovaTransacaoDialog() {
     }
     toast.success("Transação registada")
     setOpen(false)
-    form.reset(VAZIO())
+    form.reset(VAZIO(fm.hoje()))
     router.refresh()
   }
 

@@ -10,14 +10,14 @@ import { toast } from "sonner"
 import { atualizarVisita, criarVisita } from "@/actions/visitas"
 import { CATEGORIA_OPCOES } from "@/lib/constants/categorias"
 import { ESTADO_VISITA_OPCOES } from "@/lib/constants/estados"
-import { formatEuro, parseEuro } from "@/lib/formatters/currency"
-import { formatTelefone } from "@/lib/formatters/phone"
+import { parseEuro } from "@/lib/formatters/currency"
 import type { Servico, Visita } from "@/db/schema"
 import {
   SERVICO_LINHA_VAZIO,
   visitaSchema,
   type VisitaFormValues,
 } from "@/lib/validations/visita"
+import { useFormatos } from "@/components/i18n/idioma-provider"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRotulos } from "@/components/servicos/rotulos"
@@ -99,6 +99,7 @@ export function VisitaForm({
   prefill?: Partial<VisitaFormValues>
   orcamentoOrigemId?: string
 }) {
+  const fm = useFormatos()
   const router = useRouter()
   const r = useRotulos()
   const isEdit = Boolean(visita)
@@ -143,7 +144,7 @@ export function VisitaForm({
   const clienteOptions = clientesList.map((c) => ({
     value: c.id,
     label: c.nome,
-    sub: formatTelefone(c.telefone),
+    sub: fm.telefone(c.telefone),
   }))
 
   function autofill(c: { morada: string | null; cidade: string | null }) {
@@ -458,7 +459,7 @@ export function VisitaForm({
                   <div>
                     <p className="text-muted-foreground text-xs">Total</p>
                     <p className="flex h-10 items-center font-medium">
-                      {formatEuro(
+                      {fm.euro(
                         parseEuro(servicosW?.[index]?.maoDeObra) +
                           parseEuro(servicosW?.[index]?.material)
                       )}
@@ -514,15 +515,15 @@ export function VisitaForm({
             <div className="bg-muted/50 ml-auto grid max-w-xs gap-1 rounded-lg p-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Serviços</span>
-                <span>{formatEuro(totalServicos)}</span>
+                <span>{fm.euro(totalServicos)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Deslocação</span>
-                <span>{formatEuro(parseEuro(deslocacaoW))}</span>
+                <span>{fm.euro(parseEuro(deslocacaoW))}</span>
               </div>
               <div className="flex justify-between border-t pt-1 text-base font-semibold">
                 <span>Total</span>
-                <span>{formatEuro(total)}</span>
+                <span>{fm.euro(total)}</span>
               </div>
             </div>
           </CardContent>

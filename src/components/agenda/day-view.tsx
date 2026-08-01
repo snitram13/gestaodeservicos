@@ -1,10 +1,10 @@
 import Link from "next/link"
+import { getFormatos } from "@/lib/formatos"
 import { CalendarDays, Plus } from "lucide-react"
 
 import type { CategoriaServico } from "@/lib/constants/enums"
 import type { Visita } from "@/db/schema"
 import { cn } from "@/lib/utils"
-import { formatHora } from "@/lib/formatters/date"
 import { buttonVariants } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/common/empty-state"
@@ -18,7 +18,7 @@ type Row = Visita & {
   tecnico: { id: string; nome: string; corAgenda: string | null } | null
 }
 
-export function DayView({
+export async function DayView({
   dia,
   visitas,
   temServicos,
@@ -27,6 +27,7 @@ export function DayView({
   visitas: Row[]
   temServicos?: boolean
 }) {
+  const f = await getFormatos()
   const r = rotulosServico(!!temServicos)
   return (
     <div className="space-y-2">
@@ -47,7 +48,7 @@ export function DayView({
               >
                 <div className="flex items-center gap-3">
                   <div className="text-muted-foreground w-12 shrink-0 text-sm font-medium">
-                    {formatHora(v.agendadoPara)}
+                    {f.hora(v.agendadoPara)}
                   </div>
                   <CategoriaChip categoria={v.servicos[0]?.categoria ?? "OUTROS"} />
                   <div className="min-w-0 flex-1">

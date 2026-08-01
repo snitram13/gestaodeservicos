@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getFormatos } from "@/lib/formatos"
 import { redirect } from "next/navigation"
 import {
   addDays,
@@ -25,14 +26,6 @@ import type { CategoriaServico } from "@/lib/constants/enums"
 import { isSuperAdmin, requireEmpresa } from "@/lib/auth"
 import { temModuloAtual } from "@/lib/modulos"
 import { MODULOS, rotulosServico } from "@/lib/constants/modulos"
-import { hojeKey } from "@/lib/agenda"
-import {
-  chaveDia,
-  formatData,
-  formatDiaExtenso,
-  formatHora,
-} from "@/lib/formatters/date"
-import { formatEuro } from "@/lib/formatters/currency"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { StatCard } from "@/components/common/stat-card"
 import { CategoriaChip } from "@/components/visitas/categoria-chip"
@@ -48,10 +41,11 @@ type VisitaRow = Visita & {
 
 export default async function DashboardPage() {
   const { empresaId, email } = await requireEmpresa()
+  const f = await getFormatos()
   // O dono da plataforma não usa a app de negócio — vai para o painel de controlo.
   if (isSuperAdmin(email)) redirect("/admin")
   const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO))
-  const hoje = hojeKey()
+  const hoje = f.hoje()
   const inicioMes = `${hoje.slice(0, 7)}-01`
   const fimMes = format(addMonths(parseISO(inicioMes), 1), "yyyy-MM-dd")
   const seisMesesAtras = format(
@@ -120,7 +114,7 @@ export default async function DashboardPage() {
 
   const faturacaoMes = entradasMes.reduce((s, t) => s + Number(t.valor), 0)
   const visitasHoje = (janela as VisitaRow[]).filter(
-    (v) => chaveDia(v.agendadoPara) === hoje
+    (v) => f.chaveDia(v.agendadoPara) === hoje
   )
   const prox = proxima as VisitaRow | undefined
 
@@ -139,14 +133,14 @@ export default async function DashboardPage() {
       <div>
         <h2 className="text-2xl font-semibold tracking-tight">Olá! 👋</h2>
         <p className="text-muted-foreground mt-1 capitalize">
-          {formatDiaExtenso(new Date())}
+          {f.diaExtenso(new Date())}
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label="Faturação do mês"
-          value={formatEuro(faturacaoMes)}
+          value={f.euro(faturacaoMes)}
           icon={Euro}
           accent="text-emerald-600"
           href="/financeiro"
@@ -184,8 +178,8 @@ export default async function DashboardPage() {
                 {prox.titulo || `${r.Singular} #${prox.numero}`}
               </Link>
               <p className="text-muted-foreground truncate text-sm">
-                {prox.cliente?.nome} · {formatData(prox.agendadoPara)} às{" "}
-                {formatHora(prox.agendadoPara)}
+                {prox.cliente?.nome} · {f.data(prox.agendadoPara)} às{" "}
+                {f.hora(prox.agendadoPara)}
               </p>
             </div>
           </CardContent>
@@ -217,7 +211,7 @@ export default async function DashboardPage() {
                     className="flex items-center gap-3 py-2.5"
                   >
                     <span className="text-muted-foreground w-12 shrink-0 text-sm font-medium">
-                      {formatHora(v.agendadoPara)}
+                      {f.hora(v.agendadoPara)}
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">

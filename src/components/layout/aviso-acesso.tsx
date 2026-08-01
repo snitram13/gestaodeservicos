@@ -1,10 +1,10 @@
 import { TriangleAlert } from "lucide-react"
+import { getFormatos } from "@/lib/formatos"
 
 import { getEmpresaAtual } from "@/lib/configuracao"
 import { contarFuncionarios } from "@/lib/funcionarios"
 import { estadoAcesso, mensalidadeDe } from "@/lib/subscricao"
 import { AVISO_DIAS } from "@/lib/constants/subscricao"
-import { formatEuro } from "@/lib/formatters/currency"
 
 /**
  * Faixa de aviso mostrada no topo da app quando faltam poucos dias de acesso
@@ -13,6 +13,7 @@ import { formatEuro } from "@/lib/formatters/currency"
  * redirecionadas para /suspenso por `requireEmpresa`).
  */
 export async function AvisoAcesso() {
+  const f = await getFormatos()
   const emp = await getEmpresaAtual()
   const est = estadoAcesso(emp.acessoAte)
 
@@ -35,7 +36,7 @@ export async function AvisoAcesso() {
       <p>
         O seu acesso à aplicação termina <strong>{quando}</strong>. Para
         continuar, contacte o administrador do sistema e regularize a
-        mensalidade de <strong>{formatEuro(valor)}/mês</strong>.
+        mensalidade de <strong>{f.euro(valor)}/mês</strong>.
       </p>
     </div>
   )

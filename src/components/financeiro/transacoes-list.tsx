@@ -1,9 +1,8 @@
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react"
+import { getFormatos } from "@/lib/formatos"
 
 import type { TransacaoFinanceira } from "@/db/schema"
 import { cn } from "@/lib/utils"
-import { formatData } from "@/lib/formatters/date"
-import { formatEuro } from "@/lib/formatters/currency"
 import {
   CATEGORIA_TRANSACAO_LABEL,
   METODO_LABEL,
@@ -11,11 +10,12 @@ import {
 import { Card } from "@/components/ui/card"
 import { DeleteTransacaoButton } from "./delete-transacao-button"
 
-export function TransacoesList({
+export async function TransacoesList({
   transacoes,
 }: {
   transacoes: TransacaoFinanceira[]
 }) {
+  const f = await getFormatos()
   return (
     <Card className="gap-0 overflow-hidden p-0">
       {transacoes.map((t, i) => {
@@ -44,7 +44,7 @@ export function TransacoesList({
                 {t.descricao || CATEGORIA_TRANSACAO_LABEL[t.categoria]}
               </p>
               <p className="text-muted-foreground truncate text-sm">
-                {formatData(t.data)} · {CATEGORIA_TRANSACAO_LABEL[t.categoria]}
+                {f.data(t.data)} · {CATEGORIA_TRANSACAO_LABEL[t.categoria]}
                 {t.metodoPagamento ? ` · ${METODO_LABEL[t.metodoPagamento]}` : ""}
               </p>
             </div>
@@ -55,7 +55,7 @@ export function TransacoesList({
               )}
             >
               {entrada ? "+" : "−"}
-              {formatEuro(t.valor)}
+              {f.euro(t.valor)}
             </span>
             <DeleteTransacaoButton id={t.id} />
           </div>

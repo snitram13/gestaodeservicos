@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getFormatos } from "@/lib/formatos"
 import { addMonths, format, parseISO, subMonths } from "date-fns"
 import { pt } from "date-fns/locale"
 import { and, desc, eq, gte, isNotNull, lt } from "drizzle-orm"
@@ -14,9 +15,7 @@ import {
 import { db } from "@/db/client"
 import { transacaoFinanceira, visita } from "@/db/schema"
 import { requireEmpresa } from "@/lib/auth"
-import { hojeKey } from "@/lib/agenda"
 import { cn } from "@/lib/utils"
-import { formatEuro } from "@/lib/formatters/currency"
 import { buttonVariants } from "@/components/ui/button"
 import { EmptyState } from "@/components/common/empty-state"
 import { PageHeader } from "@/components/common/page-header"
@@ -32,8 +31,9 @@ export default async function FinanceiroPage({
   searchParams: Promise<{ mes?: string }>
 }) {
   const { empresaId } = await requireEmpresa()
+  const f = await getFormatos()
   const { mes } = await searchParams
-  const mesAtual = mes && /^\d{4}-\d{2}$/.test(mes) ? mes : hojeKey().slice(0, 7)
+  const mesAtual = mes && /^\d{4}-\d{2}$/.test(mes) ? mes : f.hoje().slice(0, 7)
   const inicio = `${mesAtual}-01`
   const fim = format(addMonths(parseISO(inicio), 1), "yyyy-MM-dd")
 
@@ -96,24 +96,24 @@ export default async function FinanceiroPage({
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label="Receita do mês"
-          value={formatEuro(receita)}
+          value={f.euro(receita)}
           icon={TrendingUp}
           accent="text-emerald-600"
         />
         <StatCard
           label="Despesas do mês"
-          value={formatEuro(despesas)}
+          value={f.euro(despesas)}
           icon={TrendingDown}
           accent="text-red-600"
         />
         <StatCard
           label="Saldo do mês"
-          value={formatEuro(receita - despesas)}
+          value={f.euro(receita - despesas)}
           icon={Wallet}
         />
         <StatCard
           label="A receber"
-          value={formatEuro(aReceber)}
+          value={f.euro(aReceber)}
           icon={Euro}
           hint="Serviços concluídos por cobrar"
         />

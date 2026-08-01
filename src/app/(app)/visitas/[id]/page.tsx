@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getFormatos } from "@/lib/formatos"
 import { notFound } from "next/navigation"
 import { and, eq } from "drizzle-orm"
 import { ArrowLeft, FileText, MessageCircle, Pencil } from "lucide-react"
@@ -11,8 +12,6 @@ import { MODULOS, rotulosServico } from "@/lib/constants/modulos"
 import { BUCKET_SERVICO, urlAssinada, urlsAssinadas } from "@/lib/storage"
 import { CATEGORIA_META } from "@/lib/constants/categorias"
 import { cn } from "@/lib/utils"
-import { formatEuro } from "@/lib/formatters/currency"
-import { formatData, formatHora } from "@/lib/formatters/date"
 import { waLink } from "@/lib/whatsapp"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -32,6 +31,7 @@ export default async function VisitaDetailPage({
 }) {
   const { id } = await params
   const { empresaId } = await requireEmpresa()
+  const f = await getFormatos()
   const v = await db.query.visita.findFirst({
     where: and(eq(visita.id, id), eq(visita.empresaId, empresaId)),
     with: { cliente: true, servicos: true, orcamentos: true, fotos: true },
@@ -108,7 +108,7 @@ export default async function VisitaDetailPage({
           <a
             href={waLink(
               v.cliente.telefone,
-              `Olá ${v.cliente.nome}! Sobre a marcação de ${formatData(v.agendadoPara)} às ${formatHora(v.agendadoPara)}${v.moradaServico ? `, em ${v.moradaServico}` : ""}${v.titulo ? ` — ${v.titulo}` : ""}. Fico ao dispor para qualquer questão. Obrigado!`
+              `Olá ${v.cliente.nome}! Sobre a marcação de ${f.data(v.agendadoPara)} às ${f.hora(v.agendadoPara)}${v.moradaServico ? `, em ${v.moradaServico}` : ""}${v.titulo ? ` — ${v.titulo}` : ""}. Fico ao dispor para qualquer questão. Obrigado!`
             )}
             target="_blank"
             rel="noopener noreferrer"
@@ -146,7 +146,7 @@ export default async function VisitaDetailPage({
                     {s.descricao ? ` · ${s.descricao}` : ""}
                   </p>
                 </div>
-                <span className="font-medium">{formatEuro(s.valor)}</span>
+                <span className="font-medium">{f.euro(s.valor)}</span>
               </div>
             ))}
           </CardContent>
@@ -159,18 +159,18 @@ export default async function VisitaDetailPage({
           <CardContent className="grid gap-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Serviços</span>
-              <span>{formatEuro(totalServicos)}</span>
+              <span>{f.euro(totalServicos)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Deslocação</span>
-              <span>{formatEuro(v.deslocacao)}</span>
+              <span>{f.euro(v.deslocacao)}</span>
             </div>
             <div className="mt-1 flex items-center justify-between border-t pt-2">
               <span className="font-medium">Total</span>
-              <span className="text-lg font-semibold">{formatEuro(v.valor)}</span>
+              <span className="text-lg font-semibold">{f.euro(v.valor)}</span>
             </div>
             <p className="text-muted-foreground mt-1 text-xs">
-              {formatData(v.agendadoPara)} às {formatHora(v.agendadoPara)}
+              {f.data(v.agendadoPara)} às {f.hora(v.agendadoPara)}
               {Number(v.kmPercorridos) > 0 ? ` · ${v.kmPercorridos} km` : ""}
             </p>
           </CardContent>
@@ -230,7 +230,7 @@ export default async function VisitaDetailPage({
                     <p className="text-muted-foreground text-sm">#{o.numero}</p>
                   </div>
                   <EstadoOrcamentoBadge estado={o.estado} />
-                  <span className="text-sm font-medium">{formatEuro(o.total)}</span>
+                  <span className="text-sm font-medium">{f.euro(o.total)}</span>
                 </Link>
               ))}
             </div>

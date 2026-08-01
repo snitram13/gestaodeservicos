@@ -5,7 +5,7 @@ import { MessageCircle } from "lucide-react"
 
 import { TEMPLATES_WHATSAPP } from "@/lib/constants/mensagens-whatsapp"
 import { interpolarMensagem, waLink } from "@/lib/whatsapp"
-import { formatTelefone } from "@/lib/formatters/phone"
+import { useFormatos } from "@/components/i18n/idioma-provider"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Combobox } from "@/components/common/combobox"
@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea"
 type ClienteOpt = { id: string; nome: string; telefone: string }
 
 export function EnviarMensagem({ clientes }: { clientes: ClienteOpt[] }) {
+  const fm = useFormatos()
   const [clienteId, setClienteId] = useState("")
   const [texto, setTexto] = useState("")
   const cliente = clientes.find((c) => c.id === clienteId)
@@ -40,7 +41,7 @@ export function EnviarMensagem({ clientes }: { clientes: ClienteOpt[] }) {
             options={clientes.map((c) => ({
               value: c.id,
               label: c.nome,
-              sub: formatTelefone(c.telefone),
+              sub: fm.telefone(c.telefone),
             }))}
             value={clienteId}
             onChange={setClienteId}

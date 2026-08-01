@@ -9,10 +9,8 @@ import { temModuloAtual } from "@/lib/modulos"
 import { MODULOS, rotulosServico } from "@/lib/constants/modulos"
 import type { CategoriaServico } from "@/lib/constants/enums"
 import { cn } from "@/lib/utils"
-import { chaveDia } from "@/lib/formatters/date"
 import {
   diasDaVista,
-  hojeKey,
   intervaloFetch,
   navDatas,
   rotuloVista,
@@ -20,6 +18,8 @@ import {
 } from "@/lib/agenda"
 import { buttonVariants } from "@/components/ui/button"
 import { PageHeader } from "@/components/common/page-header"
+import { getFormatos } from "@/lib/formatos"
+import { getT } from "@/lib/i18n"
 import { AgendaNav } from "@/components/agenda/agenda-nav"
 import { AgendaLegenda } from "@/components/agenda/agenda-legenda"
 import { DayView } from "@/components/agenda/day-view"
@@ -40,12 +40,16 @@ export default async function AgendaPage({
   searchParams: Promise<{ view?: string; date?: string }>
 }) {
   const { empresaId } = await requireEmpresa()
+  // Fuso e idioma da empresa: em Madrid/Paris o dia "de hoje" e as horas dos
+  // serviços são 1h à frente de Lisboa.
+  const f = await getFormatos()
+  const t = await getT()
   const temServicos = await temModuloAtual(MODULOS.ORDENS_SERVICO)
   const r = rotulosServico(temServicos)
   const sp = await searchParams
   const vista = vistaValida(sp.view)
   const date =
-    sp.date && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : hojeKey()
+    sp.date && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : f.hoje()
 
   const dias = diasDaVista(vista, date)
   const { inicio, fim } = intervaloFetch(dias)
@@ -73,7 +77,7 @@ export default async function AgendaPage({
 
   const porDia = new Map<string, Row[]>()
   for (const v of visitas) {
-    const k = chaveDia(v.agendadoPara)
+    const k = f.chaveDia(v.agendadoPara)
     const arr = porDia.get(k)
     if (arr) arr.push(v)
     else porDia.set(k, [v])
@@ -81,7 +85,7 @@ export default async function AgendaPage({
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Agenda">
+      <PageHeader title={t("Agenda")}>
         <Link href="/visitas/novo" className={cn(buttonVariants(), "h-10 gap-1.5")}>
           <Plus className="size-4" />
           {r.novo}
@@ -91,8 +95,8 @@ export default async function AgendaPage({
       <AgendaNav
         vista={vista}
         date={date}
-        label={rotuloVista(vista, date)}
-        nav={navDatas(vista, date)}
+        label={rotuloVista(vista, date, f.idioma)}
+        nav={navDatas(vista, date, f.tz)}
       />
 
       <AgendaLegenda tecnicos={tecnicos} />
@@ -108,7 +112,7 @@ export default async function AgendaPage({
         <WeekView
           dias={dias}
           visitasPorDia={porDia}
-          hoje={hojeKey()}
+          hoje={f.hoje()}
           temServicos={temServicos}
         />
       )}
@@ -116,7 +120,7 @@ export default async function AgendaPage({
         <MonthView
           dias={dias}
           visitasPorDia={porDia}
-          hoje={hojeKey()}
+          hoje={f.hoje()}
           mesAtual={Number(date.slice(5, 7))}
         />
       )}

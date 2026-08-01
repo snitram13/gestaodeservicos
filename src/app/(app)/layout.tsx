@@ -2,7 +2,7 @@ import { AppShell } from "@/components/layout/app-shell"
 import { AvisoAcesso } from "@/components/layout/aviso-acesso"
 import { IdiomaProvider } from "@/components/i18n/idioma-provider"
 import { RotulosProvider } from "@/components/servicos/rotulos"
-import { getDicionario, getIdioma } from "@/lib/i18n"
+import { getDicionario, getIdioma, getPais } from "@/lib/i18n"
 import { isSuperAdmin, requireUser } from "@/lib/auth"
 import { getModulosAtuais } from "@/lib/modulos"
 import { MODULOS, temModulo } from "@/lib/constants/modulos"
@@ -17,7 +17,11 @@ export default async function AppLayout({
 }) {
   const user = await requireUser()
   const superAdmin = isSuperAdmin(user.email)
-  const [idioma, dic] = await Promise.all([getIdioma(), getDicionario()])
+  const [idioma, pais, dic] = await Promise.all([
+    getIdioma(),
+    getPais(),
+    getDicionario(),
+  ])
   // Quando o módulo Ordens de Serviço está ligado, o menu "Visitas" → "Serviços".
   const temServicos = superAdmin
     ? false
@@ -29,7 +33,7 @@ export default async function AppLayout({
       showAdmin={superAdmin}
       temServicos={temServicos}
     >
-      <IdiomaProvider idioma={idioma} dic={dic}>
+      <IdiomaProvider idioma={idioma} pais={pais} dic={dic}>
         <RotulosProvider temServicos={temServicos}>
           <AvisoAcesso />
           {children}

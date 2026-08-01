@@ -10,14 +10,14 @@ import { toast } from "sonner"
 import { atualizarOrcamento, criarOrcamento } from "@/actions/orcamentos"
 import { CATEGORIA_OPCOES } from "@/lib/constants/categorias"
 import { ESTADO_ORCAMENTO_OPCOES } from "@/lib/constants/estados"
-import { formatEuro, parseEuro } from "@/lib/formatters/currency"
-import { formatTelefone } from "@/lib/formatters/phone"
+import { parseEuro } from "@/lib/formatters/currency"
 import type { Orcamento, OrcamentoItem } from "@/db/schema"
 import {
   orcamentoSchema,
   ORCAMENTO_ITEM_VAZIO,
   type OrcamentoFormValues,
 } from "@/lib/validations/orcamento"
+import { useFormatos } from "@/components/i18n/idioma-provider"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Combobox } from "@/components/common/combobox"
@@ -64,6 +64,7 @@ export function OrcamentoForm({
   visitaOrigemId?: string
   taxaIvaPadrao?: string
 }) {
+  const fm = useFormatos()
   const router = useRouter()
   const isEdit = Boolean(orcamento)
 
@@ -130,7 +131,7 @@ export function OrcamentoForm({
   const clienteOptions = clientesList.map((c) => ({
     value: c.id,
     label: c.nome,
-    sub: formatTelefone(c.telefone),
+    sub: fm.telefone(c.telefone),
   }))
 
   function autofill(c: { morada: string | null; cidade: string | null }) {
@@ -422,7 +423,7 @@ export function OrcamentoForm({
                   <div>
                     <p className="text-muted-foreground text-xs">Total</p>
                     <p className="flex h-10 items-center font-medium">
-                      {formatEuro(
+                      {fm.euro(
                         parseEuro(itens?.[index]?.quantidade) *
                           parseEuro(itens?.[index]?.precoUnit)
                       )}
@@ -451,15 +452,15 @@ export function OrcamentoForm({
             <div className="bg-muted/50 ml-auto grid max-w-xs gap-1 rounded-lg p-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>{formatEuro(subtotal)}</span>
+                <span>{fm.euro(subtotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">IVA ({taxa}%)</span>
-                <span>{formatEuro(totalIva)}</span>
+                <span>{fm.euro(totalIva)}</span>
               </div>
               <div className="flex justify-between border-t pt-1 text-base font-semibold">
                 <span>Total</span>
-                <span>{formatEuro(total)}</span>
+                <span>{fm.euro(total)}</span>
               </div>
             </div>
           </CardContent>

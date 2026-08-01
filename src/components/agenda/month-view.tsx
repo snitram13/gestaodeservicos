@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getFormatos } from "@/lib/formatos"
 
 import type { Visita } from "@/db/schema"
 import { cn } from "@/lib/utils"
@@ -12,7 +13,7 @@ type Row = Visita & {
 
 const DIAS_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
-export function MonthView({
+export async function MonthView({
   dias,
   visitasPorDia,
   hoje,
@@ -23,6 +24,7 @@ export function MonthView({
   hoje: string
   mesAtual: number
 }) {
+  const f = await getFormatos()
   return (
     <div>
       <div className="text-muted-foreground mb-1 grid grid-cols-7 gap-1 text-center text-xs font-medium">
@@ -33,7 +35,7 @@ export function MonthView({
       <div className="grid grid-cols-7 gap-1">
         {dias.map((dia) => {
           const lista = visitasPorDia.get(dia) ?? []
-          const r = rotuloDia(dia)
+          const r = rotuloDia(dia, f.idioma)
           const isHoje = dia === hoje
           const noMes = r.mesNum === mesAtual
           return (

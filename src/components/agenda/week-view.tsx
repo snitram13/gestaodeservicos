@@ -1,8 +1,8 @@
 import Link from "next/link"
+import { getFormatos } from "@/lib/formatos"
 
 import type { Visita } from "@/db/schema"
 import { cn } from "@/lib/utils"
-import { formatHora } from "@/lib/formatters/date"
 import { rotuloDia } from "@/lib/agenda"
 import { rotulosServico } from "@/lib/constants/modulos"
 import { ESTADO_VISITA_META } from "@/lib/constants/estados"
@@ -12,7 +12,7 @@ type Row = Visita & {
   tecnico: { id: string; nome: string; corAgenda: string | null } | null
 }
 
-export function WeekView({
+export async function WeekView({
   dias,
   visitasPorDia,
   hoje,
@@ -23,12 +23,13 @@ export function WeekView({
   hoje: string
   temServicos?: boolean
 }) {
+  const f = await getFormatos()
   const rot = rotulosServico(!!temServicos)
   return (
     <div className="grid grid-cols-1 gap-2 md:h-[calc(100dvh-14rem)] md:grid-cols-7">
       {dias.map((dia) => {
         const lista = visitasPorDia.get(dia) ?? []
-        const r = rotuloDia(dia)
+        const r = rotuloDia(dia, f.idioma)
         const isHoje = dia === hoje
         return (
           <div
@@ -81,7 +82,7 @@ export function WeekView({
                       )}
                     />
                     <span className="text-muted-foreground shrink-0">
-                      {formatHora(v.agendadoPara)}
+                      {f.hora(v.agendadoPara)}
                     </span>
                   </span>
                   <span className="mt-0.5 block truncate font-medium">
