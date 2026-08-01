@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getT } from "@/lib/i18n"
 import { and, asc, eq, ilike, or } from "drizzle-orm"
 import { Plus, Users } from "lucide-react"
 
@@ -19,6 +20,7 @@ export default async function ClientesPage({
 }: {
   searchParams: Promise<{ q?: string }>
 }) {
+  const t = await getT()
   const { empresaId } = await requireEmpresa()
   const { q } = await searchParams
   const termo = (q ?? "").trim()
@@ -41,13 +43,11 @@ export default async function ClientesPage({
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Clientes"
+        title={t("Clientes")}
         description={`${clientes.length} ${clientes.length === 1 ? "cliente" : "clientes"}`}
       >
         <Link href="/clientes/novo" className={cn(buttonVariants(), "h-10 gap-1.5")}>
-          <Plus className="size-4" />
-          Novo
-        </Link>
+          <Plus className="size-4" />{t("Novo")}</Link>
       </PageHeader>
 
       <ClientesSearch defaultValue={termo} />
@@ -67,9 +67,7 @@ export default async function ClientesPage({
               href="/clientes/novo"
               className={cn(buttonVariants(), "gap-1.5")}
             >
-              <Plus className="size-4" />
-              Novo cliente
-            </Link>
+              <Plus className="size-4" />{t("Novo cliente")}</Link>
           )}
         </EmptyState>
       ) : (

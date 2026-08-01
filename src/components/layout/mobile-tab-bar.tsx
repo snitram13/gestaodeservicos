@@ -9,10 +9,12 @@ import {
   mobileTabsNegocio,
   type NavItem,
 } from "@/lib/navigation"
+import { useT } from "@/components/i18n/idioma-provider"
 import { cn } from "@/lib/utils"
 import { QuickActionFab } from "./quick-actions"
 
 function TabLink({ item, pathname }: { item: NavItem; pathname: string }) {
+  const t = useT()
   const active = isActiveHref(pathname, item.href)
   const Icon = item.icon
   return (
@@ -25,7 +27,7 @@ function TabLink({ item, pathname }: { item: NavItem; pathname: string }) {
       )}
     >
       <Icon className="size-5" />
-      {item.label}
+      {t(item.label)}
     </Link>
   )
 }
@@ -37,6 +39,7 @@ export function MobileTabBar({
   showAdmin?: boolean
   temServicos?: boolean
 }) {
+  const t = useT()
   const pathname = usePathname()
 
   // Controlador da plataforma: barra simples (sem ações rápidas de negócio).

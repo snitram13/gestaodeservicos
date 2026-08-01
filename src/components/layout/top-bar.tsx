@@ -1,6 +1,7 @@
 "use client"
 
 import { usePathname } from "next/navigation"
+import { useT } from "@/components/i18n/idioma-provider"
 
 import { tituloDaRota } from "@/lib/navigation"
 import { MobileDrawer } from "./mobile-drawer"
@@ -16,13 +17,14 @@ export function TopBar({
   showAdmin?: boolean
   temServicos?: boolean
 }) {
+  const t = useT()
   const pathname = usePathname()
 
   return (
     <header className="bg-background/80 sticky top-0 z-30 flex h-16 items-center gap-2 border-b px-3 backdrop-blur md:px-6">
       <MobileDrawer showAdmin={showAdmin} temServicos={temServicos} />
       <h1 className="flex-1 truncate text-lg font-semibold">
-        {tituloDaRota(pathname, temServicos)}
+        {t(tituloDaRota(pathname, temServicos))}
       </h1>
       <div className="flex items-center gap-1.5">
         {/* Ações rápidas de negócio — não fazem sentido para o controlador. */}

@@ -1,4 +1,5 @@
 import { and, asc, eq } from "drizzle-orm"
+import { getT } from "@/lib/i18n"
 
 import { db } from "@/db/client"
 import { cliente, visita } from "@/db/schema"
@@ -20,6 +21,7 @@ export default async function NovoOrcamentoPage({
 }: {
   searchParams: Promise<{ cliente?: string; visita?: string }>
 }) {
+  const t = await getT()
   const { empresaId } = await requireEmpresa()
   const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO))
   const emp = await getEmpresaAtual()
@@ -80,7 +82,7 @@ export default async function NovoOrcamentoPage({
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Novo orçamento" />
+      <PageHeader title={t("Novo orçamento")} />
       <OrcamentoForm
         clientes={clientes}
         prefill={prefill}

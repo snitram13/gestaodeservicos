@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getT } from "@/lib/i18n"
 import { and, desc, eq } from "drizzle-orm"
 import { CalendarCheck, Plus } from "lucide-react"
 
@@ -29,6 +30,7 @@ export default async function VisitasPage({
 }: {
   searchParams: Promise<{ estado?: string }>
 }) {
+  const t = await getT()
   const { empresaId } = await requireEmpresa()
   const { estado } = await searchParams
   const temServicos = await temModuloAtual(MODULOS.ORDENS_SERVICO)
@@ -69,7 +71,7 @@ export default async function VisitasPage({
               ? `Sem ${r.plural} com este estado`
               : `Ainda não há ${r.plural}`
           }
-          description="Registe aqui o trabalho realizado."
+          description={t("Registe aqui o trabalho realizado.")}
         >
           <Link href="/visitas/novo" className={cn(buttonVariants(), "gap-1.5")}>
             <Plus className="size-4" />

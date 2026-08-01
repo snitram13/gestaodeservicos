@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2, UserPlus } from "lucide-react"
@@ -50,6 +51,7 @@ export function NovoClienteDialog({
   /** País da empresa: formato do telefone e do código postal. */
   pais?: Pais
 }) {
+  const t = useT()
   const meta = metaPais(pais)
   const digitosCp = pais === "PT" ? 7 : 5
   const [open, setOpen] = useState(false)
@@ -72,23 +74,23 @@ export function NovoClienteDialog({
     const res = await procurarMorada(valor)
     setCpLoading(false)
     if (!res.ok) {
-      toast.error("Código postal", { description: res.message })
+      toast.error(t("Código postal"), { description: res.message })
       return
     }
     if (res.cidade) form.setValue("cidade", res.cidade, { shouldValidate: true })
     if (res.morada && !(form.getValues("morada") || "").trim()) {
       form.setValue("morada", res.morada, { shouldValidate: true })
     }
-    toast.success("Morada preenchida a partir do código postal")
+    toast.success(t("Morada preenchida a partir do código postal"))
   }
 
   async function onSubmit(values: ClienteFormValues) {
     const res = await criarCliente(values)
     if (!res.ok) {
-      toast.error("Não foi possível criar", { description: res.message })
+      toast.error(t("Não foi possível criar"), { description: res.message })
       return
     }
-    toast.success("Cliente criado")
+    toast.success(t("Cliente criado"))
     onCreated({
       id: res.id,
       nome: values.nome.trim(),
@@ -107,12 +109,10 @@ export function NovoClienteDialog({
           <Button type="button" variant="outline" className="h-11 shrink-0 gap-1.5" />
         }
       >
-        <UserPlus className="size-4" />
-        Novo
-      </DialogTrigger>
+        <UserPlus className="size-4" />{t("Novo")}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Novo cliente</DialogTitle>
+          <DialogTitle>{t("Novo cliente")}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
@@ -121,9 +121,9 @@ export function NovoClienteDialog({
               name="nome"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome *</FormLabel>
+                  <FormLabel>{t("Nome *")}</FormLabel>
                   <FormControl>
-                    <Input className="h-11" placeholder="Nome do cliente" {...field} />
+                    <Input className="h-11" placeholder={t("Nome do cliente")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -135,7 +135,7 @@ export function NovoClienteDialog({
                 name="telefone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Telefone *</FormLabel>
+                    <FormLabel>{t("Telefone *")}</FormLabel>
                     <FormControl>
                       <Input
                         className="h-11"
@@ -186,9 +186,9 @@ export function NovoClienteDialog({
               name="morada"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Morada</FormLabel>
+                  <FormLabel>{t("Morada")}</FormLabel>
                   <FormControl>
-                    <Input className="h-11" placeholder="Rua, número…" {...field} />
+                    <Input className="h-11" placeholder={t("Rua, número…")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -199,18 +199,16 @@ export function NovoClienteDialog({
               name="cidade"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cidade / localidade</FormLabel>
+                  <FormLabel>{t("Cidade / localidade")}</FormLabel>
                   <FormControl>
-                    <Input className="h-11" placeholder="Localidade" {...field} />
+                    <Input className="h-11" placeholder={t("Localidade")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter>
-              <DialogClose render={<Button type="button" variant="outline" />}>
-                Cancelar
-              </DialogClose>
+              <DialogClose render={<Button type="button" variant="outline" />}>{t("Cancelar")}</DialogClose>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting && (
                   <Loader2 className="size-4 animate-spin" />

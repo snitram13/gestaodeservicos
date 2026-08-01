@@ -1,12 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { usePathname, useRouter } from "next/navigation"
 import { Search } from "lucide-react"
 
 import { Input } from "@/components/ui/input"
 
 export function ClientesSearch({ defaultValue }: { defaultValue: string }) {
+  const t = useT()
   const router = useRouter()
   const pathname = usePathname()
   const [valor, setValor] = useState(defaultValue)
@@ -27,7 +29,7 @@ export function ClientesSearch({ defaultValue }: { defaultValue: string }) {
       <Input
         value={valor}
         onChange={(e) => setValor(e.target.value)}
-        placeholder="Procurar por nome ou telefone…"
+        placeholder={t("Procurar por nome ou telefone…")}
         className="h-11 pl-9"
         type="search"
         inputMode="search"

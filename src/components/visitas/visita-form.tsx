@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { useRouter } from "next/navigation"
 import { useFieldArray, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -99,6 +100,7 @@ export function VisitaForm({
   prefill?: Partial<VisitaFormValues>
   orcamentoOrigemId?: string
 }) {
+  const t = useT()
   const fm = useFormatos()
   const router = useRouter()
   const r = useRotulos()
@@ -189,7 +191,7 @@ export function VisitaForm({
       ? await atualizarVisita(visita!.id, values)
       : await criarVisita(values, orcamentoOrigemId)
     if (!res.ok) {
-      toast.error("Não foi possível guardar", { description: res.message })
+      toast.error(t("Não foi possível guardar"), { description: res.message })
       return
     }
     toast.success(isEdit ? r.atualizado : r.criado)
@@ -212,14 +214,14 @@ export function VisitaForm({
               name="clienteId"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Cliente *</FormLabel>
+                  <FormLabel>{t("Cliente *")}</FormLabel>
                   <div className="flex gap-2">
                     <div className="min-w-0 flex-1">
                       <Combobox
                         options={clienteOptions}
                         value={field.value}
                         onChange={onClienteChange}
-                        placeholder="Selecionar cliente"
+                        placeholder={t("Selecionar cliente")}
                         searchPlaceholder="Procurar cliente…"
                         empty="Nenhum cliente encontrado."
                       />
@@ -236,7 +238,7 @@ export function VisitaForm({
               name="agendadoPara"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Data e hora *</FormLabel>
+                  <FormLabel>{t("Data e hora *")}</FormLabel>
                   <FormControl>
                     <Input type="datetime-local" className="h-11" {...field} />
                   </FormControl>
@@ -250,7 +252,7 @@ export function VisitaForm({
               name="estado"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Estado</FormLabel>
+                  <FormLabel>{t("Estado")}</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="h-11 w-full">
@@ -265,7 +267,7 @@ export function VisitaForm({
                     <SelectContent>
                       {ESTADO_VISITA_OPCOES.map((o) => (
                         <SelectItem key={o.value} value={o.value}>
-                          {o.label}
+                          {t(o.label)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -280,7 +282,7 @@ export function VisitaForm({
               name="tecnicoId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Técnico</FormLabel>
+                  <FormLabel>{t("Técnico")}</FormLabel>
                   <Select
                     value={field.value ? field.value : SEM_TECNICO}
                     onValueChange={(v) =>
@@ -289,7 +291,7 @@ export function VisitaForm({
                   >
                     <FormControl>
                       <SelectTrigger className="h-11 w-full">
-                        <SelectValue placeholder="Sem técnico">
+                        <SelectValue placeholder={t("Sem técnico")}>
                           {(v) =>
                             !v || v === SEM_TECNICO
                               ? "Sem técnico"
@@ -300,7 +302,7 @@ export function VisitaForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value={SEM_TECNICO}>Sem técnico</SelectItem>
+                      <SelectItem value={SEM_TECNICO}>{t("Sem técnico")}</SelectItem>
                       {tecnicos.map((t) => (
                         <SelectItem key={t.id} value={t.id}>
                           {t.nome}
@@ -318,9 +320,9 @@ export function VisitaForm({
               name="moradaServico"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Morada</FormLabel>
+                  <FormLabel>{t("Morada")}</FormLabel>
                   <FormControl>
-                    <Input className="h-11" placeholder="Rua, número…" {...field} />
+                    <Input className="h-11" placeholder={t("Rua, número…")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -332,9 +334,9 @@ export function VisitaForm({
               name="cidade"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cidade / localidade</FormLabel>
+                  <FormLabel>{t("Cidade / localidade")}</FormLabel>
                   <FormControl>
-                    <Input className="h-11" placeholder="Localidade" {...field} />
+                    <Input className="h-11" placeholder={t("Localidade")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -348,7 +350,7 @@ export function VisitaForm({
                 <FormItem className="sm:col-span-2">
                   <FormLabel>{r.notas}</FormLabel>
                   <FormControl>
-                    <Textarea rows={2} placeholder="Observações gerais…" {...field} />
+                    <Textarea rows={2} placeholder={t("Observações gerais…")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -359,7 +361,7 @@ export function VisitaForm({
 
         <Card>
           <CardHeader>
-            <CardTitle>Serviços</CardTitle>
+            <CardTitle>{t("Serviços")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {fields.map((f, index) => (
@@ -391,7 +393,7 @@ export function VisitaForm({
                           <SelectContent>
                             {CATEGORIA_OPCOES.map((o) => (
                               <SelectItem key={o.value} value={o.value}>
-                                {o.label}
+                                {t(o.label)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -407,7 +409,7 @@ export function VisitaForm({
                         <FormControl>
                           <Input
                             className="h-10"
-                            placeholder="Serviço (ex.: Troca de torneira)"
+                            placeholder={t("Serviço (ex.: Troca de torneira)")}
                             {...field}
                           />
                         </FormControl>
@@ -420,7 +422,7 @@ export function VisitaForm({
                     variant="ghost"
                     size="icon"
                     className="text-destructive"
-                    aria-label="Remover serviço"
+                    aria-label={t("Remover serviço")}
                     disabled={fields.length === 1}
                     onClick={() => remove(index)}
                   >
@@ -433,9 +435,7 @@ export function VisitaForm({
                     name={`servicos.${index}.maoDeObra`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-muted-foreground text-xs">
-                          Mão de obra
-                        </FormLabel>
+                        <FormLabel className="text-muted-foreground text-xs">{t("Mão de obra")}</FormLabel>
                         <FormControl>
                           <Input className="h-10" inputMode="decimal" {...field} />
                         </FormControl>
@@ -447,9 +447,7 @@ export function VisitaForm({
                     name={`servicos.${index}.material`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-muted-foreground text-xs">
-                          Material
-                        </FormLabel>
+                        <FormLabel className="text-muted-foreground text-xs">{t("Material")}</FormLabel>
                         <FormControl>
                           <Input className="h-10" inputMode="decimal" {...field} />
                         </FormControl>
@@ -457,7 +455,7 @@ export function VisitaForm({
                     )}
                   />
                   <div>
-                    <p className="text-muted-foreground text-xs">Total</p>
+                    <p className="text-muted-foreground text-xs">{t("Total")}</p>
                     <p className="flex h-10 items-center font-medium">
                       {fm.euro(
                         parseEuro(servicosW?.[index]?.maoDeObra) +
@@ -475,9 +473,7 @@ export function VisitaForm({
               className="w-full border-dashed gap-1.5"
               onClick={() => append({ ...SERVICO_LINHA_VAZIO })}
             >
-              <Plus className="size-4" />
-              Adicionar serviço
-            </Button>
+              <Plus className="size-4" />{t("Adicionar serviço")}</Button>
 
             {form.formState.errors.servicos?.message && (
               <p className="text-destructive text-sm">
@@ -491,7 +487,7 @@ export function VisitaForm({
                 name="deslocacao"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Deslocação (€)</FormLabel>
+                    <FormLabel>{t("Deslocação (€)")}</FormLabel>
                     <FormControl>
                       <Input className="h-11" inputMode="decimal" {...field} />
                     </FormControl>
@@ -503,7 +499,7 @@ export function VisitaForm({
                 name="kmPercorridos"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Km percorridos</FormLabel>
+                    <FormLabel>{t("Km percorridos")}</FormLabel>
                     <FormControl>
                       <Input className="h-11" inputMode="decimal" {...field} />
                     </FormControl>
@@ -514,15 +510,15 @@ export function VisitaForm({
 
             <div className="bg-muted/50 ml-auto grid max-w-xs gap-1 rounded-lg p-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Serviços</span>
+                <span className="text-muted-foreground">{t("Serviços")}</span>
                 <span>{fm.euro(totalServicos)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Deslocação</span>
+                <span className="text-muted-foreground">{t("Deslocação")}</span>
                 <span>{fm.euro(parseEuro(deslocacaoW))}</span>
               </div>
               <div className="flex justify-between border-t pt-1 text-base font-semibold">
-                <span>Total</span>
+                <span>{t("Total")}</span>
                 <span>{fm.euro(total)}</span>
               </div>
             </div>
@@ -535,9 +531,7 @@ export function VisitaForm({
             variant="outline"
             className="h-11"
             onClick={() => router.back()}
-          >
-            Cancelar
-          </Button>
+          >{t("Cancelar")}</Button>
           <Button type="submit" className="h-11" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="size-4 animate-spin" />}
             Guardar

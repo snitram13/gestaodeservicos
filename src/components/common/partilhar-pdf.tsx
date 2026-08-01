@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { FileText, Loader2, MessageCircle, Send } from "lucide-react"
 import { toast } from "sonner"
 
@@ -31,10 +32,12 @@ export function PartilharPdf({
   mensagem: string
   mostrarPdf?: boolean
 }) {
+  const t = useT()
   const [loading, setLoading] = useState(false)
   const [ficheiro, setFicheiro] = useState<File | null>(null)
 
   function suportaAnexar(): boolean {
+  const t = useT()
     try {
       const nav = navigator as Navigator & {
         canShare?: (data?: unknown) => boolean
@@ -47,6 +50,7 @@ export function PartilharPdf({
   }
 
   async function partilhar(file: File): Promise<"ok" | "cancelado" | "falhou"> {
+  const t = useT()
     try {
       await navigator.share({ files: [file], text: mensagem })
       return "ok"
@@ -57,16 +61,17 @@ export function PartilharPdf({
   }
 
   async function enviarLink(comAviso = false) {
+  const t = useT()
     const res =
       tipo === "orcamento"
         ? await linkOrcamentoPdf(id)
         : await linkOrdemServicoPdf(id)
     if (!res.ok) {
-      toast.error("Não foi possível preparar o PDF", { description: res.message })
+      toast.error(t("Não foi possível preparar o PDF"), { description: res.message })
       return
     }
     if (comAviso) {
-      toast.info("Este dispositivo não anexa ficheiros — enviei o link do PDF.")
+      toast.info(t("Este dispositivo não anexa ficheiros — enviei o link do PDF."))
     }
     window.open(waLink(telefone, `${mensagem}\n\n${res.url}`), "_blank")
   }

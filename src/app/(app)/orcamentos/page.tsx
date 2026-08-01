@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getT } from "@/lib/i18n"
 import { desc, eq } from "drizzle-orm"
 import { FileText, Plus } from "lucide-react"
 
@@ -16,6 +17,7 @@ export const metadata = { title: "Orçamentos" }
 type Row = Orcamento & { cliente: { nome: string } | null }
 
 export default async function OrcamentosPage() {
+  const t = await getT()
   const { empresaId } = await requireEmpresa()
   const orcamentos = (await db.query.orcamento.findMany({
     where: eq(orcamento.empresaId, empresaId),
@@ -26,31 +28,27 @@ export default async function OrcamentosPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Orçamentos"
+        title={t("Orçamentos")}
         description={`${orcamentos.length} orçamento(s)`}
       >
         <Link
           href="/orcamentos/novo"
           className={cn(buttonVariants(), "h-10 gap-1.5")}
         >
-          <Plus className="size-4" />
-          Novo
-        </Link>
+          <Plus className="size-4" />{t("Novo")}</Link>
       </PageHeader>
 
       {orcamentos.length === 0 ? (
         <EmptyState
           icon={FileText}
-          title="Ainda não há orçamentos"
-          description="Crie um orçamento com linhas de item e gere um PDF para enviar ao cliente."
+          title={t("Ainda não há orçamentos")}
+          description={t("Crie um orçamento com linhas de item e gere um PDF para enviar ao cliente.")}
         >
           <Link
             href="/orcamentos/novo"
             className={cn(buttonVariants(), "gap-1.5")}
           >
-            <Plus className="size-4" />
-            Novo orçamento
-          </Link>
+            <Plus className="size-4" />{t("Novo orçamento")}</Link>
         </EmptyState>
       ) : (
         <OrcamentosList orcamentos={orcamentos} />

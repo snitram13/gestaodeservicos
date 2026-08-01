@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { useT } from "@/components/i18n/idioma-provider"
 import { MapPin, MessageCircle, Phone, Plus } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -20,6 +21,7 @@ type Props = {
 }
 
 export function ClienteQuickActions({ cliente, temServicos }: Props) {
+  const t = useT()
   const r = rotulosServico(!!temServicos)
   const itemCls = cn(
     buttonVariants({ variant: "outline" }),
@@ -31,10 +33,10 @@ export function ClienteQuickActions({ cliente, temServicos }: Props) {
       <a
         href={telLink(cliente.telefone)}
         className={itemCls}
-        aria-label="Ligar"
+        aria-label={t("Ligar")}
       >
         <Phone className="size-5" />
-        <span className="text-xs">Ligar</span>
+        <span className="text-xs">{t("Ligar")}</span>
       </a>
       <a
         href={waLink(cliente.telefone, `Olá ${cliente.nome}, `)}
@@ -51,10 +53,10 @@ export function ClienteQuickActions({ cliente, temServicos }: Props) {
         target="_blank"
         rel="noopener noreferrer"
         className={itemCls}
-        aria-label="Ver no mapa"
+        aria-label={t("Ver no mapa")}
       >
         <MapPin className="size-5" />
-        <span className="text-xs">Mapa</span>
+        <span className="text-xs">{t("Mapa")}</span>
       </a>
       <Link
         href={`/visitas/novo?cliente=${cliente.id}`}

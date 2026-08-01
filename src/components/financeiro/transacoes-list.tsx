@@ -1,4 +1,5 @@
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react"
+import { getT } from "@/lib/i18n"
 import { getFormatos } from "@/lib/formatos"
 
 import type { TransacaoFinanceira } from "@/db/schema"
@@ -16,6 +17,8 @@ export async function TransacoesList({
   transacoes: TransacaoFinanceira[]
 }) {
   const f = await getFormatos()
+  // `t` é o movimento no map — o tradutor fica `tr`.
+  const tr = await getT()
   return (
     <Card className="gap-0 overflow-hidden p-0">
       {transacoes.map((t, i) => {
@@ -41,11 +44,11 @@ export async function TransacoesList({
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">
-                {t.descricao || CATEGORIA_TRANSACAO_LABEL[t.categoria]}
+                {t.descricao || tr(CATEGORIA_TRANSACAO_LABEL[t.categoria])}
               </p>
               <p className="text-muted-foreground truncate text-sm">
-                {f.data(t.data)} · {CATEGORIA_TRANSACAO_LABEL[t.categoria]}
-                {t.metodoPagamento ? ` · ${METODO_LABEL[t.metodoPagamento]}` : ""}
+                {f.data(t.data)} · {tr(CATEGORIA_TRANSACAO_LABEL[t.categoria])}
+                {t.metodoPagamento ? ` · ${tr(METODO_LABEL[t.metodoPagamento])}` : ""}
               </p>
             </div>
             <span

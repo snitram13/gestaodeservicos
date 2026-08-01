@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getT } from "@/lib/i18n"
 import { getFormatos } from "@/lib/formatos"
 import { notFound } from "next/navigation"
 import { and, eq } from "drizzle-orm"
@@ -29,6 +30,7 @@ export default async function VisitaDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const t = await getT()
   const { id } = await params
   const { empresaId } = await requireEmpresa()
   const f = await getFormatos()
@@ -94,7 +96,7 @@ export default async function VisitaDetailPage({
           <Link
             href={`/visitas/${id}/editar`}
             className={cn(buttonVariants({ variant: "outline", size: "icon" }))}
-            aria-label="Editar"
+            aria-label={t("Editar")}
           >
             <Pencil className="size-4" />
           </Link>
@@ -122,9 +124,7 @@ export default async function VisitaDetailPage({
           href={`/orcamentos/novo?visita=${id}`}
           className={cn(buttonVariants({ variant: "outline" }), "h-9 gap-1.5")}
         >
-          <FileText className="size-4" />
-          Criar orçamento
-        </Link>
+          <FileText className="size-4" />{t("Criar orçamento")}</Link>
         {v.estado === "CONCLUIDO" && (
           <RegistarPagamentoButton visitaId={id} valorSugerido={v.valor} />
         )}
@@ -154,19 +154,19 @@ export default async function VisitaDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Valores</CardTitle>
+            <CardTitle>{t("Valores")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Serviços</span>
+              <span className="text-muted-foreground">{t("Serviços")}</span>
               <span>{f.euro(totalServicos)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Deslocação</span>
+              <span className="text-muted-foreground">{t("Deslocação")}</span>
               <span>{f.euro(v.deslocacao)}</span>
             </div>
             <div className="mt-1 flex items-center justify-between border-t pt-2">
-              <span className="font-medium">Total</span>
+              <span className="font-medium">{t("Total")}</span>
               <span className="text-lg font-semibold">{f.euro(v.valor)}</span>
             </div>
             <p className="text-muted-foreground mt-1 text-xs">
@@ -180,25 +180,19 @@ export default async function VisitaDetailPage({
       {temServicos && (
         <Card>
           <CardHeader>
-            <CardTitle>Ordem de serviço</CardTitle>
+            <CardTitle>{t("Ordem de serviço")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
             <div>
-              <p className="text-muted-foreground mb-2 text-sm font-medium">
-                Fotos
-              </p>
+              <p className="text-muted-foreground mb-2 text-sm font-medium">{t("Fotos")}</p>
               <FotosSection visitaId={v.id} fotos={fotos} />
             </div>
             <div>
-              <p className="text-muted-foreground mb-2 text-sm font-medium">
-                Assinatura do cliente
-              </p>
+              <p className="text-muted-foreground mb-2 text-sm font-medium">{t("Assinatura do cliente")}</p>
               <AssinaturaSection visitaId={v.id} url={assinaturaUrl} />
             </div>
             <div>
-              <p className="text-muted-foreground mb-2 text-sm font-medium">
-                Comprovativo
-              </p>
+              <p className="text-muted-foreground mb-2 text-sm font-medium">{t("Comprovativo")}</p>
               <PartilharPdf
                 tipo="ordem-servico"
                 id={v.id}
@@ -214,7 +208,7 @@ export default async function VisitaDetailPage({
       {v.orcamentos.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Orçamentos associados</CardTitle>
+            <CardTitle>{t("Orçamentos associados")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y">
@@ -241,7 +235,7 @@ export default async function VisitaDetailPage({
       {v.descricao && (
         <Card>
           <CardContent>
-            <p className="text-muted-foreground text-xs">Notas</p>
+            <p className="text-muted-foreground text-xs">{t("Notas")}</p>
             <p className="mt-0.5 whitespace-pre-wrap text-sm">{v.descricao}</p>
           </CardContent>
         </Card>

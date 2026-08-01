@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getT } from "@/lib/i18n"
 import { getFormatos } from "@/lib/formatos"
 import { redirect } from "next/navigation"
 import {
@@ -40,6 +41,7 @@ type VisitaRow = Visita & {
 }
 
 export default async function DashboardPage() {
+  const t = await getT()
   const { empresaId, email } = await requireEmpresa()
   const f = await getFormatos()
   // O dono da plataforma não usa a app de negócio — vai para o painel de controlo.
@@ -131,7 +133,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-2xl font-semibold tracking-tight">Olá! 👋</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">{t("Olá! 👋")}</h2>
         <p className="text-muted-foreground mt-1 capitalize">
           {f.diaExtenso(new Date())}
         </p>
@@ -139,7 +141,7 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
-          label="Faturação do mês"
+          label={t("Faturação do mês")}
           value={f.euro(faturacaoMes)}
           icon={Euro}
           accent="text-emerald-600"
@@ -152,13 +154,13 @@ export default async function DashboardPage() {
           href="/agenda?view=dia"
         />
         <StatCard
-          label="Orçamentos pendentes"
+          label={t("Orçamentos pendentes")}
           value={String(nOrcPendentes)}
           icon={FileText}
           href="/orcamentos"
         />
         <StatCard
-          label="Clientes"
+          label={t("Clientes")}
           value={String(nClientes)}
           icon={Users}
           href="/clientes"
@@ -189,12 +191,11 @@ export default async function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Hoje</CardTitle>
+            <CardTitle>{t("Hoje")}</CardTitle>
             <Link
               href="/agenda?view=dia"
               className="text-primary inline-flex items-center gap-1 text-sm"
-            >
-              Agenda <ArrowRight className="size-3.5" />
+            >{t("Agenda")}<ArrowRight className="size-3.5" />
             </Link>
           </CardHeader>
           <CardContent>
@@ -231,7 +232,7 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Faturação (últimos 6 meses)</CardTitle>
+            <CardTitle>{t("Faturação (últimos 6 meses)")}</CardTitle>
           </CardHeader>
           <CardContent>
             <FaturacaoChart data={chart} />

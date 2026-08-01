@@ -1,4 +1,5 @@
 import { Ban } from "lucide-react"
+import { getT } from "@/lib/i18n"
 
 import { signOut } from "@/actions/auth"
 import { getUtilizadorAtual, requireUser } from "@/lib/auth"
@@ -22,6 +23,7 @@ export const metadata = { title: "Acesso suspenso" }
  * não voltar a passar por `requireEmpresa()` (evita ciclo de redireccionamento).
  */
 export default async function SuspensoPage() {
+  const t = await getT()
   await requireUser()
   // Mensalidade real (base + funcionários ativos × 4,99) para esta empresa.
   const u = await getUtilizadorAtual()
@@ -33,7 +35,7 @@ export default async function SuspensoPage() {
         <div className="bg-destructive/10 text-destructive mx-auto mb-2 flex size-12 items-center justify-center rounded-xl">
           <Ban className="size-6" />
         </div>
-        <CardTitle className="text-xl">Acesso suspenso</CardTitle>
+        <CardTitle className="text-xl">{t("Acesso suspenso")}</CardTitle>
         <CardDescription>
           O período de acesso a esta conta terminou. Para voltar a usar a
           aplicação, contacte o administrador do sistema e regularize a

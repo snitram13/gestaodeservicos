@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -59,6 +60,7 @@ const VAZIO = (hoje: string): TransacaoFormValues => ({
 })
 
 export function NovaTransacaoDialog() {
+  const t = useT()
   const fm = useFormatos()
   const router = useRouter()
   const [open, setOpen] = useState(false)
@@ -78,10 +80,10 @@ export function NovaTransacaoDialog() {
   async function onSubmit(values: TransacaoFormValues) {
     const res = await criarTransacao(values)
     if (!res.ok) {
-      toast.error("Não foi possível registar", { description: res.message })
+      toast.error(t("Não foi possível registar"), { description: res.message })
       return
     }
-    toast.success("Transação registada")
+    toast.success(t("Transação registada"))
     setOpen(false)
     form.reset(VAZIO(fm.hoje()))
     router.refresh()
@@ -90,12 +92,10 @@ export function NovaTransacaoDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button className="h-10 gap-1.5" />}>
-        <Plus className="size-4" />
-        Nova transação
-      </DialogTrigger>
+        <Plus className="size-4" />{t("Nova transação")}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nova transação</DialogTitle>
+          <DialogTitle>{t("Nova transação")}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
@@ -104,16 +104,12 @@ export function NovaTransacaoDialog() {
                 type="button"
                 variant={tipo === "ENTRADA" ? "default" : "outline"}
                 onClick={() => setTipo("ENTRADA")}
-              >
-                Entrada
-              </Button>
+              >{t("Entrada")}</Button>
               <Button
                 type="button"
                 variant={tipo === "SAIDA" ? "default" : "outline"}
                 onClick={() => setTipo("SAIDA")}
-              >
-                Saída
-              </Button>
+              >{t("Saída")}</Button>
             </div>
 
             <FormField
@@ -121,7 +117,7 @@ export function NovaTransacaoDialog() {
               name="categoria"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Categoria</FormLabel>
+                  <FormLabel>{t("Categoria")}</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="h-11 w-full">
@@ -131,7 +127,7 @@ export function NovaTransacaoDialog() {
                     <SelectContent>
                       {categorias.map((c) => (
                         <SelectItem key={c} value={c}>
-                          {CATEGORIA_TRANSACAO_LABEL[c]}
+                          {t(CATEGORIA_TRANSACAO_LABEL[c])}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -147,7 +143,7 @@ export function NovaTransacaoDialog() {
                 name="valor"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Valor (€)</FormLabel>
+                    <FormLabel>{t("Valor (€)")}</FormLabel>
                     <FormControl>
                       <Input className="h-11" inputMode="decimal" {...field} />
                     </FormControl>
@@ -160,7 +156,7 @@ export function NovaTransacaoDialog() {
                 name="data"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Data</FormLabel>
+                    <FormLabel>{t("Data")}</FormLabel>
                     <FormControl>
                       <Input type="date" className="h-11" {...field} />
                     </FormControl>
@@ -176,20 +172,20 @@ export function NovaTransacaoDialog() {
                 name="metodoPagamento"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Método de pagamento</FormLabel>
+                    <FormLabel>{t("Método de pagamento")}</FormLabel>
                     <Select
                       value={field.value || undefined}
                       onValueChange={(v) => field.onChange(v ?? "")}
                     >
                       <FormControl>
                         <SelectTrigger className="h-11 w-full">
-                          <SelectValue placeholder="Selecionar…" />
+                          <SelectValue placeholder={t("Selecionar…")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {METODOS_PAGAMENTO.map((m) => (
                           <SelectItem key={m} value={m}>
-                            {METODO_LABEL[m]}
+                            {t(METODO_LABEL[m])}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -204,7 +200,7 @@ export function NovaTransacaoDialog() {
               name="descricao"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descrição</FormLabel>
+                  <FormLabel>{t("Descrição")}</FormLabel>
                   <FormControl>
                     <Textarea rows={2} {...field} />
                   </FormControl>
@@ -215,9 +211,7 @@ export function NovaTransacaoDialog() {
             <DialogFooter>
               <DialogClose
                 render={<Button type="button" variant="outline" />}
-              >
-                Cancelar
-              </DialogClose>
+              >{t("Cancelar")}</DialogClose>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting && (
                   <Loader2 className="size-4 animate-spin" />

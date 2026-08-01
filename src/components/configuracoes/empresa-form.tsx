@@ -1,6 +1,8 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { useT, usePais } from "@/components/i18n/idioma-provider"
+import { metaPais } from "@/lib/constants/paises"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -31,6 +33,8 @@ import {
 import { Input } from "@/components/ui/input"
 
 export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
+  const t = useT()
+  const meta = metaPais(usePais())
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
   const [logoPath, setLogoPath] = useState(cfg.logoPath)
@@ -53,6 +57,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
   const url = logoUrl(logoPath)
 
   async function onLogo(e: React.ChangeEvent<HTMLInputElement>) {
+  const t = useT()
     const file = e.target.files?.[0]
     e.target.value = ""
     if (!file) return
@@ -62,34 +67,36 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
     const res = await uploadLogo(fd)
     setUploading(false)
     if (!res.ok) {
-      toast.error("Falha no upload", { description: res.message })
+      toast.error(t("Falha no upload"), { description: res.message })
       return
     }
     setLogoPath(res.path)
-    toast.success("Logótipo atualizado")
+    toast.success(t("Logótipo atualizado"))
     router.refresh()
   }
 
   async function onRemover() {
+  const t = useT()
     setUploading(true)
     const res = await removerLogo()
     setUploading(false)
     if (!res.ok) {
-      toast.error("Não foi possível remover")
+      toast.error(t("Não foi possível remover"))
       return
     }
     setLogoPath(null)
-    toast.success("Logótipo removido")
+    toast.success(t("Logótipo removido"))
     router.refresh()
   }
 
   async function onSubmit(values: ConfiguracaoFormValues) {
+  const t = useT()
     const res = await guardarConfiguracao(values)
     if (!res.ok) {
-      toast.error("Não foi possível guardar", { description: res.message })
+      toast.error(t("Não foi possível guardar"), { description: res.message })
       return
     }
-    toast.success("Dados guardados")
+    toast.success(t("Dados guardados"))
     router.refresh()
   }
 
@@ -98,7 +105,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <Card>
           <CardHeader>
-            <CardTitle>Logótipo</CardTitle>
+            <CardTitle>{t("Logótipo")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
@@ -159,7 +166,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Dados da empresa</CardTitle>
+            <CardTitle>{t("Dados da empresa")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <FormField
@@ -167,7 +174,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
               name="nomeEmpresa"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Nome da empresa *</FormLabel>
+                  <FormLabel>{t("Nome da empresa *")}</FormLabel>
                   <FormControl>
                     <Input className="h-11" {...field} />
                   </FormControl>
@@ -180,9 +187,9 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
               name="slogan"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Slogan</FormLabel>
+                  <FormLabel>{t("Slogan")}</FormLabel>
                   <FormControl>
-                    <Input className="h-11" placeholder="Ex.: Reparações ao domicílio" {...field} />
+                    <Input className="h-11" placeholder={t("Ex.: Reparações ao domicílio")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -193,9 +200,9 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
               name="nif"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>NIF</FormLabel>
+                  <FormLabel>{meta.rotuloFiscal}</FormLabel>
                   <FormControl>
-                    <Input className="h-11" inputMode="numeric" placeholder="9 dígitos" {...field} />
+                    <Input className="h-11" inputMode="numeric" placeholder={meta.exemploFiscal} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -206,7 +213,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
               name="telefone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Telefone</FormLabel>
+                  <FormLabel>{t("Telefone")}</FormLabel>
                   <FormControl>
                     <Input className="h-11" type="tel" inputMode="tel" placeholder="+351 …" {...field} />
                   </FormControl>
@@ -219,7 +226,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
               name="email"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("Email")}</FormLabel>
                   <FormControl>
                     <Input className="h-11" type="email" inputMode="email" {...field} />
                   </FormControl>
@@ -232,7 +239,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
               name="morada"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Morada</FormLabel>
+                  <FormLabel>{t("Morada")}</FormLabel>
                   <FormControl>
                     <Input className="h-11" {...field} />
                   </FormControl>
@@ -245,7 +252,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
               name="iban"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>IBAN (opcional, aparece no PDF)</FormLabel>
+                  <FormLabel>{t("IBAN (opcional, aparece no PDF)")}</FormLabel>
                   <FormControl>
                     <Input className="h-11" placeholder="PT50 …" {...field} />
                   </FormControl>
@@ -258,7 +265,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
               name="taxaIvaPadrao"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Taxa de IVA (%)</FormLabel>
+                  <FormLabel>{t("Taxa de IVA (%)")}</FormLabel>
                   <FormControl>
                     <Input
                       className="h-11"

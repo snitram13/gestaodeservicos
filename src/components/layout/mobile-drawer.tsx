@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { Menu, Wrench } from "lucide-react"
 
 import {
@@ -20,6 +21,7 @@ export function MobileDrawer({
   showAdmin?: boolean
   temServicos?: boolean
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
 
   return (

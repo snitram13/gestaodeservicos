@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -97,17 +98,18 @@ function CampoRole({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: any
 }) {
+  const t = useT()
   return (
     <FormField
       control={control}
       name="role"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Cargo</FormLabel>
+          <FormLabel>{t("Cargo")}</FormLabel>
           <Select value={field.value} onValueChange={(v) => field.onChange(v)}>
             <FormControl>
               <SelectTrigger className="h-11 w-full">
-                <SelectValue placeholder="Selecionar…" />
+                <SelectValue placeholder={t("Selecionar…")} />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
@@ -131,13 +133,14 @@ function CampoCor({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: any
 }) {
+  const t = useT()
   return (
     <FormField
       control={control}
       name="corAgenda"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Cor na agenda</FormLabel>
+          <FormLabel>{t("Cor na agenda")}</FormLabel>
           <div className="flex items-center gap-3">
             <FormControl>
               <input
@@ -166,6 +169,7 @@ function CampoCor({
 /* ------------------------------------------------------------------ */
 
 export function NovoFuncionarioDialog() {
+  const t = useT()
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const form = useForm<CriarUtilizadorValues>({
@@ -174,12 +178,13 @@ export function NovoFuncionarioDialog() {
   })
 
   async function onSubmit(values: CriarUtilizadorValues) {
+  const t = useT()
     const res = await criarUtilizador(values)
     if (!res.ok) {
-      toast.error("Não foi possível criar", { description: res.message })
+      toast.error(t("Não foi possível criar"), { description: res.message })
       return
     }
-    toast.success("Funcionário criado")
+    toast.success(t("Funcionário criado"))
     setOpen(false)
     form.reset(CRIAR_UTILIZADOR_VAZIO)
     router.refresh()
@@ -193,7 +198,7 @@ export function NovoFuncionarioDialog() {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Novo funcionário</DialogTitle>
+          <DialogTitle>{t("Novo funcionário")}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
@@ -202,9 +207,9 @@ export function NovoFuncionarioDialog() {
               name="nome"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome *</FormLabel>
+                  <FormLabel>{t("Nome *")}</FormLabel>
                   <FormControl>
-                    <Input className="h-11" placeholder="Nome do funcionário" {...field} />
+                    <Input className="h-11" placeholder={t("Nome do funcionário")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -215,14 +220,14 @@ export function NovoFuncionarioDialog() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email *</FormLabel>
+                  <FormLabel>{t("Email *")}</FormLabel>
                   <FormControl>
                     <Input
                       className="h-11"
                       type="email"
                       inputMode="email"
                       autoComplete="off"
-                      placeholder="nome@exemplo.pt"
+                      placeholder="nome@email.com"
                       {...field}
                     />
                   </FormControl>
@@ -235,13 +240,13 @@ export function NovoFuncionarioDialog() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password *</FormLabel>
+                  <FormLabel>{t("Password *")}</FormLabel>
                   <FormControl>
                     <Input
                       className="h-11"
                       type="password"
                       autoComplete="new-password"
-                      placeholder="Mínimo 6 caracteres"
+                      placeholder={t("Mínimo 6 caracteres")}
                       {...field}
                     />
                   </FormControl>
@@ -282,6 +287,7 @@ export function UtilizadorAcoes({
   item: UtilizadorRow
   isSelf: boolean
 }) {
+  const t = useT()
   const [editOpen, setEditOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
 
@@ -292,7 +298,7 @@ export function UtilizadorAcoes({
           render={<Button variant="ghost" size="icon-sm" type="button" />}
         >
           <MoreHorizontal className="size-4" />
-          <span className="sr-only">Ações</span>
+          <span className="sr-only">{t("Ações")}</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => setEditOpen(true)}>
@@ -342,6 +348,7 @@ function EditarUtilizadorDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const t = useT()
   const router = useRouter()
   const isOwner = item.role === "OWNER"
   const form = useForm<EditarUtilizadorValues>({
@@ -355,12 +362,13 @@ function EditarUtilizadorDialog({
   })
 
   async function onSubmit(values: EditarUtilizadorValues) {
+  const t = useT()
     const res = await atualizarUtilizador(item.id, values)
     if (!res.ok) {
-      toast.error("Não foi possível guardar", { description: res.message })
+      toast.error(t("Não foi possível guardar"), { description: res.message })
       return
     }
-    toast.success("Funcionário atualizado")
+    toast.success(t("Funcionário atualizado"))
     onOpenChange(false)
     router.refresh()
   }
@@ -369,7 +377,7 @@ function EditarUtilizadorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar funcionário</DialogTitle>
+          <DialogTitle>{t("Editar funcionário")}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
@@ -378,9 +386,9 @@ function EditarUtilizadorDialog({
               name="nome"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome *</FormLabel>
+                  <FormLabel>{t("Nome *")}</FormLabel>
                   <FormControl>
-                    <Input className="h-11" placeholder="Nome do funcionário" {...field} />
+                    <Input className="h-11" placeholder={t("Nome do funcionário")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -417,16 +425,18 @@ function ConfirmarEstadoDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const t = useT()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const desativar = item.ativo
 
   async function confirmar() {
+  const t = useT()
     setLoading(true)
     const res = await definirEstadoUtilizador(item.id, !item.ativo)
     setLoading(false)
     if (!res.ok) {
-      toast.error("Não foi possível concluir", { description: res.message })
+      toast.error(t("Não foi possível concluir"), { description: res.message })
       return
     }
     toast.success(desativar ? "Funcionário desativado" : "Funcionário ativado")
@@ -448,7 +458,7 @@ function ConfirmarEstadoDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={loading}>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>{t("Cancelar")}</AlertDialogCancel>
           <AlertDialogAction
             variant={desativar ? "destructive" : "default"}
             disabled={loading}

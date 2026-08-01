@@ -356,4 +356,26 @@ export const ES: Record<string, string> = {
   "Deixar vazio → gerada automaticamente": "Dejar vacío → se genera sola",
   "Este dispositivo não anexa ficheiros — enviei o link do PDF.":
     "Este dispositivo no adjunta archivos: se ha enviado el enlace del PDF.",
+
+  /* Acrescentado no varrimento da app ------------------------------- */
+  "(você)": "(usted)",
+  "Abrir WhatsApp": "Abrir WhatsApp",
+  "Adicionar linha": "Añadir línea",
+  "Adicionar serviço": "Añadir servicio",
+  "Ainda não há orçamentos para este cliente.": "Todavía no hay presupuestos para este cliente.",
+  "Cliente *": "Cliente *",
+  "Comprovativo": "Justificante",
+  "Criar orçamento": "Crear presupuesto",
+  "Criar visita": "Crear visita",
+  "Entrada": "Ingreso",
+  "Saída": "Gasto",
+  "Falha no upload": "Error al subir",
+  "Faltam {dias} dias": "Quedan {dias} días",
+  "IBAN (opcional, aparece no PDF)": "IBAN (opcional, aparece en el PDF)",
+  "Mensagem": "Mensaje",
+  "Novo": "Nuevo",
+  "Olá! 👋": "¡Hola! 👋",
+  "Preenche a morada e a cidade automaticamente.": "Rellena la dirección y la ciudad automáticamente.",
+  "Remover esta foto?": "¿Quitar esta foto?",
+  "mantêm-se": "se mantienen",
 }

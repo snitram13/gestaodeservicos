@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useT } from "@/components/i18n/idioma-provider"
 import { LogOut, Settings, User } from "lucide-react"
 
 import { signOut } from "@/actions/auth"
@@ -14,11 +15,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function UserMenu({ email }: { email?: string }) {
+  const t = useT()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" size="icon" aria-label="Conta" />
+          <Button variant="ghost" size="icon" aria-label={t("Conta")} />
         }
       >
         <User className="size-5" />

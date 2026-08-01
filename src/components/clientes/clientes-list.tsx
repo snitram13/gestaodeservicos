@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getT } from "@/lib/i18n"
 import { ChevronRight, MessageCircle, Phone } from "lucide-react"
 
 import type { Cliente } from "@/db/schema"
@@ -16,7 +17,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-export function ClientesList({ clientes }: { clientes: Cliente[] }) {
+export async function ClientesList({ clientes }: { clientes: Cliente[] }) {
+  const t = await getT()
   return (
     <>
       {/* Telemóvel: cartões */}
@@ -34,7 +36,7 @@ export function ClientesList({ clientes }: { clientes: Cliente[] }) {
               <a
                 href={telLink(c.telefone)}
                 className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
-                aria-label="Ligar"
+                aria-label={t("Ligar")}
               >
                 <Phone className="size-4" />
               </a>
@@ -57,9 +59,9 @@ export function ClientesList({ clientes }: { clientes: Cliente[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>Cidade</TableHead>
+              <TableHead>{t("Nome")}</TableHead>
+              <TableHead>{t("Telefone")}</TableHead>
+              <TableHead>{t("Cidade")}</TableHead>
               <TableHead className="w-12" />
             </TableRow>
           </TableHeader>
@@ -79,7 +81,7 @@ export function ClientesList({ clientes }: { clientes: Cliente[] }) {
                     className={cn(
                       buttonVariants({ variant: "ghost", size: "icon" })
                     )}
-                    aria-label="Ver"
+                    aria-label={t("Ver")}
                   >
                     <ChevronRight className="size-4" />
                   </Link>

@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getT } from "@/lib/i18n"
 import { getFormatos } from "@/lib/formatos"
 import { addMonths, format, parseISO, subMonths } from "date-fns"
 import { pt } from "date-fns/locale"
@@ -30,6 +31,7 @@ export default async function FinanceiroPage({
 }: {
   searchParams: Promise<{ mes?: string }>
 }) {
+  const t = await getT()
   const { empresaId } = await requireEmpresa()
   const f = await getFormatos()
   const { mes } = await searchParams
@@ -89,33 +91,33 @@ export default async function FinanceiroPage({
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Financeiro">
+      <PageHeader title={t("Financeiro")}>
         <NovaTransacaoDialog />
       </PageHeader>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
-          label="Receita do mês"
+          label={t("Receita do mês")}
           value={f.euro(receita)}
           icon={TrendingUp}
           accent="text-emerald-600"
         />
         <StatCard
-          label="Despesas do mês"
+          label={t("Despesas do mês")}
           value={f.euro(despesas)}
           icon={TrendingDown}
           accent="text-red-600"
         />
         <StatCard
-          label="Saldo do mês"
+          label={t("Saldo do mês")}
           value={f.euro(receita - despesas)}
           icon={Wallet}
         />
         <StatCard
-          label="A receber"
+          label={t("A receber")}
           value={f.euro(aReceber)}
           icon={Euro}
-          hint="Serviços concluídos por cobrar"
+          hint={t("Serviços concluídos por cobrar")}
         />
       </div>
 
@@ -123,14 +125,14 @@ export default async function FinanceiroPage({
         <Link
           href={`/financeiro?mes=${prev}`}
           className={cn(buttonVariants({ variant: "outline", size: "icon" }))}
-          aria-label="Mês anterior"
+          aria-label={t("Mês anterior")}
         >
           <ChevronLeft className="size-4" />
         </Link>
         <Link
           href={`/financeiro?mes=${next}`}
           className={cn(buttonVariants({ variant: "outline", size: "icon" }))}
-          aria-label="Mês seguinte"
+          aria-label={t("Mês seguinte")}
         >
           <ChevronRight className="size-4" />
         </Link>
@@ -140,8 +142,8 @@ export default async function FinanceiroPage({
       {txMes.length === 0 ? (
         <EmptyState
           icon={Euro}
-          title="Sem transações neste mês"
-          description="Registe a primeira entrada ou saída."
+          title={t("Sem transações neste mês")}
+          description={t("Registe a primeira entrada ou saída.")}
         >
           <NovaTransacaoDialog />
         </EmptyState>

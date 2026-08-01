@@ -67,14 +67,14 @@ export function ClienteForm({
     const res = await procurarMorada(valor)
     setCpLoading(false)
     if (!res.ok) {
-      toast.error("Código postal", { description: res.message })
+      toast.error(t("Código postal"), { description: res.message })
       return
     }
     if (res.cidade) form.setValue("cidade", res.cidade, { shouldValidate: true })
     if (res.morada && !(form.getValues("morada") || "").trim()) {
       form.setValue("morada", res.morada, { shouldValidate: true })
     }
-    toast.success("Morada preenchida a partir do código postal")
+    toast.success(t("Morada preenchida a partir do código postal"))
   }
 
   async function onSubmit(values: ClienteFormValues) {
@@ -83,7 +83,7 @@ export function ClienteForm({
       : await criarCliente(values)
 
     if (!res.ok) {
-      toast.error("Não foi possível guardar", { description: res.message })
+      toast.error(t("Não foi possível guardar"), { description: res.message })
       return
     }
     toast.success(isEdit ? "Cliente atualizado" : "Cliente criado")
@@ -103,9 +103,9 @@ export function ClienteForm({
               name="nome"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Nome *</FormLabel>
+                  <FormLabel>{t("Nome *")}</FormLabel>
                   <FormControl>
-                    <Input className="h-11" placeholder="Nome do cliente" {...field} />
+                    <Input className="h-11" placeholder={t("Nome do cliente")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -117,7 +117,7 @@ export function ClienteForm({
               name="telefone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Telefone *</FormLabel>
+                  <FormLabel>{t("Telefone *")}</FormLabel>
                   <FormControl>
                     <Input
                       className="h-11"
@@ -137,13 +137,13 @@ export function ClienteForm({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("Email")}</FormLabel>
                   <FormControl>
                     <Input
                       className="h-11"
                       type="email"
                       inputMode="email"
-                      placeholder="nome@exemplo.pt"
+                      placeholder="nome@email.com"
                       {...field}
                     />
                   </FormControl>
@@ -198,9 +198,7 @@ export function ClienteForm({
                       )}
                     </div>
                   </FormControl>
-                  <p className="text-muted-foreground text-xs">
-                    Preenche a morada e a cidade automaticamente.
-                  </p>
+                  <p className="text-muted-foreground text-xs">{t("Preenche a morada e a cidade automaticamente.")}</p>
                   <FormMessage />
                 </FormItem>
               )}
@@ -211,11 +209,11 @@ export function ClienteForm({
               name="morada"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Morada</FormLabel>
+                  <FormLabel>{t("Morada")}</FormLabel>
                   <FormControl>
                     <Input
                       className="h-11"
-                      placeholder="Rua, número, andar…"
+                      placeholder={t("Rua, número, andar…")}
                       {...field}
                     />
                   </FormControl>
@@ -229,9 +227,9 @@ export function ClienteForm({
               name="cidade"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cidade / localidade</FormLabel>
+                  <FormLabel>{t("Cidade / localidade")}</FormLabel>
                   <FormControl>
-                    <Input className="h-11" placeholder="Localidade" {...field} />
+                    <Input className="h-11" placeholder={t("Localidade")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -243,11 +241,11 @@ export function ClienteForm({
               name="notas"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Observações</FormLabel>
+                  <FormLabel>{t("Observações")}</FormLabel>
                   <FormControl>
                     <Textarea
                       rows={3}
-                      placeholder="Notas internas sobre o cliente…"
+                      placeholder={t("Notas internas sobre o cliente…")}
                       {...field}
                     />
                   </FormControl>
@@ -264,9 +262,7 @@ export function ClienteForm({
             variant="outline"
             className="h-11"
             onClick={() => router.back()}
-          >
-            Cancelar
-          </Button>
+          >{t("Cancelar")}</Button>
           <Button type="submit" className="h-11" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="size-4 animate-spin" />}
             Guardar

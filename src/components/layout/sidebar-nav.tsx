@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { ADMIN_NAV_ITEMS, isActiveHref, navNegocio } from "@/lib/navigation"
+import { useT } from "@/components/i18n/idioma-provider"
 import { cn } from "@/lib/utils"
 
 export function SidebarNav({
@@ -15,6 +16,7 @@ export function SidebarNav({
   showAdmin?: boolean
   temServicos?: boolean
 }) {
+  const t = useT()
   const pathname = usePathname()
   // O super-admin vê a navegação de controlador da plataforma, não a de negócio.
   const items = showAdmin ? ADMIN_NAV_ITEMS : navNegocio(!!temServicos)
@@ -38,7 +40,7 @@ export function SidebarNav({
             )}
           >
             <Icon className="size-5 shrink-0" />
-            {item.label}
+            {t(item.label)}
           </Link>
         )
       })}

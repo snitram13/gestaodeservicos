@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { useRouter } from "next/navigation"
 import { useFieldArray, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -64,6 +65,7 @@ export function OrcamentoForm({
   visitaOrigemId?: string
   taxaIvaPadrao?: string
 }) {
+  const t = useT()
   const fm = useFormatos()
   const router = useRouter()
   const isEdit = Boolean(orcamento)
@@ -178,7 +180,7 @@ export function OrcamentoForm({
       ? await atualizarOrcamento(orcamento!.id, values)
       : await criarOrcamento(values, visitaOrigemId)
     if (!res.ok) {
-      toast.error("Não foi possível guardar", { description: res.message })
+      toast.error(t("Não foi possível guardar"), { description: res.message })
       return
     }
     toast.success(isEdit ? "Orçamento atualizado" : "Orçamento criado")
@@ -193,7 +195,7 @@ export function OrcamentoForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <Card>
           <CardHeader>
-            <CardTitle>Dados</CardTitle>
+            <CardTitle>{t("Dados")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <FormField
@@ -201,14 +203,14 @@ export function OrcamentoForm({
               name="clienteId"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Cliente *</FormLabel>
+                  <FormLabel>{t("Cliente *")}</FormLabel>
                   <div className="flex gap-2">
                     <div className="min-w-0 flex-1">
                       <Combobox
                         options={clienteOptions}
                         value={field.value}
                         onChange={onClienteChange}
-                        placeholder="Selecionar cliente"
+                        placeholder={t("Selecionar cliente")}
                         searchPlaceholder="Procurar cliente…"
                       />
                     </div>
@@ -223,11 +225,11 @@ export function OrcamentoForm({
               name="titulo"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Título *</FormLabel>
+                  <FormLabel>{t("Título *")}</FormLabel>
                   <FormControl>
                     <Input
                       className="h-11"
-                      placeholder="Ex.: Remodelação de casa de banho"
+                      placeholder={t("Ex.: Remodelação de casa de banho")}
                       {...field}
                     />
                   </FormControl>
@@ -240,7 +242,7 @@ export function OrcamentoForm({
               name="categoria"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Categoria</FormLabel>
+                  <FormLabel>{t("Categoria")}</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="h-11 w-full">
@@ -250,7 +252,7 @@ export function OrcamentoForm({
                     <SelectContent>
                       {CATEGORIA_OPCOES.map((o) => (
                         <SelectItem key={o.value} value={o.value}>
-                          {o.label}
+                          {t(o.label)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -264,7 +266,7 @@ export function OrcamentoForm({
               name="estado"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Estado</FormLabel>
+                  <FormLabel>{t("Estado")}</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="h-11 w-full">
@@ -274,7 +276,7 @@ export function OrcamentoForm({
                     <SelectContent>
                       {ESTADO_ORCAMENTO_OPCOES.map((o) => (
                         <SelectItem key={o.value} value={o.value}>
-                          {o.label}
+                          {t(o.label)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -288,7 +290,7 @@ export function OrcamentoForm({
               name="validade"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Válido até</FormLabel>
+                  <FormLabel>{t("Válido até")}</FormLabel>
                   <FormControl>
                     <Input type="date" className="h-11" {...field} />
                   </FormControl>
@@ -301,7 +303,7 @@ export function OrcamentoForm({
               name="taxaIva"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>IVA (%)</FormLabel>
+                  <FormLabel>{t("IVA (%)")}</FormLabel>
                   <FormControl>
                     <Input className="h-11" inputMode="decimal" {...field} />
                   </FormControl>
@@ -314,11 +316,11 @@ export function OrcamentoForm({
               name="morada"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Local da obra (morada)</FormLabel>
+                  <FormLabel>{t("Local da obra (morada)")}</FormLabel>
                   <FormControl>
                     <Input
                       className="h-11"
-                      placeholder="Rua, número…"
+                      placeholder={t("Rua, número…")}
                       {...field}
                     />
                   </FormControl>
@@ -331,9 +333,9 @@ export function OrcamentoForm({
               name="cidade"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cidade / localidade</FormLabel>
+                  <FormLabel>{t("Cidade / localidade")}</FormLabel>
                   <FormControl>
-                    <Input className="h-11" placeholder="Localidade" {...field} />
+                    <Input className="h-11" placeholder={t("Localidade")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -344,7 +346,7 @@ export function OrcamentoForm({
               name="descricao"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Descrição</FormLabel>
+                  <FormLabel>{t("Descrição")}</FormLabel>
                   <FormControl>
                     <Textarea rows={2} {...field} />
                   </FormControl>
@@ -357,7 +359,7 @@ export function OrcamentoForm({
 
         <Card>
           <CardHeader>
-            <CardTitle>Linhas</CardTitle>
+            <CardTitle>{t("Linhas")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {fields.map((f, index) => (
@@ -371,7 +373,7 @@ export function OrcamentoForm({
                         <FormControl>
                           <Input
                             className="h-10"
-                            placeholder="Descrição"
+                            placeholder={t("Descrição")}
                             {...field}
                           />
                         </FormControl>
@@ -384,7 +386,7 @@ export function OrcamentoForm({
                     variant="ghost"
                     size="icon"
                     className="text-destructive"
-                    aria-label="Remover linha"
+                    aria-label={t("Remover linha")}
                     disabled={fields.length === 1}
                     onClick={() => remove(index)}
                   >
@@ -397,9 +399,7 @@ export function OrcamentoForm({
                     name={`itens.${index}.quantidade`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-muted-foreground text-xs">
-                          Qtd.
-                        </FormLabel>
+                        <FormLabel className="text-muted-foreground text-xs">{t("Qtd.")}</FormLabel>
                         <FormControl>
                           <Input className="h-10" inputMode="decimal" {...field} />
                         </FormControl>
@@ -411,9 +411,7 @@ export function OrcamentoForm({
                     name={`itens.${index}.precoUnit`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-muted-foreground text-xs">
-                          Preço un.
-                        </FormLabel>
+                        <FormLabel className="text-muted-foreground text-xs">{t("Preço un.")}</FormLabel>
                         <FormControl>
                           <Input className="h-10" inputMode="decimal" {...field} />
                         </FormControl>
@@ -421,7 +419,7 @@ export function OrcamentoForm({
                     )}
                   />
                   <div>
-                    <p className="text-muted-foreground text-xs">Total</p>
+                    <p className="text-muted-foreground text-xs">{t("Total")}</p>
                     <p className="flex h-10 items-center font-medium">
                       {fm.euro(
                         parseEuro(itens?.[index]?.quantidade) *
@@ -439,9 +437,7 @@ export function OrcamentoForm({
               className="w-full border-dashed gap-1.5"
               onClick={() => append({ ...ORCAMENTO_ITEM_VAZIO })}
             >
-              <Plus className="size-4" />
-              Adicionar linha
-            </Button>
+              <Plus className="size-4" />{t("Adicionar linha")}</Button>
 
             {form.formState.errors.itens?.message && (
               <p className="text-destructive text-sm">
@@ -451,7 +447,7 @@ export function OrcamentoForm({
 
             <div className="bg-muted/50 ml-auto grid max-w-xs gap-1 rounded-lg p-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Subtotal</span>
+                <span className="text-muted-foreground">{t("Subtotal")}</span>
                 <span>{fm.euro(subtotal)}</span>
               </div>
               <div className="flex justify-between">
@@ -459,7 +455,7 @@ export function OrcamentoForm({
                 <span>{fm.euro(totalIva)}</span>
               </div>
               <div className="flex justify-between border-t pt-1 text-base font-semibold">
-                <span>Total</span>
+                <span>{t("Total")}</span>
                 <span>{fm.euro(total)}</span>
               </div>
             </div>
@@ -473,11 +469,11 @@ export function OrcamentoForm({
               name="notas"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notas / condições</FormLabel>
+                  <FormLabel>{t("Notas / condições")}</FormLabel>
                   <FormControl>
                     <Textarea
                       rows={2}
-                      placeholder="Ex.: Validade de 30 dias. Pagamento a pronto."
+                      placeholder={t("Ex.: Validade de 30 dias. Pagamento a pronto.")}
                       {...field}
                     />
                   </FormControl>
@@ -493,9 +489,7 @@ export function OrcamentoForm({
             variant="outline"
             className="h-11"
             onClick={() => router.back()}
-          >
-            Cancelar
-          </Button>
+          >{t("Cancelar")}</Button>
           <Button type="submit" className="h-11" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="size-4 animate-spin" />}
             Guardar

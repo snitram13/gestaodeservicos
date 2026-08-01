@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { useRouter } from "next/navigation"
 import { Euro, Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -35,6 +36,7 @@ export function RegistarPagamentoButton({
   visitaId: string
   valorSugerido: string
 }) {
+  const t = useT()
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [valor, setValor] = useState(valorSugerido)
@@ -42,14 +44,15 @@ export function RegistarPagamentoButton({
   const [loading, setLoading] = useState(false)
 
   async function onConfirm() {
+  const t = useT()
     setLoading(true)
     const res = await registarPagamentoVisita(visitaId, valor, metodo)
     setLoading(false)
     if (!res.ok) {
-      toast.error("Não foi possível registar", { description: res.message })
+      toast.error(t("Não foi possível registar"), { description: res.message })
       return
     }
-    toast.success("Pagamento registado")
+    toast.success(t("Pagamento registado"))
     setOpen(false)
     router.refresh()
   }
@@ -62,11 +65,11 @@ export function RegistarPagamentoButton({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Registar pagamento</DialogTitle>
+          <DialogTitle>{t("Registar pagamento")}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="pg-valor">Valor (€)</Label>
+            <Label htmlFor="pg-valor">{t("Valor (€)")}</Label>
             <Input
               id="pg-valor"
               value={valor}
@@ -76,7 +79,7 @@ export function RegistarPagamentoButton({
             />
           </div>
           <div className="grid gap-2">
-            <Label>Método de pagamento</Label>
+            <Label>{t("Método de pagamento")}</Label>
             <Select value={metodo} onValueChange={(v) => setMetodo(v ?? "DINHEIRO")}>
               <SelectTrigger className="h-11 w-full">
                 <SelectValue />
@@ -84,7 +87,7 @@ export function RegistarPagamentoButton({
               <SelectContent>
                 {METODOS_PAGAMENTO.map((m) => (
                   <SelectItem key={m} value={m}>
-                    {METODO_LABEL[m]}
+                    {t(METODO_LABEL[m])}
                   </SelectItem>
                 ))}
               </SelectContent>

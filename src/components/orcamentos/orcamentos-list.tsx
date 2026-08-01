@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getT } from "@/lib/i18n"
 import { ChevronRight, FileText } from "lucide-react"
 
 import type { Orcamento } from "@/db/schema"
@@ -18,7 +19,8 @@ import { EstadoOrcamentoBadge } from "@/components/orcamentos/estado-badge"
 
 type Row = Orcamento & { cliente: { nome: string } | null }
 
-export function OrcamentosList({ orcamentos }: { orcamentos: Row[] }) {
+export async function OrcamentosList({ orcamentos }: { orcamentos: Row[] }) {
+  const t = await getT()
   return (
     <>
       {/* Telemóvel */}
@@ -52,11 +54,11 @@ export function OrcamentosList({ orcamentos }: { orcamentos: Row[] }) {
           <TableHeader>
             <TableRow>
               <TableHead>Nº</TableHead>
-              <TableHead>Título</TableHead>
-              <TableHead>Cliente</TableHead>
-              <TableHead>Data</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead className="text-right">Total</TableHead>
+              <TableHead>{t("Título")}</TableHead>
+              <TableHead>{t("Cliente")}</TableHead>
+              <TableHead>{t("Data")}</TableHead>
+              <TableHead>{t("Estado")}</TableHead>
+              <TableHead className="text-right">{t("Total")}</TableHead>
               <TableHead className="w-12" />
             </TableRow>
           </TableHeader>
@@ -81,7 +83,7 @@ export function OrcamentosList({ orcamentos }: { orcamentos: Row[] }) {
                   <Link
                     href={`/orcamentos/${o.id}`}
                     className="text-muted-foreground inline-flex"
-                    aria-label="Ver"
+                    aria-label={t("Ver")}
                   >
                     <ChevronRight className="size-4" />
                   </Link>

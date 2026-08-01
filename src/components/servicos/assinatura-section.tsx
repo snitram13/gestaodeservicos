@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { useRouter } from "next/navigation"
 import { Eraser, Loader2, PenLine, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -15,16 +16,18 @@ export function AssinaturaSection({
   visitaId: string
   url: string | null
 }) {
+  const t = useT()
   const router = useRouter()
   const [editando, setEditando] = useState(false)
 
   async function remover() {
+  const t = useT()
     const res = await removerAssinatura(visitaId)
     if (!res.ok) {
-      toast.error("Não foi possível remover", { description: res.message })
+      toast.error(t("Não foi possível remover"), { description: res.message })
       return
     }
-    toast.success("Assinatura removida")
+    toast.success(t("Assinatura removida"))
     router.refresh()
   }
 
@@ -64,6 +67,7 @@ export function AssinaturaSection({
 }
 
 function Pad({ visitaId, onDone }: { visitaId: string; onDone: () => void }) {
+  const t = useT()
   const router = useRouter()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const desenhando = useRef(false)
@@ -71,6 +75,7 @@ function Pad({ visitaId, onDone }: { visitaId: string; onDone: () => void }) {
   const [loading, setLoading] = useState(false)
 
   function posicao(e: React.PointerEvent<HTMLCanvasElement>) {
+  const t = useT()
     const c = canvasRef.current!
     const r = c.getBoundingClientRect()
     return {
@@ -80,6 +85,7 @@ function Pad({ visitaId, onDone }: { visitaId: string; onDone: () => void }) {
   }
 
   function comecar(e: React.PointerEvent<HTMLCanvasElement>) {
+  const t = useT()
     const ctx = canvasRef.current!.getContext("2d")!
     const p = posicao(e)
     ctx.beginPath()
@@ -89,6 +95,7 @@ function Pad({ visitaId, onDone }: { visitaId: string; onDone: () => void }) {
   }
 
   function mover(e: React.PointerEvent<HTMLCanvasElement>) {
+  const t = useT()
     if (!desenhando.current) return
     const ctx = canvasRef.current!.getContext("2d")!
     const p = posicao(e)
@@ -102,18 +109,21 @@ function Pad({ visitaId, onDone }: { visitaId: string; onDone: () => void }) {
   }
 
   function terminar() {
+  const t = useT()
     desenhando.current = false
   }
 
   function limpar() {
+  const t = useT()
     const c = canvasRef.current!
     c.getContext("2d")!.clearRect(0, 0, c.width, c.height)
     setVazio(true)
   }
 
   async function guardar() {
+  const t = useT()
     if (vazio) {
-      toast.error("Peça ao cliente para assinar primeiro.")
+      toast.error(t("Peça ao cliente para assinar primeiro."))
       return
     }
     setLoading(true)
@@ -121,10 +131,10 @@ function Pad({ visitaId, onDone }: { visitaId: string; onDone: () => void }) {
     const res = await guardarAssinatura(visitaId, dataUrl)
     setLoading(false)
     if (!res.ok) {
-      toast.error("Não foi possível guardar", { description: res.message })
+      toast.error(t("Não foi possível guardar"), { description: res.message })
       return
     }
-    toast.success("Assinatura guardada")
+    toast.success(t("Assinatura guardada"))
     onDone()
     router.refresh()
   }

@@ -1,3 +1,5 @@
+import { getT } from "@/lib/i18n"
+
 type Tecnico = { id: string; nome: string; corAgenda: string | null }
 
 /**
@@ -5,13 +7,19 @@ type Tecnico = { id: string; nome: string; corAgenda: string | null }
  * cor definida (em Definições → Utilizadores). As visitas na agenda ficam
  * marcadas com a cor do técnico atribuído.
  */
-export function AgendaLegenda({ tecnicos }: { tecnicos: Tecnico[] }) {
+export async function AgendaLegenda({
+  tecnicos,
+}: {
+  tecnicos: Tecnico[]
+}) {
+  // `t` aqui seria confundido com o técnico do map — usar `tr`.
+  const tr = await getT()
   const comCor = tecnicos.filter((t) => t.corAgenda)
   if (comCor.length === 0) return null
 
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
-      <span className="text-muted-foreground">Técnicos:</span>
+      <span className="text-muted-foreground">{tr("Técnicos:")}</span>
       {comCor.map((t) => (
         <span key={t.id} className="inline-flex items-center gap-1.5">
           <span

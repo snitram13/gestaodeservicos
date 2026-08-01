@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import Link from "next/link"
 import { Plus } from "lucide-react"
 
@@ -23,6 +24,7 @@ import {
 
 /** Botão "+ Novo" com menu — usado no topo em ecrã grande. */
 export function NovoButton() {
+  const t = useT()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -39,7 +41,7 @@ export function NovoButton() {
           return (
             <DropdownMenuItem key={a.href} render={<Link href={a.href} />}>
               <Icon className="size-4" />
-              {a.label}
+              {t(a.label)}
             </DropdownMenuItem>
           )
         })}
@@ -50,6 +52,7 @@ export function NovoButton() {
 
 /** Botão de ação flutuante central — usado na barra inferior do telemóvel. */
 export function QuickActionFab() {
+  const t = useT()
   const [open, setOpen] = useState(false)
 
   return (
@@ -57,7 +60,7 @@ export function QuickActionFab() {
       <SheetTrigger
         render={
           <Button
-            aria-label="Criar novo"
+            aria-label={t("Criar novo")}
             className="size-14 -translate-y-3 rounded-full shadow-lg"
           />
         }
@@ -69,7 +72,7 @@ export function QuickActionFab() {
         className="rounded-t-2xl pb-[max(1rem,env(safe-area-inset-bottom))]"
       >
         <SheetHeader>
-          <SheetTitle>Criar novo</SheetTitle>
+          <SheetTitle>{t("Criar novo")}</SheetTitle>
         </SheetHeader>
         <div className="grid gap-2 px-4 pb-2">
           {QUICK_ACTIONS.map((a) => {
@@ -87,7 +90,7 @@ export function QuickActionFab() {
                 <span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
                   <Icon className="size-5" />
                 </span>
-                {a.label}
+                {t(a.label)}
               </Link>
             )
           })}

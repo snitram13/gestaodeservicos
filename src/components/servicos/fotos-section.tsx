@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { useRouter } from "next/navigation"
 import { Camera, ImagePlus, Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -33,6 +34,7 @@ export type FotoUI = {
  * limite dos Server Actions (evita ficar "a processar" sem anexar).
  */
 async function comprimir(file: File): Promise<File> {
+  const t = useT()
   try {
     const dataUrl = await new Promise<string>((resolve, reject) => {
       const r = new FileReader()
@@ -69,6 +71,7 @@ export function FotosSection({
   visitaId: string
   fotos: FotoUI[]
 }) {
+  const t = useT()
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <Galeria
@@ -98,6 +101,7 @@ function Galeria({
   visitaId: string
   fotos: FotoUI[]
 }) {
+  const t = useT()
   const router = useRouter()
   const camaraRef = useRef<HTMLInputElement>(null)
   const galeriaRef = useRef<HTMLInputElement>(null)
@@ -110,6 +114,7 @@ function Galeria({
 
   /** Envia as fotos uma a uma (o limite dos Server Actions é por pedido). */
   async function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
+  const t = useT()
     const escolhidas = Array.from(e.target.files ?? [])
     e.target.value = ""
     if (escolhidas.length === 0) return
@@ -151,15 +156,16 @@ function Galeria({
   }
 
   async function confirmarRemover() {
+  const t = useT()
     if (!aRemover) return
     setAApagar(true)
     const res = await apagarFoto(aRemover.id)
     setAApagar(false)
     if (!res.ok) {
-      toast.error("Não foi possível apagar", { description: res.message })
+      toast.error(t("Não foi possível apagar"), { description: res.message })
       return
     }
-    toast.success("Foto removida")
+    toast.success(t("Foto removida"))
     setARemover(null)
     router.refresh()
   }
@@ -199,7 +205,7 @@ function Galeria({
             variant="outline"
             disabled={ocupado}
             onClick={() => galeriaRef.current?.click()}
-            title="Escolher várias fotos"
+            title={t("Escolher várias fotos")}
           >
             <ImagePlus className="size-4" />
             Galeria
@@ -250,7 +256,7 @@ function Galeria({
                 type="button"
                 onClick={() => setARemover(f)}
                 className="absolute top-1 right-1 rounded-md bg-black/60 p-1.5 text-white active:bg-black/80"
-                aria-label="Remover foto"
+                aria-label={t("Remover foto")}
               >
                 <Trash2 className="size-4" />
               </button>
@@ -265,7 +271,7 @@ function Galeria({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remover esta foto?</AlertDialogTitle>
+            <AlertDialogTitle>{t("Remover esta foto?")}</AlertDialogTitle>
             <AlertDialogDescription>
               A foto é apagada definitivamente e deixa de aparecer na ordem de
               serviço.
@@ -280,7 +286,7 @@ function Galeria({
             />
           )}
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={aApagar}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={aApagar}>{t("Cancelar")}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={aApagar}

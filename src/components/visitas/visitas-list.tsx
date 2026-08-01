@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getT } from "@/lib/i18n"
 import { getFormatos } from "@/lib/formatos"
 import { ChevronRight } from "lucide-react"
 
@@ -34,6 +35,7 @@ export async function VisitasList({
   visitas: Row[]
   temServicos?: boolean
 }) {
+  const t = await getT()
   const f = await getFormatos()
   const r = rotulosServico(!!temServicos)
   const rotulo = (v: Row) => v.titulo || `${r.Singular} #${v.numero}`
@@ -71,11 +73,11 @@ export async function VisitasList({
           <TableHeader>
             <TableRow>
               <TableHead>{r.Singular}</TableHead>
-              <TableHead>Cliente</TableHead>
-              <TableHead>Data</TableHead>
-              <TableHead>Serviços</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead className="text-right">Valor</TableHead>
+              <TableHead>{t("Cliente")}</TableHead>
+              <TableHead>{t("Data")}</TableHead>
+              <TableHead>{t("Serviços")}</TableHead>
+              <TableHead>{t("Estado")}</TableHead>
+              <TableHead className="text-right">{t("Valor")}</TableHead>
               <TableHead className="w-12" />
             </TableRow>
           </TableHeader>
@@ -115,7 +117,7 @@ export async function VisitasList({
                   <Link
                     href={`/visitas/${v.id}`}
                     className="text-muted-foreground inline-flex"
-                    aria-label="Ver"
+                    aria-label={t("Ver")}
                   >
                     <ChevronRight className="size-4" />
                   </Link>

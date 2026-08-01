@@ -1,4 +1,5 @@
 import { asc, eq } from "drizzle-orm"
+import { getT } from "@/lib/i18n"
 
 import { db } from "@/db/client"
 import { cliente } from "@/db/schema"
@@ -11,6 +12,7 @@ import { EnviarMensagem } from "@/components/mensagens/enviar-mensagem"
 export const metadata = { title: "Mensagens" }
 
 export default async function MensagensPage() {
+  const t = await getT()
   const { empresaId } = await requireEmpresa()
   const clientes = await db
     .select({
@@ -25,14 +27,14 @@ export default async function MensagensPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Mensagens WhatsApp"
-        description="Modelos rápidos para enviar aos clientes."
+        title={t("Mensagens WhatsApp")}
+        description={t("Modelos rápidos para enviar aos clientes.")}
       />
 
       <EnviarMensagem clientes={clientes} />
 
       <div>
-        <h3 className="mb-2 text-sm font-medium">Modelos disponíveis</h3>
+        <h3 className="mb-2 text-sm font-medium">{t("Modelos disponíveis")}</h3>
         <div className="grid gap-2 sm:grid-cols-2">
           {TEMPLATES_WHATSAPP.map((t) => (
             <Card key={t.id} className="gap-1 p-4">

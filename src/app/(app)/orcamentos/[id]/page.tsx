@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getT } from "@/lib/i18n"
 import { getFormatos } from "@/lib/formatos"
 import { notFound } from "next/navigation"
 import { and, eq } from "drizzle-orm"
@@ -22,6 +23,7 @@ export default async function OrcamentoDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const t = await getT()
   const { empresaId } = await requireEmpresa()
   const f = await getFormatos()
   const { id } = await params
@@ -42,9 +44,7 @@ export default async function OrcamentoDetailPage({
         href="/orcamentos"
         className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
       >
-        <ArrowLeft className="size-4" />
-        Orçamentos
-      </Link>
+        <ArrowLeft className="size-4" />{t("Orçamentos")}</Link>
 
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -70,7 +70,7 @@ export default async function OrcamentoDetailPage({
           <Link
             href={`/orcamentos/${id}/editar`}
             className={cn(buttonVariants({ variant: "outline", size: "icon" }))}
-            aria-label="Editar"
+            aria-label={t("Editar")}
           >
             <Pencil className="size-4" />
           </Link>
@@ -91,14 +91,12 @@ export default async function OrcamentoDetailPage({
           href={`/visitas/novo?orcamento=${id}`}
           className={cn(buttonVariants({ variant: "outline" }), "h-9 gap-1.5")}
         >
-          <Wrench className="size-4" />
-          Criar visita
-        </Link>
+          <Wrench className="size-4" />{t("Criar visita")}</Link>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Linhas</CardTitle>
+          <CardTitle>{t("Linhas")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="divide-y">
@@ -120,7 +118,7 @@ export default async function OrcamentoDetailPage({
 
           <div className="mt-3 ml-auto grid max-w-xs gap-1 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Subtotal</span>
+              <span className="text-muted-foreground">{t("Subtotal")}</span>
               <span>{f.euro(o.subtotal)}</span>
             </div>
             <div className="flex justify-between">
@@ -130,7 +128,7 @@ export default async function OrcamentoDetailPage({
               <span>{f.euro(o.totalIva)}</span>
             </div>
             <div className="flex justify-between border-t pt-1 text-base font-semibold">
-              <span>Total</span>
+              <span>{t("Total")}</span>
               <span>{f.euro(o.total)}</span>
             </div>
           </div>
@@ -167,19 +165,19 @@ export default async function OrcamentoDetailPage({
           <CardContent className="grid gap-3 text-sm">
             {o.validade && (
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Válido até</span>
+                <span className="text-muted-foreground">{t("Válido até")}</span>
                 <span>{f.data(o.validade)}</span>
               </div>
             )}
             {o.descricao && (
               <div>
-                <p className="text-muted-foreground text-xs">Descrição</p>
+                <p className="text-muted-foreground text-xs">{t("Descrição")}</p>
                 <p className="mt-0.5 whitespace-pre-wrap">{o.descricao}</p>
               </div>
             )}
             {o.notas && (
               <div>
-                <p className="text-muted-foreground text-xs">Notas</p>
+                <p className="text-muted-foreground text-xs">{t("Notas")}</p>
                 <p className="mt-0.5 whitespace-pre-wrap">{o.notas}</p>
               </div>
             )}

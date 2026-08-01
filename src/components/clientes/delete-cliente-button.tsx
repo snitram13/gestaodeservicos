@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { useRouter } from "next/navigation"
 import { Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -30,6 +31,7 @@ export function DeleteClienteButton({
   id: string
   nome: string
 }) {
+  const t = useT()
   const router = useRouter()
   const r = useRotulos()
   const [open, setOpen] = useState(false)
@@ -51,10 +53,10 @@ export function DeleteClienteButton({
     const res = await apagarCliente(id)
     setLoading(false)
     if (!res.ok) {
-      toast.error("Não foi possível apagar", { description: res.message })
+      toast.error(t("Não foi possível apagar"), { description: res.message })
       return
     }
-    toast.success("Cliente apagado")
+    toast.success(t("Cliente apagado"))
     setOpen(false)
     router.push("/clientes")
     router.refresh()
@@ -70,7 +72,7 @@ export function DeleteClienteButton({
         type="button"
         variant="outline"
         size="icon"
-        aria-label="Apagar cliente"
+        aria-label={t("Apagar cliente")}
         onClick={abrir}
       >
         <Trash2 className="size-4" />
@@ -123,7 +125,7 @@ export function DeleteClienteButton({
                     {resumo.transacoes}
                   </strong>{" "}
                   movimentos no Financeiro{" "}
-                  <strong className="text-foreground">mantêm-se</strong>, só
+                  <strong className="text-foreground">{t("mantêm-se")}</strong>, só
                   deixam de estar ligados ao cliente
                 </li>
               )}
@@ -131,7 +133,7 @@ export function DeleteClienteButton({
           )}
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={loading}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={loading}>{t("Cancelar")}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={loading || aCarregar}

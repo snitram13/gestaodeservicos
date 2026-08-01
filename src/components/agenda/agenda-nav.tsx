@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { useT } from "@/components/i18n/idioma-provider"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -22,6 +23,7 @@ export function AgendaNav({
   label: string
   nav: { anterior: string; seguinte: string; hoje: string }
 }) {
+  const t = useT()
   const href = (v: Vista, d: string) => `/agenda?view=${v}&date=${d}`
 
   return (
@@ -30,14 +32,14 @@ export function AgendaNav({
         <Link
           href={href(vista, nav.anterior)}
           className={cn(buttonVariants({ variant: "outline", size: "icon" }))}
-          aria-label="Anterior"
+          aria-label={t("Anterior")}
         >
           <ChevronLeft className="size-4" />
         </Link>
         <Link
           href={href(vista, nav.seguinte)}
           className={cn(buttonVariants({ variant: "outline", size: "icon" }))}
-          aria-label="Seguinte"
+          aria-label={t("Seguinte")}
         >
           <ChevronRight className="size-4" />
         </Link>

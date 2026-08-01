@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getT } from "@/lib/i18n"
 import { getFormatos } from "@/lib/formatos"
 import { notFound } from "next/navigation"
 import { and, desc, eq } from "drizzle-orm"
@@ -28,6 +29,7 @@ export default async function ClienteDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const t = await getT()
   const { empresaId } = await requireEmpresa()
   const f = await getFormatos()
   const { id } = await params
@@ -59,9 +61,7 @@ export default async function ClienteDetailPage({
         href="/clientes"
         className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
       >
-        <ArrowLeft className="size-4" />
-        Clientes
-      </Link>
+        <ArrowLeft className="size-4" />{t("Clientes")}</Link>
 
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -77,7 +77,7 @@ export default async function ClienteDetailPage({
           <Link
             href={`/clientes/${id}/editar`}
             className={cn(buttonVariants({ variant: "outline", size: "icon" }))}
-            aria-label="Editar"
+            aria-label={t("Editar")}
           >
             <Pencil className="size-4" />
           </Link>
@@ -135,9 +135,7 @@ export default async function ClienteDetailPage({
 
         <TabsContent value="orcamentos">
           {orcamentos.length === 0 ? (
-            <p className="text-muted-foreground py-8 text-center text-sm">
-              Ainda não há orçamentos para este cliente.
-            </p>
+            <p className="text-muted-foreground py-8 text-center text-sm">{t("Ainda não há orçamentos para este cliente.")}</p>
           ) : (
             <Card className="gap-0 overflow-hidden p-0">
               {orcamentos.map((o, i) => (

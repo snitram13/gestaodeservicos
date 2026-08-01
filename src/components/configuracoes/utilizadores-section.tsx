@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm"
+import { getT } from "@/lib/i18n"
 
 import { db } from "@/db/client"
 import { utilizador } from "@/db/schema"
@@ -44,6 +45,7 @@ function roleVariant(
  * empresa (OWNER/ADMIN); os dados são sempre da empresa do contexto.
  */
 export async function UtilizadoresSection() {
+  const t = await getT()
   const { empresaId, role, userId } = await requireEmpresa()
   if (!podeGerir(role)) return null
 
@@ -63,7 +65,7 @@ export async function UtilizadoresSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Utilizadores</CardTitle>
+        <CardTitle>{t("Utilizadores")}</CardTitle>
         <CardDescription>
           Funcionários com acesso à aplicação desta empresa.
         </CardDescription>
@@ -74,12 +76,12 @@ export async function UtilizadoresSection() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="pl-4">Nome</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Cargo</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Cor</TableHead>
-            <TableHead className="pr-4 text-right">Ações</TableHead>
+            <TableHead className="pl-4">{t("Nome")}</TableHead>
+            <TableHead>{t("Email")}</TableHead>
+            <TableHead>{t("Cargo")}</TableHead>
+            <TableHead>{t("Estado")}</TableHead>
+            <TableHead>{t("Cor")}</TableHead>
+            <TableHead className="pr-4 text-right">{t("Ações")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -88,7 +90,7 @@ export async function UtilizadoresSection() {
               <TableCell className="pl-4 font-medium">
                 {u.nome}
                 {u.id === userId && (
-                  <span className="text-muted-foreground"> (você)</span>
+                  <span className="text-muted-foreground">{t("(você)")}</span>
                 )}
               </TableCell>
               <TableCell className="text-muted-foreground">{u.email}</TableCell>
@@ -97,9 +99,9 @@ export async function UtilizadoresSection() {
               </TableCell>
               <TableCell>
                 {u.ativo ? (
-                  <Badge variant="secondary">Ativo</Badge>
+                  <Badge variant="secondary">{t("Ativo")}</Badge>
                 ) : (
-                  <Badge variant="outline">Inativo</Badge>
+                  <Badge variant="outline">{t("Inativo")}</Badge>
                 )}
               </TableCell>
               <TableCell>
