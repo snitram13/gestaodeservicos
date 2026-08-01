@@ -1,6 +1,6 @@
 import "server-only"
 import { cache } from "react"
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
@@ -23,8 +23,12 @@ import {
  * Idioma do pedido atual, por esta ordem:
  *  1. escolha do utilizador (`utilizador.idioma`);
  *  2. idioma do país da empresa (uma empresa francesa abre em francês);
- *  3. cookie escolhido no ecrã de login (quem ainda não entrou);
- *  4. português.
+ *  3. cookie — gravado no último login feito neste dispositivo;
+ *  4. idioma do próprio browser (`Accept-Language`), para quem nunca entrou;
+ *  5. português.
+ *
+ * Os pontos 3 e 4 só contam ANTES de haver sessão (ecrã de entrada): depois de
+ * entrar, quem manda é a conta e o país da empresa.
  */
 export const getIdioma = cache(async (): Promise<Idioma> => {
   const u = await getUtilizadorAtual()
@@ -38,8 +42,28 @@ export const getIdioma = cache(async (): Promise<Idioma> => {
   }
   const jar = await cookies()
   const escolhido = jar.get(COOKIE_IDIOMA)?.value
-  return escolhido ? idiomaValido(escolhido) : IDIOMA_PADRAO
+  if (escolhido) return idiomaValido(escolhido)
+  return (await idiomaDoBrowser()) ?? IDIOMA_PADRAO
 })
+
+/**
+ * Primeiro idioma suportado que o browser pede (`Accept-Language`). É o que faz
+ * o ecrã de entrada aparecer em francês a um francês que nunca entrou — antes
+ * do login não há mais nada que o identifique.
+ */
+async function idiomaDoBrowser(): Promise<Idioma | null> {
+  const cabecalho = (await headers()).get("accept-language")
+  if (!cabecalho) return null
+  // "fr-FR,fr;q=0.9,en;q=0.8" → ["fr-fr", "fr", "en"]
+  const pedidos = cabecalho
+    .split(",")
+    .map((p) => p.split(";")[0].trim().toLowerCase())
+  for (const p of pedidos) {
+    const base = p.split("-")[0]
+    if (base === "pt" || base === "es" || base === "fr") return base
+  }
+  return null
+}
 
 /** País da empresa do pedido atual (PT se não houver sessão). */
 export const getPais = cache(async (): Promise<Pais> => {

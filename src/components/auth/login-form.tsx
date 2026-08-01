@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
+import { sincronizarIdiomaDaConta } from "@/actions/idioma"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 import { useT } from "@/components/i18n/idioma-provider"
 import { Button } from "@/components/ui/button"
@@ -41,6 +42,9 @@ export function LoginForm() {
       return
     }
 
+    // Guarda o idioma desta conta no dispositivo, para o próximo login já
+    // aparecer na língua certa.
+    await sincronizarIdiomaDaConta()
     toast.success(t("Sessão iniciada"))
     router.push("/")
     router.refresh()
