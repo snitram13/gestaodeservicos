@@ -194,7 +194,7 @@ export function NovoFuncionarioDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button type="button" className="gap-1.5" />}>
         <UserPlus className="size-4" />
-        Novo funcionário
+        {t("Novo funcionário")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

@@ -69,7 +69,7 @@ export default async function VisitasPage({
           title={
             estado
               ? `Sem ${r.plural} com este estado`
-              : `Ainda não há ${r.plural}`
+              : t("Ainda não há {tipo}", { tipo: r.plural })
           }
           description={t("Registe aqui o trabalho realizado.")}
         >

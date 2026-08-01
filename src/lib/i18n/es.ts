@@ -508,4 +508,5 @@ export const ES: Record<string, string> = {
     "Puede editar el texto antes de enviarlo. Los marcadores como {data} o {valor} se rellenan a mano.",
   "de Serviços":
     "de Servicios",
+  "Ainda não há {tipo}": "Todavía no hay {tipo}",
 }

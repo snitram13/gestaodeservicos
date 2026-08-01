@@ -514,4 +514,5 @@ export const FR: Record<string, string> = {
     "Vous pouvez modifier le texte avant l'envoi. Les balises comme {data} ou {valor} se remplissent à la main.",
   "de Serviços":
     "d'Interventions",
+  "Ainda não há {tipo}": "Rien à afficher pour l'instant",
 }

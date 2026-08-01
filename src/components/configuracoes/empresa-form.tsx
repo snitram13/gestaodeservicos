@@ -141,7 +141,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
                   ) : (
                     <Upload className="size-4" />
                   )}
-                  Carregar logótipo
+                  {t("Carregar logótipo")}
                 </Button>
                 {url && (
                   <Button

@@ -83,7 +83,7 @@ export function ContaForm({ email }: { email?: string }) {
             ) : (
               <KeyRound className="size-4" />
             )}
-            Alterar password
+            {t("Alterar password")}
           </Button>
         </form>
       </CardContent>

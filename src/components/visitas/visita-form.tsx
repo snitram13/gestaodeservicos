@@ -294,7 +294,7 @@ export function VisitaForm({
                         <SelectValue placeholder={t("Sem técnico")}>
                           {(v) =>
                             !v || v === SEM_TECNICO
-                              ? "Sem técnico"
+                              ? t("Sem técnico")
                               : (tecnicos.find((t) => t.id === v)?.nome ??
                                 "Sem técnico")
                           }
