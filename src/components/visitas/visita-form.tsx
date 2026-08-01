@@ -258,8 +258,10 @@ export function VisitaForm({
                       <SelectTrigger className="h-11 w-full">
                         <SelectValue>
                           {(v) =>
-                            ESTADO_VISITA_OPCOES.find((o) => o.value === v)
-                              ?.label ?? ""
+                            t(
+                              ESTADO_VISITA_OPCOES.find((o) => o.value === v)
+                                ?.label ?? ""
+                            )
                           }
                         </SelectValue>
                       </SelectTrigger>
@@ -384,8 +386,11 @@ export function VisitaForm({
                             <SelectTrigger className="h-10 w-full">
                               <SelectValue>
                                 {(v) =>
-                                  CATEGORIA_OPCOES.find((o) => o.value === v)
-                                    ?.label ?? ""
+                                  t(
+                                    CATEGORIA_OPCOES.find(
+                                      (o) => o.value === v
+                                    )?.label ?? ""
+                                  )
                                 }
                               </SelectValue>
                             </SelectTrigger>
