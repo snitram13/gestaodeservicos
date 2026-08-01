@@ -4,8 +4,9 @@ import { revalidatePath } from "next/cache"
 import { and, eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
-import { orcamento, servico, visita } from "@/db/schema"
+import { foto, orcamento, servico, visita } from "@/db/schema"
 import { requireEmpresa } from "@/lib/auth"
+import { apagarDoStorage, BUCKET_SERVICO } from "@/lib/storage"
 import { proximoNumeroVisita } from "@/lib/numeracao"
 import { clientePertence, tecnicoPertence } from "@/lib/ownership"
 import { parseEuro } from "@/lib/formatters/currency"
@@ -171,6 +172,22 @@ export async function apagarVisita(
   id: string
 ): Promise<{ ok: true } | { ok: false; message: string }> {
   const { empresaId } = await requireEmpresa()
+  // As fotos/assinatura desaparecem da BD por cascade, mas os ficheiros no
+  // Storage não — apagá-los aqui, senão ficam órfãos a ocupar espaço.
+  const alvo = await db.query.visita.findFirst({
+    columns: { assinaturaPath: true },
+    where: and(eq(visita.id, id), eq(visita.empresaId, empresaId)),
+  })
+  if (!alvo) return { ok: false, message: "Serviço não encontrado." }
+  const fotos = await db
+    .select({ path: foto.storagePath })
+    .from(foto)
+    .where(and(eq(foto.visitaId, id), eq(foto.empresaId, empresaId)))
+  await apagarDoStorage(BUCKET_SERVICO, [
+    ...fotos.map((f) => f.path),
+    alvo.assinaturaPath,
+  ])
+
   await db
     .delete(visita)
     .where(and(eq(visita.id, id), eq(visita.empresaId, empresaId)))

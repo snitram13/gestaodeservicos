@@ -27,6 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
+  ApagarClienteControl,
   EmpresaAcoes,
   LimiteFuncionariosControl,
 } from "@/components/admin/admin-client"
@@ -224,6 +225,29 @@ export default async function AdminClientePage({
               )}
             </TableBody>
           </Table>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive/40">
+        <CardHeader>
+          <CardTitle className="text-destructive">Zona de perigo</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-muted-foreground text-sm">
+            Apagar este cliente remove definitivamente a conta, todos os dados e
+            os ficheiros guardados. Para apenas cortar o acesso, usa{" "}
+            <strong>Suspender</strong>.
+          </p>
+          <ApagarClienteControl
+            empresaId={emp.id}
+            nome={emp.nome}
+            totais={{
+              utilizadores: emp.utilizadores.length,
+              clientes: uso.clientes,
+              visitas: uso.visitas,
+              orcamentos: uso.orcamentos,
+            }}
+          />
         </CardContent>
       </Card>
     </div>

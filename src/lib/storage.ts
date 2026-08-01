@@ -19,6 +19,48 @@ export async function urlAssinada(
   return data?.signedUrl ?? null
 }
 
+/**
+ * Apaga objetos do storage. Silencioso de propósito: falhar a limpar um
+ * ficheiro nunca deve impedir a operação principal (apagar o serviço/cliente).
+ */
+export async function apagarDoStorage(
+  bucket: string,
+  paths: (string | null | undefined)[]
+): Promise<void> {
+  const limpos = paths.filter((p): p is string => !!p)
+  if (limpos.length === 0) return
+  const admin = createSupabaseAdminClient()
+  await admin.storage
+    .from(bucket)
+    .remove(limpos)
+    .catch(() => {})
+}
+
+/**
+ * Lista recursivamente todos os objetos sob um prefixo (o storage do Supabase
+ * não tem pastas reais — é preciso descer nível a nível).
+ */
+export async function listarRecursivo(
+  bucket: string,
+  prefixo: string
+): Promise<string[]> {
+  const admin = createSupabaseAdminClient()
+  const encontrados: string[] = []
+  async function descer(atual: string) {
+    const { data } = await admin.storage
+      .from(bucket)
+      .list(atual, { limit: 1000 })
+    for (const item of data ?? []) {
+      const caminho = `${atual}/${item.name}`
+      // Objetos têm `id`; "pastas" (prefixos) vêm com id null.
+      if (item.id) encontrados.push(caminho)
+      else await descer(caminho)
+    }
+  }
+  await descer(prefixo)
+  return encontrados
+}
+
 /** URLs assinadas para vários objetos (path → url). */
 export async function urlsAssinadas(
   bucket: string,

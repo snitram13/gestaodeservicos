@@ -15,11 +15,13 @@ import {
   Loader2,
   MoreHorizontal,
   RotateCcw,
+  Trash2,
   Users,
 } from "lucide-react"
 import { toast } from "sonner"
 
 import {
+  apagarClientePlataforma,
   criarCliente,
   definirAcesso,
   definirEstadoEmpresa,
@@ -616,6 +618,118 @@ function AcessoConteudo({
           Fechar
         </DialogClose>
       </DialogFooter>
+    </>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Apagar cliente (definitivo)                                         */
+/* ------------------------------------------------------------------ */
+
+export function ApagarClienteControl({
+  empresaId,
+  nome,
+  totais,
+}: {
+  empresaId: string
+  nome: string
+  /** Contagens para o super-admin ver o que vai destruir. */
+  totais: { utilizadores: number; clientes: number; visitas: number; orcamentos: number }
+}) {
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const [confirmacao, setConfirmacao] = useState("")
+  const [loading, setLoading] = useState(false)
+  const podeApagar =
+    confirmacao.trim().toLocaleLowerCase("pt-PT") ===
+    nome.trim().toLocaleLowerCase("pt-PT")
+
+  async function apagar() {
+    setLoading(true)
+    const res = await apagarClientePlataforma(empresaId, confirmacao)
+    setLoading(false)
+    if (!res.ok) {
+      toast.error("Não foi possível apagar", { description: res.message })
+      return
+    }
+    toast.success(`"${nome}" foi apagado`)
+    setOpen(false)
+    // A página deste cliente deixou de existir.
+    router.replace("/admin")
+    router.refresh()
+  }
+
+  return (
+    <>
+      <Button
+        type="button"
+        variant="destructive"
+        className="h-11"
+        onClick={() => {
+          setConfirmacao("")
+          setOpen(true)
+        }}
+      >
+        <Trash2 className="size-4" />
+        Apagar cliente
+      </Button>
+
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          if (!loading) setOpen(v)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Apagar “{nome}” definitivamente?</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3 text-sm">
+            <p className="text-muted-foreground">
+              Isto apaga <strong className="text-foreground">tudo</strong> deste
+              cliente e <strong className="text-foreground">não tem volta</strong>
+              :
+            </p>
+            <ul className="text-muted-foreground list-disc space-y-0.5 pl-5">
+              <li>{totais.utilizadores} conta(s) de login (o email fica livre)</li>
+              <li>{totais.clientes} cliente(s) na agenda dele</li>
+              <li>{totais.visitas} serviço(s) e {totais.orcamentos} orçamento(s)</li>
+              <li>fotos, assinaturas e PDFs guardados</li>
+              <li>o histórico de pagamentos deixa de contar no financeiro</li>
+            </ul>
+            <p className="text-muted-foreground">
+              Se só queres cortar o acesso, usa <strong>Suspender</strong> — os
+              dados ficam guardados.
+            </p>
+            <div className="grid gap-1.5">
+              <Label htmlFor="confirmar-nome">
+                Escreve <strong>{nome}</strong> para confirmar
+              </Label>
+              <Input
+                id="confirmar-nome"
+                value={confirmacao}
+                onChange={(e) => setConfirmacao(e.target.value)}
+                autoComplete="off"
+                className="h-11"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose render={<Button type="button" variant="outline" />}>
+              Cancelar
+            </DialogClose>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={!podeApagar || loading}
+              onClick={apagar}
+            >
+              {loading && <Loader2 className="size-4 animate-spin" />}
+              Apagar para sempre
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

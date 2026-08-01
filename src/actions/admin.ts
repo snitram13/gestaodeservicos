@@ -6,8 +6,26 @@ import { addMonths } from "date-fns"
 import { eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
-import { empresa, pagamento, utilizador } from "@/db/schema"
+import {
+  avaliacao,
+  cliente,
+  empresa,
+  foto,
+  orcamento,
+  orcamentoItem,
+  pagamento,
+  produtoEstoque,
+  servico,
+  transacaoFinanceira,
+  utilizador,
+  visita,
+} from "@/db/schema"
 import { requireSuperAdmin } from "@/lib/auth"
+import {
+  apagarDoStorage,
+  BUCKET_SERVICO,
+  listarRecursivo,
+} from "@/lib/storage"
 import { hojeKey } from "@/lib/agenda"
 import { contarFuncionarios } from "@/lib/funcionarios"
 import {
@@ -266,6 +284,74 @@ export async function definirLimiteFuncionarios(
     .where(eq(empresa.id, empresaId))
   revalidatePath("/admin")
   revalidatePath(`/admin/${empresaId}`)
+  return { ok: true }
+}
+
+/**
+ * Apaga um cliente (tenant) POR COMPLETO e para sempre: ficheiros no Storage,
+ * dados de negócio, contas de login (Supabase Auth) e a própria empresa.
+ * Exige que o super-admin escreva o nome exato da empresa como confirmação.
+ * Não é possível apagar a própria empresa.
+ */
+export async function apagarClientePlataforma(
+  empresaId: string,
+  confirmacao: string
+): Promise<Ok> {
+  const ctx = await requireSuperAdmin()
+  if (empresaId === ctx.empresaId) {
+    return { ok: false, message: "Não podes apagar a tua própria empresa." }
+  }
+  const alvo = await db.query.empresa.findFirst({
+    columns: { id: true, nome: true },
+    where: eq(empresa.id, empresaId),
+  })
+  if (!alvo) return { ok: false, message: "Empresa não encontrada." }
+  if (
+    confirmacao.trim().toLocaleLowerCase("pt-PT") !==
+    alvo.nome.trim().toLocaleLowerCase("pt-PT")
+  ) {
+    return { ok: false, message: "O nome escrito não corresponde à empresa." }
+  }
+
+  const utilizadores = await db
+    .select({ id: utilizador.id })
+    .from(utilizador)
+    .where(eq(utilizador.empresaId, empresaId))
+
+  // 1) Ficheiros: fotos/assinaturas (`{empresaId}/…`) e PDFs de partilha.
+  const ficheiros = [
+    ...(await listarRecursivo(BUCKET_SERVICO, empresaId)),
+    ...(await listarRecursivo(BUCKET_SERVICO, `partilha/${empresaId}`)),
+  ]
+  await apagarDoStorage(BUCKET_SERVICO, ficheiros)
+
+  // 2) Dados de negócio, filhos primeiro (visita→cliente é RESTRICT, por isso
+  //    não dá para confiar só no cascade da empresa).
+  await db.delete(orcamentoItem).where(eq(orcamentoItem.empresaId, empresaId))
+  await db.delete(foto).where(eq(foto.empresaId, empresaId))
+  await db.delete(avaliacao).where(eq(avaliacao.empresaId, empresaId))
+  await db
+    .delete(transacaoFinanceira)
+    .where(eq(transacaoFinanceira.empresaId, empresaId))
+  await db.delete(servico).where(eq(servico.empresaId, empresaId))
+  await db.delete(orcamento).where(eq(orcamento.empresaId, empresaId))
+  await db.delete(visita).where(eq(visita.empresaId, empresaId))
+  await db.delete(cliente).where(eq(cliente.empresaId, empresaId))
+  await db.delete(produtoEstoque).where(eq(produtoEstoque.empresaId, empresaId))
+  await db.delete(pagamento).where(eq(pagamento.empresaId, empresaId))
+  await db.delete(utilizador).where(eq(utilizador.empresaId, empresaId))
+
+  // 3) Contas de login (liberta os emails para futuras contas).
+  const admin = createSupabaseAdminClient()
+  for (const u of utilizadores) {
+    await admin.auth.admin.deleteUser(u.id).catch(() => {})
+  }
+
+  // 4) A empresa.
+  await db.delete(empresa).where(eq(empresa.id, empresaId))
+
+  revalidatePath("/admin")
+  revalidatePath("/admin/financeiro")
   return { ok: true }
 }
 
