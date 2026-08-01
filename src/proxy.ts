@@ -44,7 +44,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  if (user && path === "/login") {
+  // Quem já entrou não fica no ecrã de login. Só vale para NAVEGAÇÕES (GET):
+  // um POST daqui é uma Server Action do formulário de entrada e redirecioná-lo
+  // rebenta o login ("An unexpected response was received from the server").
+  if (user && path === "/login" && request.method === "GET") {
     const url = request.nextUrl.clone()
     url.pathname = "/"
     return NextResponse.redirect(url)
