@@ -290,7 +290,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
             {form.formState.isSubmitting && (
               <Loader2 className="size-4 animate-spin" />
             )}
-            Guardar
+            {t("Guardar")}
           </Button>
         </div>
       </form>

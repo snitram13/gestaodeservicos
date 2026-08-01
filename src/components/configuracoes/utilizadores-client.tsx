@@ -406,7 +406,7 @@ function EditarUtilizadorDialog({
                 {form.formState.isSubmitting && (
                   <Loader2 className="size-4 animate-spin" />
                 )}
-                Guardar
+                {t("Guardar")}
               </Button>
             </DialogFooter>
           </form>
