@@ -153,11 +153,11 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
                     disabled={uploading}
                   >
                     <Trash2 className="size-4" />
-                    Remover
+                    {t("Remover")}
                   </Button>
                 )}
                 <p className="text-muted-foreground text-xs">
-                  PNG ou JPG, até 2 MB. Aparece nos orçamentos.
+                  {t("PNG ou JPG, até 2 MB. Aparece nos orçamentos.")}
                 </p>
               </div>
             </div>
@@ -254,7 +254,7 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
                 <FormItem className="sm:col-span-2">
                   <FormLabel>{t("IBAN (opcional, aparece no PDF)")}</FormLabel>
                   <FormControl>
-                    <Input className="h-11" placeholder="PT50 …" {...field} />
+                    <Input className="h-11" placeholder={meta.exemploIban} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -275,8 +275,9 @@ export function EmpresaForm({ configuracao: cfg }: { configuracao: Empresa }) {
                     />
                   </FormControl>
                   <p className="text-muted-foreground text-xs">
-                    Aplicada por omissão aos novos orçamentos. Use 0 se for
-                    isento (art. 53º).
+                    {t(
+                      "Aplicada por omissão aos novos orçamentos. Use 0 se for isento (art. 53º)."
+                    )}
                   </p>
                   <FormMessage />
                 </FormItem>

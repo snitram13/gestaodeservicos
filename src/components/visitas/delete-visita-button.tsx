@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { useRouter } from "next/navigation"
 import { Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -21,16 +22,18 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export function DeleteVisitaButton({ id }: { id: string }) {
+  const t = useT()
   const router = useRouter()
   const r = useRotulos()
   const [loading, setLoading] = useState(false)
 
   async function onConfirm() {
+  const t = useT()
     setLoading(true)
     const res = await apagarVisita(id)
     setLoading(false)
     if (!res.ok) {
-      toast.error("Não foi possível apagar", { description: res.message })
+      toast.error(t("Não foi possível apagar"), { description: res.message })
       return
     }
     toast.success(r.apagado)
@@ -53,7 +56,7 @@ export function DeleteVisitaButton({ id }: { id: string }) {
           <AlertDialogDescription>{r.apagarDesc}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>{t("Cancelar")}</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             onClick={onConfirm}

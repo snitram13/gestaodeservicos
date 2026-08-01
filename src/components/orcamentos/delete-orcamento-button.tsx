@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { useRouter } from "next/navigation"
 import { Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -20,18 +21,20 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export function DeleteOrcamentoButton({ id }: { id: string }) {
+  const t = useT()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
   async function onConfirm() {
+  const t = useT()
     setLoading(true)
     const res = await apagarOrcamento(id)
     setLoading(false)
     if (!res.ok) {
-      toast.error("Não foi possível apagar", { description: res.message })
+      toast.error(t("Não foi possível apagar"), { description: res.message })
       return
     }
-    toast.success("Orçamento apagado")
+    toast.success(t("Orçamento apagado"))
     router.push("/orcamentos")
     router.refresh()
   }
@@ -40,27 +43,27 @@ export function DeleteOrcamentoButton({ id }: { id: string }) {
     <AlertDialog>
       <AlertDialogTrigger
         render={
-          <Button variant="outline" size="icon" aria-label="Apagar orçamento" />
+          <Button variant="outline" size="icon" aria-label={t("Apagar orçamento")} />
         }
       >
         <Trash2 className="size-4" />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Apagar orçamento?</AlertDialogTitle>
+          <AlertDialogTitle>{t("Apagar orçamento?")}</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta ação não pode ser anulada.
+            {t("Esta ação não pode ser anulada.")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>{t("Cancelar")}</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             onClick={onConfirm}
             disabled={loading}
           >
             {loading && <Loader2 className="size-4 animate-spin" />}
-            Apagar
+            {t("Apagar")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

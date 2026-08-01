@@ -28,7 +28,7 @@ export function UserMenu({ email }: { email?: string }) {
       <DropdownMenuContent align="end" className="w-56">
         <div className="px-2 py-1.5">
           <div className="text-muted-foreground text-xs">
-            Sessão iniciada como
+            {t("Sessão iniciada como")}
           </div>
           <div className="text-foreground truncate text-sm font-medium">
             {email ?? "—"}
@@ -37,12 +37,12 @@ export function UserMenu({ email }: { email?: string }) {
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<Link href="/configuracoes" />}>
           <Settings className="size-4" />
-          Definições
+          {t("Definições")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={() => signOut()}>
           <LogOut className="size-4" />
-          Terminar sessão
+          {t("Terminar sessão")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

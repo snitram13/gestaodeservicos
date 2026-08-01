@@ -509,4 +509,35 @@ export const ES: Record<string, string> = {
   "de Serviços":
     "de Servicios",
   "Ainda não há {tipo}": "Todavía no hay {tipo}",
+  "Guardar assinatura": "Guardar firma",
+  "A foto é apagada definitivamente e deixa de aparecer na ordem de serviço.":
+    "La foto se elimina definitivamente y deja de aparecer en la orden de trabajo.",
+  "Apagar orçamento?":
+    "¿Eliminar el presupuesto?",
+  "Apagar transação?":
+    "¿Eliminar el movimiento?",
+  "Ativar":
+    "Activar",
+  "Desativar":
+    "Desactivar",
+  "Criar":
+    "Crear",
+  "Esta ação não pode ser anulada.":
+    "Esta acción no se puede deshacer.",
+  "Limpar":
+    "Borrar",
+  "Registar":
+    "Registrar",
+  "Remover":
+    "Quitar",
+  "Sessão iniciada como":
+    "Sesión iniciada como",
+  "Substituir":
+    "Sustituir",
+  "Terminar sessão":
+    "Cerrar sesión",
+  "Peça ao cliente para assinar acima com o dedo.":
+    "Pida al cliente que firme arriba con el dedo.",
+  "O período de acesso a esta conta terminou. Para voltar a usar a aplicação, contacte o administrador do sistema e regularize a mensalidade de {valor}/mês.":
+    "El periodo de acceso de esta cuenta ha terminado. Para volver a usar la aplicación, contacte con el administrador y regularice la cuota de {valor}/mes.",
 }

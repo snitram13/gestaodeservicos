@@ -260,13 +260,13 @@ export function NovoFuncionarioDialog() {
             </div>
             <DialogFooter>
               <DialogClose render={<Button type="button" variant="outline" />}>
-                Cancelar
+                {t("Cancelar")}
               </DialogClose>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting && (
                   <Loader2 className="size-4 animate-spin" />
                 )}
-                Criar
+                {t("Criar")}
               </Button>
             </DialogFooter>
           </form>
@@ -303,7 +303,7 @@ export function UtilizadorAcoes({
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => setEditOpen(true)}>
             <Pencil className="size-4" />
-            Editar
+            {t("Editar")}
           </DropdownMenuItem>
           <DropdownMenuItem
             variant={item.ativo ? "destructive" : "default"}
@@ -313,12 +313,12 @@ export function UtilizadorAcoes({
             {item.ativo ? (
               <>
                 <UserX className="size-4" />
-                Desativar
+                {t("Desativar")}
               </>
             ) : (
               <>
                 <UserCheck className="size-4" />
-                Ativar
+                {t("Ativar")}
               </>
             )}
           </DropdownMenuItem>
@@ -400,7 +400,7 @@ function EditarUtilizadorDialog({
             </div>
             <DialogFooter>
               <DialogClose render={<Button type="button" variant="outline" />}>
-                Cancelar
+                {t("Cancelar")}
               </DialogClose>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting && (

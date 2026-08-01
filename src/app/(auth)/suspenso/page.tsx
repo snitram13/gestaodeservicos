@@ -37,15 +37,16 @@ export default async function SuspensoPage() {
         </div>
         <CardTitle className="text-xl">{t("Acesso suspenso")}</CardTitle>
         <CardDescription>
-          O período de acesso a esta conta terminou. Para voltar a usar a
-          aplicação, contacte o administrador do sistema e regularize a
-          mensalidade de {formatEuro(valor)}/mês.
+          {t(
+            "O período de acesso a esta conta terminou. Para voltar a usar a aplicação, contacte o administrador do sistema e regularize a mensalidade de {valor}/mês.",
+            { valor: formatEuro(valor) }
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form action={signOut}>
           <Button type="submit" variant="outline" className="h-11 w-full">
-            Terminar sessão
+            {t("Terminar sessão")}
           </Button>
         </form>
       </CardContent>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n/idioma-provider"
 import { useRouter } from "next/navigation"
 import { Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -20,18 +21,20 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export function DeleteTransacaoButton({ id }: { id: string }) {
+  const t = useT()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
   async function onConfirm() {
+  const t = useT()
     setLoading(true)
     const res = await apagarTransacao(id)
     setLoading(false)
     if (!res.ok) {
-      toast.error("Não foi possível apagar")
+      toast.error(t("Não foi possível apagar"))
       return
     }
-    toast.success("Transação apagada")
+    toast.success(t("Transação apagada"))
     router.refresh()
   }
 
@@ -43,7 +46,7 @@ export function DeleteTransacaoButton({ id }: { id: string }) {
             variant="ghost"
             size="icon"
             className="text-muted-foreground"
-            aria-label="Apagar"
+            aria-label={t("Apagar")}
           />
         }
       >
@@ -51,20 +54,20 @@ export function DeleteTransacaoButton({ id }: { id: string }) {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Apagar transação?</AlertDialogTitle>
+          <AlertDialogTitle>{t("Apagar transação?")}</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta ação não pode ser anulada.
+            {t("Esta ação não pode ser anulada.")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>{t("Cancelar")}</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             onClick={onConfirm}
             disabled={loading}
           >
             {loading && <Loader2 className="size-4 animate-spin" />}
-            Apagar
+            {t("Apagar")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

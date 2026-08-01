@@ -213,7 +213,7 @@ export function NovoClienteDialog({
                 {form.formState.isSubmitting && (
                   <Loader2 className="size-4 animate-spin" />
                 )}
-                Criar
+                {t("Criar")}
               </Button>
             </DialogFooter>
           </form>

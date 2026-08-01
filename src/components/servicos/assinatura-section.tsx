@@ -46,7 +46,7 @@ export function AssinaturaSection({
             onClick={() => setEditando(true)}
           >
             <PenLine className="size-4" />
-            Substituir
+            {t("Substituir")}
           </Button>
           <Button
             type="button"
@@ -56,7 +56,7 @@ export function AssinaturaSection({
             onClick={remover}
           >
             <Trash2 className="size-4" />
-            Remover
+            {t("Remover")}
           </Button>
         </div>
       </div>
@@ -152,12 +152,12 @@ function Pad({ visitaId, onDone }: { visitaId: string; onDone: () => void }) {
         onPointerLeave={terminar}
       />
       <p className="text-muted-foreground text-xs">
-        Peça ao cliente para assinar acima com o dedo.
+        {t("Peça ao cliente para assinar acima com o dedo.")}
       </p>
       <div className="flex gap-2">
         <Button type="button" size="sm" variant="outline" onClick={limpar}>
           <Eraser className="size-4" />
-          Limpar
+          {t("Limpar")}
         </Button>
         <Button type="button" size="sm" onClick={guardar} disabled={loading}>
           {loading ? (
@@ -165,7 +165,7 @@ function Pad({ visitaId, onDone }: { visitaId: string; onDone: () => void }) {
           ) : (
             <PenLine className="size-4" />
           )}
-          Guardar assinatura
+          {t("Guardar assinatura")}
         </Button>
       </div>
     </div>

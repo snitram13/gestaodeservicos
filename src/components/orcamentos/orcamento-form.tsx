@@ -492,7 +492,7 @@ export function OrcamentoForm({
           >{t("Cancelar")}</Button>
           <Button type="submit" className="h-11" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="size-4 animate-spin" />}
-            Guardar
+            {t("Guardar")}
           </Button>
         </div>
       </form>

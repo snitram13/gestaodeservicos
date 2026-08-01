@@ -208,7 +208,7 @@ function Galeria({
             title={t("Escolher várias fotos")}
           >
             <ImagePlus className="size-4" />
-            Galeria
+            {t("Galeria")}
           </Button>
         </div>
         {/* Câmara: tira uma foto na hora. */}
@@ -232,7 +232,7 @@ function Galeria({
       </div>
       {fotos.length === 0 ? (
         <p className="text-muted-foreground rounded-lg border border-dashed p-4 text-center text-sm">
-          Sem fotos.
+          {t("Sem fotos.")}
         </p>
       ) : (
         <div className="grid grid-cols-3 gap-2">
@@ -273,8 +273,9 @@ function Galeria({
           <AlertDialogHeader>
             <AlertDialogTitle>{t("Remover esta foto?")}</AlertDialogTitle>
             <AlertDialogDescription>
-              A foto é apagada definitivamente e deixa de aparecer na ordem de
-              serviço.
+              {t(
+                "A foto é apagada definitivamente e deixa de aparecer na ordem de serviço."
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           {aRemover?.url && (
@@ -296,7 +297,7 @@ function Galeria({
               }}
             >
               {aApagar && <Loader2 className="size-4 animate-spin" />}
-              Remover
+              {t("Remover")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

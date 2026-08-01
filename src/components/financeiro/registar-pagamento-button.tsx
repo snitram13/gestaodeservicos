@@ -61,7 +61,7 @@ export function RegistarPagamentoButton({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button variant="outline" className="h-9 gap-1.5" />}>
         <Euro className="size-4" />
-        Registar pagamento
+        {t("Registar pagamento")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -96,11 +96,11 @@ export function RegistarPagamentoButton({
         </div>
         <DialogFooter>
           <DialogClose render={<Button type="button" variant="outline" />}>
-            Cancelar
+            {t("Cancelar")}
           </DialogClose>
           <Button onClick={onConfirm} disabled={loading}>
             {loading && <Loader2 className="size-4 animate-spin" />}
-            Registar
+            {t("Registar")}
           </Button>
         </DialogFooter>
       </DialogContent>

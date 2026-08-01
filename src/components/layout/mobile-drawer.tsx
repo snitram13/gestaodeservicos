@@ -32,7 +32,7 @@ export function MobileDrawer({
             variant="ghost"
             size="icon"
             className="md:hidden"
-            aria-label="Abrir menu"
+            aria-label={t("Abrir menu")}
           />
         }
       >

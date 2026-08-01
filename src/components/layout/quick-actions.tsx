@@ -31,7 +31,7 @@ export function NovoButton() {
         render={
           <Button size="sm" className="gap-1.5">
             <Plus className="size-4" />
-            Novo
+            {t("Novo")}
           </Button>
         }
       />

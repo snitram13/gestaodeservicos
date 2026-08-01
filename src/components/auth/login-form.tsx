@@ -55,7 +55,7 @@ export function LoginForm() {
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="nome@exemplo.pt"
+          placeholder={t("nome@email.com")}
           className="h-11"
           required
         />

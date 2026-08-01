@@ -42,6 +42,8 @@ export type MetaPais = {
   locale: string
   /** Todos usam euro; fica explícito para não haver surpresas. */
   moeda: "EUR"
+  /** Exemplo de IBAN local (aparece como sugestão no campo). */
+  exemploIban: string
   /** Há preenchimento automático da morada pelo código postal? */
   moradaAutomatica: boolean
 }
@@ -65,6 +67,7 @@ export const PAISES_META: Record<Pais, MetaPais> = {
     fuso: "Europe/Lisbon",
     locale: "pt-PT",
     moeda: "EUR",
+    exemploIban: "PT50 …",
     moradaAutomatica: true,
   },
   ES: {
@@ -87,6 +90,7 @@ export const PAISES_META: Record<Pais, MetaPais> = {
     fuso: "Europe/Madrid",
     locale: "es-ES",
     moeda: "EUR",
+    exemploIban: "ES91 …",
     moradaAutomatica: false,
   },
   FR: {
@@ -110,6 +114,7 @@ export const PAISES_META: Record<Pais, MetaPais> = {
     fuso: "Europe/Paris",
     locale: "fr-FR",
     moeda: "EUR",
+    exemploIban: "FR76 …",
     moradaAutomatica: true,
   },
 }

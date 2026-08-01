@@ -1,6 +1,7 @@
 "use client"
 
 import { usePathname, useRouter } from "next/navigation"
+import { useT } from "@/components/i18n/idioma-provider"
 
 import { ESTADO_VISITA_OPCOES } from "@/lib/constants/estados"
 import {
@@ -14,10 +15,12 @@ import {
 const TODOS = "TODOS"
 
 export function VisitasFiltros({ estado }: { estado?: string }) {
+  const t = useT()
   const router = useRouter()
   const pathname = usePathname()
 
   function aplicar(v: string) {
+  const t = useT()
     router.replace(
       v && v !== TODOS ? `${pathname}?estado=${v}` : pathname,
       { scroll: false }
@@ -30,7 +33,7 @@ export function VisitasFiltros({ estado }: { estado?: string }) {
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={TODOS}>Todos os estados</SelectItem>
+        <SelectItem value={TODOS}>{t("Todos os estados")}</SelectItem>
         {ESTADO_VISITA_OPCOES.map((o) => (
           <SelectItem key={o.value} value={o.value}>
             {o.label}
