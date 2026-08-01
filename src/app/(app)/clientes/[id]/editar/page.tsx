@@ -6,6 +6,7 @@ import { cliente } from "@/db/schema"
 import { requireEmpresa } from "@/lib/auth"
 import { ClienteForm } from "@/components/clientes/cliente-form"
 import { PageHeader } from "@/components/common/page-header"
+import { getPais, getT } from "@/lib/i18n"
 
 export const metadata = { title: "Editar cliente" }
 
@@ -15,6 +16,7 @@ export default async function EditarClientePage({
   params: Promise<{ id: string }>
 }) {
   const { empresaId } = await requireEmpresa()
+  const [t, pais] = await Promise.all([getT(), getPais()])
   const { id } = await params
   const c = await db.query.cliente.findFirst({
     where: and(eq(cliente.id, id), eq(cliente.empresaId, empresaId)),
@@ -23,8 +25,9 @@ export default async function EditarClientePage({
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Editar cliente" />
+      <PageHeader title={t("Editar cliente")} />
       <ClienteForm
+        pais={pais}
         clienteId={id}
         defaultValues={{
           nome: c.nome,

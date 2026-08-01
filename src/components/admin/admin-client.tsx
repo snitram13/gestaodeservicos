@@ -26,10 +26,12 @@ import {
   definirAcesso,
   definirEstadoEmpresa,
   definirLimiteFuncionarios,
+  definirPais,
   registarPagamento,
   type AjusteAcesso,
 } from "@/actions/admin"
 import { PRECO_FUNCIONARIO_EUR } from "@/lib/constants/subscricao"
+import { PAISES, PAISES_META, type Pais } from "@/lib/constants/paises"
 import { estadoAcesso } from "@/lib/subscricao"
 import { formatEuro } from "@/lib/formatters/currency"
 import { chaveDia, formatData } from "@/lib/formatters/date"
@@ -73,6 +75,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 
 /* ------------------------------------------------------------------ */
@@ -135,6 +144,42 @@ export function NovoClienteDialog() {
                       <FormControl>
                         <Input className="h-11" placeholder="Empresa do cliente" {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="pais"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>País *</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="h-11 w-full">
+                            <SelectValue>
+                              {(v) =>
+                                `${PAISES_META[v as Pais].bandeira} ${PAISES_META[v as Pais].nome}`
+                              }
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PAISES.map((p) => (
+                              <SelectItem key={p} value={p}>
+                                {PAISES_META[p].bandeira} {PAISES_META[p].nome}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <p className="text-muted-foreground text-xs">
+                        Define o telefone, o código postal, o nº fiscal, o IVA (
+                        {PAISES_META[field.value as Pais].ivaPadrao}%) e o fuso
+                        horário.
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -619,6 +664,61 @@ function AcessoConteudo({
         </DialogClose>
       </DialogFooter>
     </>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* País do cliente (formatos locais)                                   */
+/* ------------------------------------------------------------------ */
+
+export function PaisControl({
+  empresaId,
+  pais,
+}: {
+  empresaId: string
+  pais: Pais
+}) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+
+  async function mudar(novo: string | null) {
+    if (!novo || novo === pais) return
+    setLoading(true)
+    const res = await definirPais(empresaId, novo)
+    setLoading(false)
+    if (!res.ok) {
+      toast.error("Não foi possível alterar o país", { description: res.message })
+      return
+    }
+    toast.success(`País alterado para ${PAISES_META[novo as Pais].nome}`)
+    router.refresh()
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <Select value={pais} onValueChange={mudar} disabled={loading}>
+        <SelectTrigger className="h-11 w-56">
+          <SelectValue>
+            {(v) =>
+              `${PAISES_META[v as Pais].bandeira} ${PAISES_META[v as Pais].nome}`
+            }
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {PAISES.map((p) => (
+            <SelectItem key={p} value={p}>
+              {PAISES_META[p].bandeira} {PAISES_META[p].nome}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {loading && <Loader2 className="size-4 animate-spin" />}
+      <p className="text-muted-foreground text-sm">
+        Telefone {PAISES_META[pais].exemploTelefone} · código postal{" "}
+        {PAISES_META[pais].exemploCodigoPostal} · {PAISES_META[pais].rotuloFiscal}{" "}
+        · IVA {PAISES_META[pais].ivaPadrao}% · {PAISES_META[pais].fuso}
+      </p>
+    </div>
   )
 }
 

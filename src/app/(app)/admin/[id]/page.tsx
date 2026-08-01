@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/table"
 import {
   ApagarClienteControl,
+  PaisControl,
   EmpresaAcoes,
   LimiteFuncionariosControl,
 } from "@/components/admin/admin-client"
@@ -162,6 +163,10 @@ export default async function AdminClientePage({
             empresaId={emp.id}
             limite={emp.limiteFuncionarios}
           />
+          <div className="border-t pt-4">
+            <p className="mb-2 text-sm font-medium">País do negócio</p>
+            <PaisControl empresaId={emp.id} pais={emp.pais} />
+          </div>
         </CardContent>
       </Card>
 

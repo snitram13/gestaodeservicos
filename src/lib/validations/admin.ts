@@ -1,8 +1,12 @@
 import { z } from "zod"
 
+import { PAISES, PAIS_PADRAO } from "@/lib/constants/paises"
+
 /** Criação de um cliente (tenant) pelo super-admin: empresa + dono OWNER. */
 export const criarClienteSchema = z.object({
   nomeEmpresa: z.string().trim().min(1, "Indique o nome da empresa."),
+  // País do negócio: manda no telefone, código postal, nº fiscal, IVA e fuso.
+  pais: z.enum(PAISES),
   nomeDono: z.string().trim().min(1, "Indique o nome do responsável."),
   email: z
     .string()
@@ -23,6 +27,7 @@ export type CriarClienteValues = z.infer<typeof criarClienteSchema>
 
 export const CRIAR_CLIENTE_VAZIO: CriarClienteValues = {
   nomeEmpresa: "",
+  pais: PAIS_PADRAO,
   nomeDono: "",
   email: "",
   password: "",

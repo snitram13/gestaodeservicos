@@ -35,6 +35,7 @@ import {
   mensalidadeDe,
 } from "@/lib/subscricao"
 import { MODULOS, MODULOS_META, type ModuloKey } from "@/lib/constants/modulos"
+import { metaPais, PAISES, paisValido } from "@/lib/constants/paises"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import {
   criarClienteSchema,
@@ -106,6 +107,9 @@ export async function criarCliente(
       // Módulo Ordens de Serviço ativo por omissão (disponível a todos).
       .values({
         nome: parsed.data.nomeEmpresa,
+        // O país define os formatos locais e o IVA por omissão do negócio.
+        pais: parsed.data.pais,
+        taxaIvaPadrao: String(metaPais(parsed.data.pais).ivaPadrao),
         acessoAte: fimDoTrial(),
         limiteFuncionarios: limite,
         modulos: [MODULOS.ORDENS_SERVICO],
@@ -284,6 +288,30 @@ export async function definirLimiteFuncionarios(
     .where(eq(empresa.id, empresaId))
   revalidatePath("/admin")
   revalidatePath(`/admin/${empresaId}`)
+  return { ok: true }
+}
+
+/**
+ * Muda o país de um cliente. Afeta o formato do telefone e do código postal,
+ * o nº fiscal pedido, o fuso horário das datas e o IVA sugerido. Os dados já
+ * gravados não são reescritos — só a forma como se validam e mostram daqui
+ * para a frente.
+ */
+export async function definirPais(
+  empresaId: string,
+  pais: string
+): Promise<Ok> {
+  await requireSuperAdmin()
+  if (!PAISES.includes(pais as (typeof PAISES)[number])) {
+    return { ok: false, message: "País inválido." }
+  }
+  await db
+    .update(empresa)
+    .set({ pais: paisValido(pais), atualizadoEm: new Date() })
+    .where(eq(empresa.id, empresaId))
+  revalidatePath("/admin")
+  revalidatePath(`/admin/${empresaId}`)
+  revalidatePath("/", "layout")
   return { ok: true }
 }
 

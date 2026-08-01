@@ -13,7 +13,8 @@ import {
 } from "@/db/schema"
 import { requireEmpresa } from "@/lib/auth"
 import { apagarDoStorage, BUCKET_SERVICO } from "@/lib/storage"
-import { clienteSchema, type ClienteFormValues } from "@/lib/validations/cliente"
+import { clienteSchemaDe, type ClienteFormValues } from "@/lib/validations/cliente"
+import { getPais } from "@/lib/i18n"
 
 type Resultado =
   | { ok: true; id: string }
@@ -39,7 +40,7 @@ function valores(d: ClienteFormValues) {
 
 export async function criarCliente(input: ClienteFormValues): Promise<Resultado> {
   const { empresaId } = await requireEmpresa()
-  const parsed = clienteSchema.safeParse(input)
+  const parsed = clienteSchemaDe(await getPais()).safeParse(input)
   if (!parsed.success) return { ok: false, message: "Dados inválidos." }
 
   const [row] = await db
@@ -56,7 +57,7 @@ export async function atualizarCliente(
   input: ClienteFormValues
 ): Promise<Resultado> {
   const { empresaId } = await requireEmpresa()
-  const parsed = clienteSchema.safeParse(input)
+  const parsed = clienteSchemaDe(await getPais()).safeParse(input)
   if (!parsed.success) return { ok: false, message: "Dados inválidos." }
 
   await db

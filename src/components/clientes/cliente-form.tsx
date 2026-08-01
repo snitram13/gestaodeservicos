@@ -10,10 +10,12 @@ import { toast } from "sonner"
 import { atualizarCliente, criarCliente } from "@/actions/clientes"
 import { procurarMorada } from "@/actions/morada"
 import {
-  clienteSchema,
+  clienteSchemaDe,
   CLIENTE_VAZIO,
   type ClienteFormValues,
 } from "@/lib/validations/cliente"
+import { metaPais, PAIS_PADRAO, type Pais } from "@/lib/constants/paises"
+import { useT } from "@/components/i18n/idioma-provider"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -30,26 +32,37 @@ import { Textarea } from "@/components/ui/textarea"
 export function ClienteForm({
   clienteId,
   defaultValues,
+  pais = PAIS_PADRAO,
 }: {
   clienteId?: string
   defaultValues?: ClienteFormValues
+  /** País da empresa: manda no telefone, código postal e nº fiscal. */
+  pais?: Pais
 }) {
   const router = useRouter()
+  const t = useT()
+  const meta = metaPais(pais)
+  // Nº de dígitos do código postal do país (PT 4+3, ES/FR 5).
+  const digitosCp = pais === "PT" ? 7 : 5
   const isEdit = Boolean(clienteId)
   const form = useForm<ClienteFormValues>({
-    resolver: zodResolver(clienteSchema),
+    resolver: zodResolver(clienteSchemaDe(pais)),
     defaultValues: defaultValues ?? CLIENTE_VAZIO,
   })
   const [cpLoading, setCpLoading] = useState(false)
 
   function formatCp(v: string) {
-    const d = v.replace(/\D/g, "").slice(0, 7)
+    const d = v.replace(/\D/g, "").slice(0, digitosCp)
+    // Só Portugal usa o hífen 0000-000.
+    if (pais !== "PT") return d
     return d.length > 4 ? `${d.slice(0, 4)}-${d.slice(4)}` : d
   }
 
-  // Procura a morada quando o código postal está completo (todo o Portugal).
+  // Procura a morada quando o código postal está completo (PT e FR têm
+  // serviço de consulta; em Espanha preenche-se à mão).
   async function procurarCp(valor: string) {
-    if (valor.replace(/\D/g, "").length !== 7) return
+    if (!meta.moradaAutomatica) return
+    if (valor.replace(/\D/g, "").length !== digitosCp) return
     setCpLoading(true)
     const res = await procurarMorada(valor)
     setCpLoading(false)
@@ -110,7 +123,7 @@ export function ClienteForm({
                       className="h-11"
                       type="tel"
                       inputMode="tel"
-                      placeholder="912 345 678"
+                      placeholder={meta.exemploTelefone}
                       {...field}
                     />
                   </FormControl>
@@ -144,12 +157,12 @@ export function ClienteForm({
               name="nif"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>NIF</FormLabel>
+                  <FormLabel>{meta.rotuloFiscal}</FormLabel>
                   <FormControl>
                     <Input
                       className="h-11"
                       inputMode="numeric"
-                      placeholder="9 dígitos"
+                      placeholder={meta.exemploFiscal}
                       {...field}
                     />
                   </FormControl>
@@ -163,13 +176,13 @@ export function ClienteForm({
               name="codigoPostal"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Código postal</FormLabel>
+                  <FormLabel>{t(meta.rotuloCodigoPostal)}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input
                         className="h-11 pr-9"
                         inputMode="numeric"
-                        placeholder="0000-000"
+                        placeholder={meta.exemploCodigoPostal}
                         name={field.name}
                         ref={field.ref}
                         value={field.value ?? ""}

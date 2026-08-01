@@ -9,10 +9,11 @@ import { toast } from "sonner"
 import { criarCliente } from "@/actions/clientes"
 import { procurarMorada } from "@/actions/morada"
 import {
-  clienteSchema,
+  clienteSchemaDe,
   CLIENTE_VAZIO,
   type ClienteFormValues,
 } from "@/lib/validations/cliente"
+import { metaPais, PAIS_PADRAO, type Pais } from "@/lib/constants/paises"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -43,23 +44,30 @@ export type ClienteCriado = {
 
 export function NovoClienteDialog({
   onCreated,
+  pais = PAIS_PADRAO,
 }: {
-  onCreated: (c: ClienteCriado) => void
+  onCreated: (cliente: ClienteCriado) => void
+  /** País da empresa: formato do telefone e do código postal. */
+  pais?: Pais
 }) {
+  const meta = metaPais(pais)
+  const digitosCp = pais === "PT" ? 7 : 5
   const [open, setOpen] = useState(false)
   const [cpLoading, setCpLoading] = useState(false)
   const form = useForm<ClienteFormValues>({
-    resolver: zodResolver(clienteSchema),
+    resolver: zodResolver(clienteSchemaDe(pais)),
     defaultValues: CLIENTE_VAZIO,
   })
 
   function formatCp(v: string) {
-    const d = v.replace(/\D/g, "").slice(0, 7)
+    const d = v.replace(/\D/g, "").slice(0, digitosCp)
+    if (pais !== "PT") return d
     return d.length > 4 ? `${d.slice(0, 4)}-${d.slice(4)}` : d
   }
 
   async function procurarCp(valor: string) {
-    if (valor.replace(/\D/g, "").length !== 7) return
+    if (!meta.moradaAutomatica) return
+    if (valor.replace(/\D/g, "").length !== digitosCp) return
     setCpLoading(true)
     const res = await procurarMorada(valor)
     setCpLoading(false)
@@ -133,7 +141,7 @@ export function NovoClienteDialog({
                         className="h-11"
                         type="tel"
                         inputMode="tel"
-                        placeholder="912 345 678"
+                        placeholder={meta.exemploTelefone}
                         {...field}
                       />
                     </FormControl>
@@ -146,13 +154,13 @@ export function NovoClienteDialog({
                 name="codigoPostal"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Código postal</FormLabel>
+                    <FormLabel>{meta.rotuloCodigoPostal}</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           className="h-11 pr-9"
                           inputMode="numeric"
-                          placeholder="0000-000"
+                          placeholder={meta.exemploCodigoPostal}
                           name={field.name}
                           ref={field.ref}
                           value={field.value ?? ""}
@@ -160,7 +168,7 @@ export function NovoClienteDialog({
                           onChange={(e) => {
                             const f = formatCp(e.target.value)
                             field.onChange(f)
-                            if (f.replace(/\D/g, "").length === 7) procurarCp(f)
+                            if (f.replace(/\D/g, "").length === digitosCp) procurarCp(f)
                           }}
                         />
                         {cpLoading && (
