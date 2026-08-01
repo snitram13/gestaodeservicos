@@ -42,7 +42,7 @@ export default async function VisitaDetailPage({
 
   // Módulo Ordens de Serviço: fotos, assinatura, PDF, WhatsApp.
   const temServicos = await temModuloAtual(MODULOS.ORDENS_SERVICO)
-  const r = rotulosServico(temServicos)
+  const r = rotulosServico(temServicos, t)
   let fotos: { id: string; tipo: "ANTES" | "DEPOIS"; url: string | null }[] = []
   let assinaturaUrl: string | null = null
   if (temServicos) {

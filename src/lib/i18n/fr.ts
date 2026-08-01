@@ -420,4 +420,98 @@ export const FR: Record<string, string> = {
   "SERVIÇOS": "PRESTATIONS",
   "DATA": "DATE",
   "nome@email.com": "nom@email.com",
+
+  /* Rótulos serviço/visita e textos em falta ------------------------ */
+  "serviço":
+    "intervention",
+  "serviços":
+    "interventions",
+  "Novo serviço":
+    "Nouvelle intervention",
+  "Serviço criado":
+    "Intervention créée",
+  "Serviço atualizado":
+    "Intervention mise à jour",
+  "Serviço apagado":
+    "Intervention supprimée",
+  "Apagar serviço":
+    "Supprimer l'intervention",
+  "Apagar serviço?":
+    "Supprimer l'intervention ?",
+  "Vai apagar o serviço e os seus dados. Esta ação não pode ser anulada.":
+    "L'intervention et ses données seront supprimées. Cette action est irréversible.",
+  "Notas do serviço":
+    "Notes de l'intervention",
+  "Sem serviços neste dia":
+    "Aucune intervention ce jour",
+  "Toque abaixo para agendar um serviço.":
+    "Touchez ci-dessous pour planifier une intervention.",
+  "Novo serviço neste dia":
+    "Nouvelle intervention ce jour",
+  "Próximo serviço":
+    "Prochaine intervention",
+  "Sem serviços agendados para hoje.":
+    "Aucune intervention prévue aujourd'hui.",
+  "Serviços hoje":
+    "Interventions du jour",
+  "Serviço associado":
+    "Intervention associée",
+  "visita":
+    "visite",
+  "visitas":
+    "visites",
+  "Visita criada":
+    "Visite créée",
+  "Visita atualizada":
+    "Visite mise à jour",
+  "Visita apagada":
+    "Visite supprimée",
+  "Apagar visita":
+    "Supprimer la visite",
+  "Apagar visita?":
+    "Supprimer la visite ?",
+  "Vai apagar a visita e os serviços associados. Esta ação não pode ser anulada.":
+    "La visite et les interventions associées seront supprimées. Cette action est irréversible.",
+  "Notas da visita":
+    "Notes de la visite",
+  "Sem visitas neste dia":
+    "Aucune visite ce jour",
+  "Toque abaixo para agendar uma visita.":
+    "Touchez ci-dessous pour planifier une visite.",
+  "Nova visita neste dia":
+    "Nouvelle visite ce jour",
+  "Próxima visita":
+    "Prochaine visite",
+  "Sem visitas agendadas para hoje.":
+    "Aucune visite prévue aujourd'hui.",
+  "Visitas hoje":
+    "Visites du jour",
+  "Visita associada":
+    "Visite associée",
+  "Ainda não há clientes":
+    "Aucun client pour l'instant",
+  "Sem resultados":
+    "Aucun résultat",
+  "Comece por adicionar o seu primeiro cliente.":
+    "Commencez par ajouter votre premier client.",
+  "{n} orçamento(s)":
+    "{n} devis",
+  "Funcionários com acesso à aplicação desta empresa.":
+    "Employés ayant accès à l'application de cette entreprise.",
+  "Proprietário":
+    "Propriétaire",
+  "Administrador":
+    "Administrateur",
+  "Alterar password":
+    "Changer le mot de passe",
+  "Carregar logótipo":
+    "Téléverser le logo",
+  "PNG ou JPG, até 2 MB. Aparece nos orçamentos.":
+    "PNG ou JPG, jusqu'à 2 Mo. Apparaît sur les devis.",
+  "Aplicada por omissão aos novos orçamentos. Use 0 se for isento (art. 53º).":
+    "Appliqué par défaut aux nouveaux devis. Mettez 0 en cas de franchise de TVA.",
+  "Pode editar o texto antes de enviar. Marcadores como {data} ou {valor} podem ser preenchidos manualmente.":
+    "Vous pouvez modifier le texte avant l'envoi. Les balises comme {data} ou {valor} se remplissent à la main.",
+  "de Serviços":
+    "d'Interventions",
 }

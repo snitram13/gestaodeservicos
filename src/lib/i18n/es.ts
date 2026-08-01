@@ -414,4 +414,98 @@ export const ES: Record<string, string> = {
   "SERVIÇOS": "SERVICIOS",
   "DATA": "FECHA",
   "nome@email.com": "nombre@email.com",
+
+  /* Rótulos serviço/visita e textos em falta ------------------------ */
+  "serviço":
+    "servicio",
+  "serviços":
+    "servicios",
+  "Novo serviço":
+    "Nuevo servicio",
+  "Serviço criado":
+    "Servicio creado",
+  "Serviço atualizado":
+    "Servicio actualizado",
+  "Serviço apagado":
+    "Servicio eliminado",
+  "Apagar serviço":
+    "Eliminar servicio",
+  "Apagar serviço?":
+    "¿Eliminar el servicio?",
+  "Vai apagar o serviço e os seus dados. Esta ação não pode ser anulada.":
+    "Se eliminará el servicio y sus datos. Esta acción no se puede deshacer.",
+  "Notas do serviço":
+    "Notas del servicio",
+  "Sem serviços neste dia":
+    "Sin servicios este día",
+  "Toque abaixo para agendar um serviço.":
+    "Toque abajo para programar un servicio.",
+  "Novo serviço neste dia":
+    "Nuevo servicio este día",
+  "Próximo serviço":
+    "Próximo servicio",
+  "Sem serviços agendados para hoje.":
+    "Sin servicios programados para hoy.",
+  "Serviços hoje":
+    "Servicios de hoy",
+  "Serviço associado":
+    "Servicio asociado",
+  "visita":
+    "visita",
+  "visitas":
+    "visitas",
+  "Visita criada":
+    "Visita creada",
+  "Visita atualizada":
+    "Visita actualizada",
+  "Visita apagada":
+    "Visita eliminada",
+  "Apagar visita":
+    "Eliminar visita",
+  "Apagar visita?":
+    "¿Eliminar la visita?",
+  "Vai apagar a visita e os serviços associados. Esta ação não pode ser anulada.":
+    "Se eliminará la visita y los servicios asociados. Esta acción no se puede deshacer.",
+  "Notas da visita":
+    "Notas de la visita",
+  "Sem visitas neste dia":
+    "Sin visitas este día",
+  "Toque abaixo para agendar uma visita.":
+    "Toque abajo para programar una visita.",
+  "Nova visita neste dia":
+    "Nueva visita este día",
+  "Próxima visita":
+    "Próxima visita",
+  "Sem visitas agendadas para hoje.":
+    "Sin visitas programadas para hoy.",
+  "Visitas hoje":
+    "Visitas de hoy",
+  "Visita associada":
+    "Visita asociada",
+  "Ainda não há clientes":
+    "Todavía no hay clientes",
+  "Sem resultados":
+    "Sin resultados",
+  "Comece por adicionar o seu primeiro cliente.":
+    "Empiece añadiendo su primer cliente.",
+  "{n} orçamento(s)":
+    "{n} presupuesto(s)",
+  "Funcionários com acesso à aplicação desta empresa.":
+    "Empleados con acceso a la aplicación de esta empresa.",
+  "Proprietário":
+    "Propietario",
+  "Administrador":
+    "Administrador",
+  "Alterar password":
+    "Cambiar contraseña",
+  "Carregar logótipo":
+    "Subir logotipo",
+  "PNG ou JPG, até 2 MB. Aparece nos orçamentos.":
+    "PNG o JPG, hasta 2 MB. Aparece en los presupuestos.",
+  "Aplicada por omissão aos novos orçamentos. Use 0 se for isento (art. 53º).":
+    "Se aplica por defecto a los nuevos presupuestos. Use 0 si está exento.",
+  "Pode editar o texto antes de enviar. Marcadores como {data} ou {valor} podem ser preenchidos manualmente.":
+    "Puede editar el texto antes de enviarlo. Los marcadores como {data} o {valor} se rellenan a mano.",
+  "de Serviços":
+    "de Servicios",
 }

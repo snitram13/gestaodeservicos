@@ -3,7 +3,7 @@ import { getFormatos } from "@/lib/formatos"
 
 import type { Visita } from "@/db/schema"
 import { cn } from "@/lib/utils"
-import { rotuloDia } from "@/lib/agenda"
+import { diasSemana, rotuloDia } from "@/lib/agenda"
 import { ESTADO_VISITA_META } from "@/lib/constants/estados"
 
 type Row = Visita & {
@@ -11,7 +11,7 @@ type Row = Visita & {
   tecnico: { id: string; nome: string; corAgenda: string | null } | null
 }
 
-const DIAS_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
+
 
 export async function MonthView({
   dias,
@@ -28,7 +28,7 @@ export async function MonthView({
   return (
     <div>
       <div className="text-muted-foreground mb-1 grid grid-cols-7 gap-1 text-center text-xs font-medium">
-        {DIAS_SEMANA.map((d) => (
+        {diasSemana(f.idioma).map((d) => (
           <div key={d}>{d}</div>
         ))}
       </div>

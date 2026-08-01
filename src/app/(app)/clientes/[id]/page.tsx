@@ -34,7 +34,7 @@ export default async function ClienteDetailPage({
   const f = await getFormatos()
   const { id } = await params
   const temServicos = await temModuloAtual(MODULOS.ORDENS_SERVICO)
-  const r = rotulosServico(temServicos)
+  const r = rotulosServico(temServicos, t)
 
   const c = await db.query.cliente.findFirst({
     where: and(eq(cliente.id, id), eq(cliente.empresaId, empresaId)),

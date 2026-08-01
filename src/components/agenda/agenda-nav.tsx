@@ -47,7 +47,7 @@ export async function AgendaNav({
           href={href(vista, nav.hoje)}
           className={cn(buttonVariants({ variant: "outline" }), "h-9")}
         >
-          Hoje
+          {t("Hoje")}
         </Link>
         <span className="ml-1 font-medium capitalize">{label}</span>
       </div>
@@ -64,7 +64,7 @@ export async function AgendaNav({
                 : "text-muted-foreground"
             )}
           >
-            {label}
+            {t(label)}
           </Link>
         ))}
       </div>

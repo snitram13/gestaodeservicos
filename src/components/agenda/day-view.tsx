@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getT } from "@/lib/i18n"
 import { getFormatos } from "@/lib/formatos"
 import { CalendarDays, Plus } from "lucide-react"
 
@@ -28,7 +29,8 @@ export async function DayView({
   temServicos?: boolean
 }) {
   const f = await getFormatos()
-  const r = rotulosServico(!!temServicos)
+  const t = await getT()
+  const r = rotulosServico(!!temServicos, t)
   return (
     <div className="space-y-2">
       {visitas.length === 0 ? (

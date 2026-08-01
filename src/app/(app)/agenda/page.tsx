@@ -45,7 +45,7 @@ export default async function AgendaPage({
   const f = await getFormatos()
   const t = await getT()
   const temServicos = await temModuloAtual(MODULOS.ORDENS_SERVICO)
-  const r = rotulosServico(temServicos)
+  const r = rotulosServico(temServicos, t)
   const sp = await searchParams
   const vista = vistaValida(sp.view)
   const date =

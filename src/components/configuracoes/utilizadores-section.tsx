@@ -67,7 +67,7 @@ export async function UtilizadoresSection() {
       <CardHeader>
         <CardTitle>{t("Utilizadores")}</CardTitle>
         <CardDescription>
-          Funcionários com acesso à aplicação desta empresa.
+          {t("Funcionários com acesso à aplicação desta empresa.")}
         </CardDescription>
         <CardAction>
           <NovoFuncionarioDialog />
@@ -95,7 +95,7 @@ export async function UtilizadoresSection() {
               </TableCell>
               <TableCell className="text-muted-foreground">{u.email}</TableCell>
               <TableCell>
-                <Badge variant={roleVariant(u.role)}>{ROLE_LABEL[u.role]}</Badge>
+                <Badge variant={roleVariant(u.role)}>{t(ROLE_LABEL[u.role])}</Badge>
               </TableCell>
               <TableCell>
                 {u.ativo ? (

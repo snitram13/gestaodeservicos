@@ -23,7 +23,7 @@ export default async function NovoOrcamentoPage({
 }) {
   const t = await getT()
   const { empresaId } = await requireEmpresa()
-  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO))
+  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO), t)
   const emp = await getEmpresaAtual()
   const { cliente: clienteId, visita: visitaId } = await searchParams
 

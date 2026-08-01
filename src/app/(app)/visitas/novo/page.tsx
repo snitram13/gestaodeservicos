@@ -1,4 +1,5 @@
 import { and, asc, eq } from "drizzle-orm"
+import { getT } from "@/lib/i18n"
 
 import { db } from "@/db/client"
 import { cliente, orcamento, utilizador } from "@/db/schema"
@@ -17,7 +18,8 @@ export default async function NovaVisitaPage({
   searchParams: Promise<{ cliente?: string; data?: string; orcamento?: string }>
 }) {
   const { empresaId } = await requireEmpresa()
-  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO))
+  const t = await getT()
+  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO), t)
   const { cliente: clienteId, data, orcamento: orcamentoId } = await searchParams
 
   const clientes = await db

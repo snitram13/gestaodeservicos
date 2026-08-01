@@ -134,3 +134,14 @@ export function rotuloDia(dateStr: string, idioma: Idioma = IDIOMA_PADRAO) {
     mesNum: Number(format(d, "M")),
   }
 }
+
+/** Cabeçalho da vista de mês: seg…dom no idioma escolhido. */
+export function diasSemana(idioma: Idioma = IDIOMA_PADRAO): string[] {
+  // 2026-06-01 é uma segunda-feira; serve só para gerar os nomes.
+  const base = parseISO("2026-06-01")
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = addDays(base, i)
+    const nome = format(d, "EEEEEE", { locale: loc(idioma) })
+    return nome.charAt(0).toUpperCase() + nome.slice(1)
+  })
+}

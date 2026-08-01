@@ -29,7 +29,7 @@ export default async function OrcamentosPage() {
     <div className="space-y-4">
       <PageHeader
         title={t("Orçamentos")}
-        description={`${orcamentos.length} orçamento(s)`}
+        description={t("{n} orçamento(s)", { n: orcamentos.length })}
       >
         <Link
           href="/orcamentos/novo"

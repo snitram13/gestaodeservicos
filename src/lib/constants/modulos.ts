@@ -37,52 +37,67 @@ export function temModulo(
  * Rótulos da unidade agendável: "Visita" por omissão, "Serviço" quando o módulo
  * Ordens de Serviço está ligado. Usado nos títulos/botões das páginas para não
  * misturar "Serviços" (menu) com "Visitas" (páginas).
+ *
+ * Os textos aqui estão em português e são a CHAVE do dicionário — passar o
+ * tradutor (`getT()` no servidor, `useT()` no cliente) para saírem traduzidos.
  */
-export function rotulosServico(temServicos: boolean) {
-  if (temServicos) {
-    return {
-      singular: "serviço",
-      plural: "serviços",
-      Singular: "Serviço",
-      Plural: "Serviços",
-      novo: "Novo serviço",
-      criado: "Serviço criado",
-      atualizado: "Serviço atualizado",
-      apagado: "Serviço apagado",
-      apagarAria: "Apagar serviço",
-      apagarTitulo: "Apagar serviço?",
-      apagarDesc:
-        "Vai apagar o serviço e os seus dados. Esta ação não pode ser anulada.",
-      notas: "Notas do serviço",
-      semNoDia: "Sem serviços neste dia",
-      agendar: "Toque abaixo para agendar um serviço.",
-      novoNoDia: "Novo serviço neste dia",
-      proximo: "Próximo serviço",
-      semHoje: "Sem serviços agendados para hoje.",
-      hoje: "Serviços hoje",
-      associada: "Serviço associado",
-    }
+const SERVICO = {
+  singular: "serviço",
+  plural: "serviços",
+  Singular: "Serviço",
+  Plural: "Serviços",
+  novo: "Novo serviço",
+  criado: "Serviço criado",
+  atualizado: "Serviço atualizado",
+  apagado: "Serviço apagado",
+  apagarAria: "Apagar serviço",
+  apagarTitulo: "Apagar serviço?",
+  apagarDesc:
+    "Vai apagar o serviço e os seus dados. Esta ação não pode ser anulada.",
+  notas: "Notas do serviço",
+  semNoDia: "Sem serviços neste dia",
+  agendar: "Toque abaixo para agendar um serviço.",
+  novoNoDia: "Novo serviço neste dia",
+  proximo: "Próximo serviço",
+  semHoje: "Sem serviços agendados para hoje.",
+  hoje: "Serviços hoje",
+  associada: "Serviço associado",
+} as const
+
+const VISITA: Record<keyof typeof SERVICO, string> = {
+  singular: "visita",
+  plural: "visitas",
+  Singular: "Visita",
+  Plural: "Visitas",
+  novo: "Nova visita",
+  criado: "Visita criada",
+  atualizado: "Visita atualizada",
+  apagado: "Visita apagada",
+  apagarAria: "Apagar visita",
+  apagarTitulo: "Apagar visita?",
+  apagarDesc:
+    "Vai apagar a visita e os serviços associados. Esta ação não pode ser anulada.",
+  notas: "Notas da visita",
+  semNoDia: "Sem visitas neste dia",
+  agendar: "Toque abaixo para agendar uma visita.",
+  novoNoDia: "Nova visita neste dia",
+  proximo: "Próxima visita",
+  semHoje: "Sem visitas agendadas para hoje.",
+  hoje: "Visitas hoje",
+  associada: "Visita associada",
+}
+
+export type RotulosServico = Record<keyof typeof SERVICO, string>
+
+export function rotulosServico(
+  temServicos: boolean,
+  /** Tradutor. Sem ele os rótulos ficam em português. */
+  t: (texto: string) => string = (x) => x
+): RotulosServico {
+  const base = temServicos ? SERVICO : VISITA
+  const out = {} as RotulosServico
+  for (const [k, v] of Object.entries(base)) {
+    out[k as keyof RotulosServico] = t(v)
   }
-  return {
-    singular: "visita",
-    plural: "visitas",
-    Singular: "Visita",
-    Plural: "Visitas",
-    novo: "Nova visita",
-    criado: "Visita criada",
-    atualizado: "Visita atualizada",
-    apagado: "Visita apagada",
-    apagarAria: "Apagar visita",
-    apagarTitulo: "Apagar visita?",
-    apagarDesc:
-      "Vai apagar a visita e os serviços associados. Esta ação não pode ser anulada.",
-    notas: "Notas da visita",
-    semNoDia: "Sem visitas neste dia",
-    agendar: "Toque abaixo para agendar uma visita.",
-    novoNoDia: "Nova visita neste dia",
-    proximo: "Próxima visita",
-    semHoje: "Sem visitas agendadas para hoje.",
-    hoje: "Visitas hoje",
-    associada: "Visita associada",
-  }
+  return out
 }

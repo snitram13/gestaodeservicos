@@ -11,7 +11,7 @@ import {
   subDays,
   subMonths,
 } from "date-fns"
-import { pt } from "date-fns/locale"
+import { es, fr, pt } from "date-fns/locale"
 import { and, asc, eq, gte, inArray, lt } from "drizzle-orm"
 import { ArrowRight, CalendarClock, Euro, FileText, Users } from "lucide-react"
 
@@ -44,9 +44,11 @@ export default async function DashboardPage() {
   const t = await getT()
   const { empresaId, email } = await requireEmpresa()
   const f = await getFormatos()
+  // nomes dos meses do gráfico no idioma da pessoa
+  const localeChart = { pt, es, fr }[f.idioma]
   // O dono da plataforma não usa a app de negócio — vai para o painel de controlo.
   if (isSuperAdmin(email)) redirect("/admin")
-  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO))
+  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO), t)
   const hoje = f.hoje()
   const inicioMes = `${hoje.slice(0, 7)}-01`
   const fimMes = format(addMonths(parseISO(inicioMes), 1), "yyyy-MM-dd")
@@ -127,7 +129,7 @@ export default async function DashboardPage() {
     const total = entradas6m
       .filter((t) => t.data.slice(0, 7) === key)
       .reduce((s, t) => s + Number(t.valor), 0)
-    chart.push({ mes: format(d, "LLL", { locale: pt }), total })
+    chart.push({ mes: format(d, "LLL", { locale: localeChart }), total })
   }
 
   return (

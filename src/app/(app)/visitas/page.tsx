@@ -34,7 +34,7 @@ export default async function VisitasPage({
   const { empresaId } = await requireEmpresa()
   const { estado } = await searchParams
   const temServicos = await temModuloAtual(MODULOS.ORDENS_SERVICO)
-  const r = rotulosServico(temServicos)
+  const r = rotulosServico(temServicos, t)
 
   const visitas = (await db.query.visita.findMany({
     where: and(

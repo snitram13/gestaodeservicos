@@ -3,6 +3,7 @@
 import { createContext, useContext } from "react"
 
 import { rotulosServico } from "@/lib/constants/modulos"
+import { useT } from "@/components/i18n/idioma-provider"
 
 /**
  * Disponibiliza aos componentes cliente os rótulos "Visita" vs "Serviço"
@@ -25,5 +26,6 @@ export function RotulosProvider({
 }
 
 export function useRotulos() {
-  return rotulosServico(useContext(TemServicosContext))
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- ambos são hooks
+  return rotulosServico(useContext(TemServicosContext), useT())
 }

@@ -43,7 +43,7 @@ export function MobileDrawer({
           <div className="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-lg">
             <Wrench className="size-5" />
           </div>
-          <SheetTitle className="text-base">Gestão de Serviços</SheetTitle>
+          <SheetTitle className="text-base">{t("Gestão de Serviços")}</SheetTitle>
         </SheetHeader>
         <div className="p-3">
           <SidebarNav

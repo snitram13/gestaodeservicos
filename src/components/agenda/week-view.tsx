@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getT } from "@/lib/i18n"
 import { getFormatos } from "@/lib/formatos"
 
 import type { Visita } from "@/db/schema"
@@ -24,7 +25,8 @@ export async function WeekView({
   temServicos?: boolean
 }) {
   const f = await getFormatos()
-  const rot = rotulosServico(!!temServicos)
+  const t = await getT()
+  const rot = rotulosServico(!!temServicos, t)
   return (
     <div className="grid grid-cols-1 gap-2 md:h-[calc(100dvh-14rem)] md:grid-cols-7">
       {dias.map((dia) => {

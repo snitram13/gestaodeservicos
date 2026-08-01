@@ -22,7 +22,7 @@ type Props = {
 
 export async function ClienteQuickActions({ cliente, temServicos }: Props) {
   const t = await getT()
-  const r = rotulosServico(!!temServicos)
+  const r = rotulosServico(!!temServicos, t)
   const itemCls = cn(
     buttonVariants({ variant: "outline" }),
     "h-auto flex-col gap-1 py-3"

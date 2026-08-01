@@ -37,7 +37,7 @@ export async function VisitasList({
 }) {
   const t = await getT()
   const f = await getFormatos()
-  const r = rotulosServico(!!temServicos)
+  const r = rotulosServico(!!temServicos, t)
   const rotulo = (v: Row) => v.titulo || `${r.Singular} #${v.numero}`
   return (
     <>

@@ -55,11 +55,11 @@ export default async function ClientesPage({
       {clientes.length === 0 ? (
         <EmptyState
           icon={Users}
-          title={termo ? "Sem resultados" : "Ainda não há clientes"}
+          title={termo ? t("Sem resultados") : t("Ainda não há clientes")}
           description={
             termo
               ? "Tente procurar por outro nome ou telefone."
-              : "Comece por adicionar o seu primeiro cliente."
+              : t("Comece por adicionar o seu primeiro cliente.")
           }
         >
           {!termo && (

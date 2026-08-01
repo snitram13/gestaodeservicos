@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import { getT } from "@/lib/i18n"
 import { and, asc, eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
@@ -23,7 +24,8 @@ export default async function EditarVisitaPage({
     with: { servicos: true },
   })
   if (!v) notFound()
-  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO))
+  const t = await getT()
+  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO), t)
 
   const clientes = await db
     .select({

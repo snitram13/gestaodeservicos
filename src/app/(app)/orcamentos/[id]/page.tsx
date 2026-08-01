@@ -32,7 +32,7 @@ export default async function OrcamentoDetailPage({
     with: { cliente: true, itens: true, visita: true },
   })
   if (!o) notFound()
-  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO))
+  const r = rotulosServico(await temModuloAtual(MODULOS.ORDENS_SERVICO), t)
 
   const itens = [...o.itens].sort((a, b) => a.ordem - b.ordem)
 
