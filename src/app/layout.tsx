@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
+import { getIdioma } from "@/lib/i18n"
 
 const sans = Geist({
   variable: "--font-sans",
@@ -38,14 +39,17 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // O idioma escolhido também tem de ir para o <html lang>, para o browser
+  // (corretor, tradutor, leitores de ecrã) saber em que língua está a página.
+  const idioma = await getIdioma()
   return (
     <html
-      lang="pt-PT"
+      lang={idioma}
       className={`${sans.variable} ${mono.variable} h-full antialiased`}
       suppressHydrationWarning
     >

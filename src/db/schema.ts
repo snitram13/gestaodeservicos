@@ -26,6 +26,8 @@ import {
   TIPOS_FOTO,
   TIPOS_TRANSACAO,
 } from "../lib/constants/enums"
+import { IDIOMAS } from "../lib/constants/idiomas"
+import { PAISES } from "../lib/constants/paises"
 
 /* ------------------------------------------------------------------ */
 /* Enumerações                                                         */
@@ -39,6 +41,8 @@ export const tipoTransacaoEnum = pgEnum("tipo_transacao", TIPOS_TRANSACAO)
 export const categoriaTransacaoEnum = pgEnum("categoria_transacao", CATEGORIAS_TRANSACAO)
 export const tipoFotoEnum = pgEnum("tipo_foto", TIPOS_FOTO)
 export const metodoPagamentoEnum = pgEnum("metodo_pagamento", METODOS_PAGAMENTO)
+export const paisEnum = pgEnum("pais", PAISES)
+export const idiomaEnum = pgEnum("idioma", IDIOMAS)
 
 /* ------------------------------------------------------------------ */
 /* Empresa (TENANT) — raiz de isolação multi-empresa                   */
@@ -53,6 +57,8 @@ export const metodoPagamentoEnum = pgEnum("metodo_pagamento", METODOS_PAGAMENTO)
 export const empresa = pgTable("empresa", {
   id: uuid("id").primaryKey().defaultRandom(),
   nome: text("nome").notNull().default("A minha empresa"),
+  // País do negócio: manda no telefone, código postal, nº fiscal, IVA e fuso.
+  pais: paisEnum("pais").notNull().default("PT"),
   slogan: text("slogan"),
   nif: text("nif"),
   telefone: text("telefone"),
@@ -109,6 +115,8 @@ export const utilizador = pgTable(
     role: utilizadorRoleEnum("role").notNull().default("TECNICO"),
     ativo: boolean("ativo").notNull().default(true),
     corAgenda: text("cor_agenda"),
+    // Idioma da interface. null = segue o idioma do país da empresa.
+    idioma: idiomaEnum("idioma"),
     criadoEm: timestamp("criado_em", { withTimezone: true })
       .notNull()
       .defaultNow(),

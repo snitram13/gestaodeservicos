@@ -6,12 +6,14 @@ import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
+import { useT } from "@/components/i18n/idioma-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export function LoginForm() {
   const router = useRouter()
+  const t = useT()
   const [loading, setLoading] = useState(false)
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -21,7 +23,7 @@ export function LoginForm() {
     const password = String(formData.get("password") ?? "")
 
     if (!email || !password) {
-      toast.error("Preencha o email e a palavra-passe.")
+      toast.error(t("Preencha o email e a palavra-passe."))
       return
     }
 
@@ -31,13 +33,15 @@ export function LoginForm() {
     setLoading(false)
 
     if (error) {
-      toast.error("Não foi possível entrar", {
-        description: "Verifique o email e a palavra-passe e tente novamente.",
+      toast.error(t("Não foi possível entrar"), {
+        description: t(
+          "Verifique o email e a palavra-passe e tente novamente."
+        ),
       })
       return
     }
 
-    toast.success("Sessão iniciada")
+    toast.success(t("Sessão iniciada"))
     router.push("/")
     router.refresh()
   }
@@ -45,7 +49,7 @@ export function LoginForm() {
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
       <div className="grid gap-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t("Email")}</Label>
         <Input
           id="email"
           name="email"
@@ -57,7 +61,7 @@ export function LoginForm() {
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="password">Palavra-passe</Label>
+        <Label htmlFor="password">{t("Palavra-passe")}</Label>
         <Input
           id="password"
           name="password"
@@ -69,7 +73,7 @@ export function LoginForm() {
       </div>
       <Button type="submit" className="h-11 w-full" disabled={loading}>
         {loading && <Loader2 className="size-4 animate-spin" />}
-        Entrar
+        {t("Entrar")}
       </Button>
     </form>
   )
