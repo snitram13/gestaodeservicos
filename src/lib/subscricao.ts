@@ -3,6 +3,7 @@ import {
   PRECO_FUNCIONARIO_EUR,
   TRIAL_DIAS,
 } from "@/lib/constants/subscricao"
+import { chaveDia } from "@/lib/formatters/date"
 
 const DIA_MS = 86_400_000
 
@@ -40,4 +41,21 @@ export function estadoAcesso(
 /** Data de fim do período gratuito, contada a partir de agora. */
 export function fimDoTrial(agora: Date = new Date()): Date {
   return new Date(agora.getTime() + TRIAL_DIAS * DIA_MS)
+}
+
+/** Soma dias a uma data (sem mexer no original). */
+export function adicionarDias(base: Date, dias: number): Date {
+  return new Date(base.getTime() + dias * DIA_MS)
+}
+
+/**
+ * Instante de fim do dia (23:59:59.999 em Lisboa) de uma data `YYYY-MM-DD`.
+ * O acesso deve terminar no FIM do dia escolhido, não à meia-noite; e o
+ * servidor corre em UTC, por isso Lisboa pode estar 1h à frente (verão).
+ */
+export function fimDoDiaLisboa(data: string): Date {
+  const utc = new Date(`${data}T23:59:59.999Z`)
+  if (Number.isNaN(utc.getTime())) return utc
+  // Se em Lisboa já for o dia seguinte (UTC+1), recua 1h.
+  return chaveDia(utc) === data ? utc : new Date(utc.getTime() - 3_600_000)
 }

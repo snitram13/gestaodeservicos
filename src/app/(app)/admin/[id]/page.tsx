@@ -95,6 +95,7 @@ export default async function AdminClientePage({
             ativo: emp.ativo,
             isMinha: false,
             mensalidade,
+            acessoAte: emp.acessoAte ? emp.acessoAte.toISOString() : null,
           }}
         />
       </div>

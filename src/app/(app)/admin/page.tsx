@@ -175,6 +175,9 @@ export default async function AdminPage() {
                           ativo: e.ativo,
                           isMinha: false,
                           mensalidade: mensalidadePorEmpresa.get(e.id) ?? 0,
+                          acessoAte: e.acessoAte
+                            ? e.acessoAte.toISOString()
+                            : null,
                         }}
                       />
                     </TableCell>

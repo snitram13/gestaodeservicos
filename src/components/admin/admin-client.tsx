@@ -7,10 +7,13 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import {
   Ban,
   Building2,
+  CalendarClock,
   Check,
   Copy,
   CreditCard,
+  Infinity as InfinityIcon,
   Loader2,
+  MoreHorizontal,
   RotateCcw,
   Users,
 } from "lucide-react"
@@ -18,12 +21,16 @@ import { toast } from "sonner"
 
 import {
   criarCliente,
+  definirAcesso,
   definirEstadoEmpresa,
   definirLimiteFuncionarios,
   registarPagamento,
+  type AjusteAcesso,
 } from "@/actions/admin"
 import { PRECO_FUNCIONARIO_EUR } from "@/lib/constants/subscricao"
+import { estadoAcesso } from "@/lib/subscricao"
 import { formatEuro } from "@/lib/formatters/currency"
+import { chaveDia, formatData } from "@/lib/formatters/date"
 import {
   criarClienteSchema,
   CRIAR_CLIENTE_VAZIO,
@@ -57,6 +64,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -275,23 +288,24 @@ function CredenciaisView({
 }
 
 /* ------------------------------------------------------------------ */
-/* Suspender / reativar empresa                                        */
+/* Ações por cliente (pagamento / acesso / suspender)                  */
 /* ------------------------------------------------------------------ */
 
-export function EmpresaAcoes({
-  item,
-}: {
-  item: {
-    id: string
-    nome: string
-    ativo: boolean
-    isMinha: boolean
-    mensalidade: number
-  }
-}) {
+export type EmpresaItem = {
+  id: string
+  nome: string
+  ativo: boolean
+  isMinha: boolean
+  mensalidade: number
+  /** Fim do acesso em ISO (null = ilimitado). */
+  acessoAte: string | null
+}
+
+export function EmpresaAcoes({ item }: { item: EmpresaItem }) {
   const router = useRouter()
   const [pagOpen, setPagOpen] = useState(false)
   const [estadoOpen, setEstadoOpen] = useState(false)
+  const [acessoOpen, setAcessoOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const suspender = item.ativo
 
@@ -335,20 +349,43 @@ export function EmpresaAcoes({
         type="button"
         size="sm"
         variant="outline"
-        onClick={() => setEstadoOpen(true)}
+        onClick={() => setAcessoOpen(true)}
       >
-        {suspender ? (
-          <>
-            <Ban className="size-4" />
-            Suspender
-          </>
-        ) : (
-          <>
-            <RotateCcw className="size-4" />
-            Reativar
-          </>
-        )}
+        <CalendarClock className="size-4" />
+        Acesso
       </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={<Button type="button" variant="ghost" size="icon-sm" />}
+        >
+          <MoreHorizontal className="size-4" />
+          <span className="sr-only">Mais ações</span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            variant={suspender ? "destructive" : "default"}
+            onClick={() => setEstadoOpen(true)}
+          >
+            {suspender ? (
+              <>
+                <Ban className="size-4" />
+                Suspender
+              </>
+            ) : (
+              <>
+                <RotateCcw className="size-4" />
+                Reativar
+              </>
+            )}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <GerirAcessoDialog
+        item={item}
+        open={acessoOpen}
+        onOpenChange={setAcessoOpen}
+      />
 
       {/* Registar pagamento (+1 mês) */}
       <AlertDialog open={pagOpen} onOpenChange={setPagOpen}>
@@ -407,6 +444,179 @@ export function EmpresaAcoes({
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Gerir acesso (dar mais dias/meses, data exata, ilimitado)           */
+/* ------------------------------------------------------------------ */
+
+const ATALHOS: { label: string; ajuste: AjusteAcesso }[] = [
+  { label: "+7 dias", ajuste: { tipo: "dias", valor: 7 } },
+  { label: "+15 dias", ajuste: { tipo: "dias", valor: 15 } },
+  { label: "+1 mês", ajuste: { tipo: "meses", valor: 1 } },
+  { label: "+3 meses", ajuste: { tipo: "meses", valor: 3 } },
+]
+
+export function GerirAcessoDialog({
+  item,
+  open,
+  onOpenChange,
+}: {
+  item: EmpresaItem
+  open: boolean
+  onOpenChange: (v: boolean) => void
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        {/* Montado só quando abre → os campos partem sempre do valor atual. */}
+        {open && (
+          <AcessoConteudo item={item} onDone={() => onOpenChange(false)} />
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function AcessoConteudo({
+  item,
+  onDone,
+}: {
+  item: EmpresaItem
+  onDone: () => void
+}) {
+  const router = useRouter()
+  const atual = item.acessoAte ? new Date(item.acessoAte) : null
+  const est = estadoAcesso(atual)
+  const [data, setData] = useState(chaveDia(atual ?? new Date()))
+  const [pendente, setPendente] = useState<string | null>(null)
+
+  async function aplicar(ajuste: AjusteAcesso, chave: string) {
+    setPendente(chave)
+    const res = await definirAcesso(item.id, ajuste)
+    setPendente(null)
+    if (!res.ok) {
+      toast.error("Não foi possível alterar o acesso", {
+        description: res.message,
+      })
+      return
+    }
+    toast.success(
+      res.acessoAte
+        ? `Acesso até ${formatData(res.acessoAte)}`
+        : "Acesso ilimitado"
+    )
+    onDone()
+    router.refresh()
+  }
+
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>Acesso — {item.nome}</DialogTitle>
+      </DialogHeader>
+
+      <div className="grid gap-4">
+        <div className="bg-muted rounded-lg p-3 text-sm">
+          <span className="text-muted-foreground">Situação atual: </span>
+          {est.estado === "ilimitado" ? (
+            <strong>acesso ilimitado</strong>
+          ) : est.estado === "expirado" ? (
+            <strong className="text-destructive">
+              expirado em {formatData(est.acessoAte)}
+            </strong>
+          ) : (
+            <>
+              <strong>até {formatData(est.acessoAte)}</strong>{" "}
+              <span className="text-muted-foreground">
+                (faltam {est.diasRestantes} dias)
+              </span>
+            </>
+          )}
+          {!item.ativo && (
+            <p className="text-destructive mt-1">
+              A empresa está suspensa — dar acesso volta a ativá-la.
+            </p>
+          )}
+        </div>
+
+        <div className="grid gap-2">
+          <Label>Dar mais tempo</Label>
+          <div className="flex flex-wrap gap-2">
+            {ATALHOS.map((a) => (
+              <Button
+                key={a.label}
+                type="button"
+                variant="outline"
+                className="h-11"
+                disabled={pendente != null}
+                onClick={() => aplicar(a.ajuste, a.label)}
+              >
+                {pendente === a.label && (
+                  <Loader2 className="size-4 animate-spin" />
+                )}
+                {a.label}
+              </Button>
+            ))}
+          </div>
+          <p className="text-muted-foreground text-xs">
+            Soma ao fim do acesso atual (ou a hoje, se já tiver expirado). Não
+            regista pagamento — é tempo de experiência oferecido.
+          </p>
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="acesso-data">Ou definir a data de fim</Label>
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              id="acesso-data"
+              type="date"
+              value={data}
+              onChange={(e) => setData(e.target.value)}
+              className="h-11 w-44"
+            />
+            <Button
+              type="button"
+              className="h-11"
+              disabled={pendente != null || !data}
+              onClick={() => aplicar({ tipo: "data", data }, "data")}
+            >
+              {pendente === "data" && <Loader2 className="size-4 animate-spin" />}
+              Guardar data
+            </Button>
+          </div>
+          <p className="text-muted-foreground text-xs">
+            O acesso termina no fim desse dia.
+          </p>
+        </div>
+
+        <div className="grid gap-2 border-t pt-3">
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-11 justify-start"
+            disabled={pendente != null || est.estado === "ilimitado"}
+            onClick={() => aplicar({ tipo: "ilimitado" }, "ilimitado")}
+          >
+            {pendente === "ilimitado" ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <InfinityIcon className="size-4" />
+            )}
+            {est.estado === "ilimitado"
+              ? "Já tem acesso ilimitado"
+              : "Tornar o acesso ilimitado (sem data de fim)"}
+          </Button>
+        </div>
+      </div>
+
+      <DialogFooter>
+        <DialogClose render={<Button type="button" variant="outline" />}>
+          Fechar
+        </DialogClose>
+      </DialogFooter>
+    </>
   )
 }
 

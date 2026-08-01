@@ -10,7 +10,12 @@ import { empresa, pagamento, utilizador } from "@/db/schema"
 import { requireSuperAdmin } from "@/lib/auth"
 import { hojeKey } from "@/lib/agenda"
 import { contarFuncionarios } from "@/lib/funcionarios"
-import { fimDoTrial, mensalidadeDe } from "@/lib/subscricao"
+import {
+  adicionarDias,
+  fimDoDiaLisboa,
+  fimDoTrial,
+  mensalidadeDe,
+} from "@/lib/subscricao"
 import { MODULOS, MODULOS_META, type ModuloKey } from "@/lib/constants/modulos"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import {
@@ -19,6 +24,15 @@ import {
 } from "@/lib/validations/admin"
 
 type Ok = { ok: true } | { ok: false; message: string }
+/** Formas de alterar o período de acesso de um cliente. */
+export type AjusteAcesso =
+  | { tipo: "dias"; valor: number }
+  | { tipo: "meses"; valor: number }
+  | { tipo: "data"; data: string }
+  | { tipo: "ilimitado" }
+type AcessoResultado =
+  | { ok: true; acessoAte: string | null }
+  | { ok: false; message: string }
 type CriarResultado =
   | { ok: true; email: string; password: string }
   | { ok: false; message: string }
@@ -157,6 +171,79 @@ export async function registarPagamento(empresaId: string): Promise<Ok> {
   revalidatePath("/admin/financeiro")
   revalidatePath(`/admin/${empresaId}`)
   return { ok: true }
+}
+
+/**
+ * Ajuste manual do período de acesso de um cliente — dar mais dias/meses de
+ * experiência, marcar uma data exata de fim ou tornar o acesso ilimitado.
+ * NÃO regista nada no ledger (não é um pagamento) — é uma cortesia/prolongamento
+ * decidido pelo super-admin. Se a nova data ficar no futuro, a empresa é
+ * reativada (deixa de estar suspensa).
+ */
+export async function definirAcesso(
+  empresaId: string,
+  ajuste: AjusteAcesso
+): Promise<AcessoResultado> {
+  const ctx = await requireSuperAdmin()
+  if (empresaId === ctx.empresaId) {
+    return { ok: false, message: "Não podes alterar o acesso da tua empresa." }
+  }
+  const alvo = await db.query.empresa.findFirst({
+    columns: { acessoAte: true },
+    where: eq(empresa.id, empresaId),
+  })
+  if (!alvo) return { ok: false, message: "Empresa não encontrada." }
+
+  let nova: Date | null
+  if (ajuste.tipo === "ilimitado") {
+    nova = null
+  } else if (ajuste.tipo === "data") {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(ajuste.data)) {
+      return { ok: false, message: "Data inválida." }
+    }
+    nova = fimDoDiaLisboa(ajuste.data)
+    if (Number.isNaN(nova.getTime())) {
+      return { ok: false, message: "Data inválida." }
+    }
+  } else {
+    if (!alvo.acessoAte) {
+      return {
+        ok: false,
+        message:
+          "Este cliente já tem acesso ilimitado. Defina primeiro uma data de fim.",
+      }
+    }
+    const n = Math.trunc(Number(ajuste.valor))
+    // Estende a partir do fim atual se ainda for futuro; senão a partir de hoje.
+    const agora = new Date()
+    const base = alvo.acessoAte.getTime() > agora.getTime() ? alvo.acessoAte : agora
+    if (ajuste.tipo === "dias") {
+      if (!Number.isFinite(n) || n < 1 || n > 3650) {
+        return { ok: false, message: "Número de dias inválido (1–3650)." }
+      }
+      nova = adicionarDias(base, n)
+    } else {
+      if (!Number.isFinite(n) || n < 1 || n > 60) {
+        return { ok: false, message: "Número de meses inválido (1–60)." }
+      }
+      nova = addMonths(base, n)
+    }
+  }
+
+  // Dar acesso implica desbloquear; uma data no passado não reativa nada.
+  const desbloquear = nova === null || nova.getTime() > Date.now()
+  await db
+    .update(empresa)
+    .set({
+      acessoAte: nova,
+      ...(desbloquear ? { ativo: true } : {}),
+      atualizadoEm: new Date(),
+    })
+    .where(eq(empresa.id, empresaId))
+
+  revalidatePath("/admin")
+  revalidatePath(`/admin/${empresaId}`)
+  return { ok: true, acessoAte: nova ? nova.toISOString() : null }
 }
 
 /**
