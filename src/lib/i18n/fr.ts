@@ -384,4 +384,39 @@ export const FR: Record<string, string> = {
   "Preenche a morada e a cidade automaticamente.": "Remplit l'adresse et la ville automatiquement.",
   "Remover esta foto?": "Retirer cette photo ?",
   "mantêm-se": "sont conservées",
+
+  /* Modelos de WhatsApp e PDFs -------------------------------------- */
+  "Confirmar agendamento":
+    "Confirmer le rendez-vous",
+  "Estou a caminho":
+    "Je suis en route",
+  "Orçamento enviado":
+    "Devis envoyé",
+  "Serviço concluído":
+    "Intervention terminée",
+  "Pedir avaliação":
+    "Demander un avis",
+  "Lembrete de pagamento":
+    "Rappel de paiement",
+  "Bom dia {nome}! Confirmo o serviço para {data} às {hora} em {morada}. Com os melhores cumprimentos.":
+    "Bonjour {nome} ! Je vous confirme l'intervention du {data} à {hora} au {morada}. Cordialement.",
+  "Olá {nome}, estou a caminho. Chego dentro de alguns minutos. Obrigado!":
+    "Bonjour {nome}, je suis en route. J'arrive dans quelques minutes. Merci !",
+  "Olá {nome}, segue o orçamento para o serviço solicitado, no valor de {valor}. Fico a aguardar a sua confirmação. Obrigado!":
+    "Bonjour {nome}, voici le devis pour l'intervention demandée, d'un montant de {valor}. Dans l'attente de votre confirmation. Merci !",
+  "Olá {nome}, o serviço foi concluído. Obrigado pela preferência! Para qualquer questão estou ao dispor.":
+    "Bonjour {nome}, l'intervention est terminée. Merci de votre confiance ! Je reste à votre disposition.",
+  "Olá {nome}, foi um gosto trabalhar consigo! Se ficou satisfeito com o serviço, agradeço que deixe uma avaliação. Muito obrigado!":
+    "Bonjour {nome}, ce fut un plaisir de travailler avec vous ! Si vous êtes satisfait de l'intervention, un avis me ferait très plaisir. Merci beaucoup !",
+  "Olá {nome}, deixo um lembrete do valor pendente de {valor}, referente ao serviço realizado. Obrigado!":
+    "Bonjour {nome}, petit rappel concernant le montant de {valor} restant dû pour l'intervention réalisée. Merci !",
+  "ORÇAMENTO":
+    "DEVIS",
+  "PARA":
+    "POUR",
+  "ORDEM DE SERVIÇO":
+    "BON D'INTERVENTION",
+  "CLIENTE": "CLIENT",
+  "SERVIÇOS": "PRESTATIONS",
+  "DATA": "DATE",
 }

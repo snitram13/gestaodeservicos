@@ -7,8 +7,9 @@ import {
   View,
 } from "@react-pdf/renderer"
 
-import { formatEuro } from "@/lib/formatters/currency"
-import { formatData, formatHora } from "@/lib/formatters/date"
+import type { Traduzir } from "@/lib/i18n/dicionarios"
+import type { Formatos } from "@/lib/formatos"
+
 import { CATEGORIA_META } from "@/lib/constants/categorias"
 import type { Cliente, Empresa, Servico, Visita } from "@/db/schema"
 
@@ -100,6 +101,10 @@ const styles = StyleSheet.create({
 })
 
 type Props = {
+  /** Tradutor do idioma da empresa (o PDF vai para o cliente final). */
+  t: Traduzir
+  /** Formatadores no fuso/idioma da empresa (ver lib/formatos.ts). */
+  fmt: Pick<Formatos, "data" | "hora" | "euro">
   visita: Visita & { cliente: Cliente | null; servicos: Servico[] }
   config: Empresa
   logo: string | null
@@ -109,6 +114,8 @@ type Props = {
 }
 
 export function OrdemServicoPDF({
+  t,
+  fmt,
   visita: v,
   config,
   logo,
@@ -134,16 +141,16 @@ export function OrdemServicoPDF({
             </Text>
           </View>
           <View>
-            <Text style={styles.docTitle}>Ordem de Serviço</Text>
+            <Text style={styles.docTitle}>{t("Ordem de Serviço")}</Text>
             <Text style={styles.docMeta}>
-              {`Nº ${v.numero}\n${formatData(v.agendadoPara)} às ${formatHora(v.agendadoPara)}`}
+              {`Nº ${v.numero}\n${fmt.data(v.agendadoPara)} às ${fmt.hora(v.agendadoPara)}`}
             </Text>
           </View>
         </View>
 
         {/* Cliente */}
         <View style={styles.section}>
-          <Text style={styles.label}>CLIENTE</Text>
+          <Text style={styles.label}>{t("CLIENTE")}</Text>
           <Text>{v.cliente?.nome ?? "—"}</Text>
           <Text style={styles.contact}>
             {[v.cliente?.telefone, v.moradaServico ?? v.cliente?.morada, v.cidade]
@@ -154,12 +161,12 @@ export function OrdemServicoPDF({
 
         {/* Serviços / materiais */}
         <View style={styles.section}>
-          <Text style={styles.title}>Serviços e materiais</Text>
+          <Text style={styles.title}>{t("Serviços e materiais")}</Text>
           <View style={styles.th}>
-            <Text style={styles.cDesc}>Descrição</Text>
-            <Text style={styles.cVal}>Mão de obra</Text>
-            <Text style={styles.cVal}>Material</Text>
-            <Text style={styles.cVal}>Total</Text>
+            <Text style={styles.cDesc}>{t("Descrição")}</Text>
+            <Text style={styles.cVal}>{t("Mão de obra")}</Text>
+            <Text style={styles.cVal}>{t("Material")}</Text>
+            <Text style={styles.cVal}>{t("Total")}</Text>
           </View>
           {servicos.map((s) => (
             <View key={s.id} style={styles.tr}>
@@ -168,23 +175,23 @@ export function OrdemServicoPDF({
                 {"  ·  "}
                 {CATEGORIA_META[s.categoria].label}
               </Text>
-              <Text style={styles.cVal}>{formatEuro(s.maoDeObra)}</Text>
-              <Text style={styles.cVal}>{formatEuro(s.material)}</Text>
-              <Text style={styles.cVal}>{formatEuro(s.valor)}</Text>
+              <Text style={styles.cVal}>{fmt.euro(s.maoDeObra)}</Text>
+              <Text style={styles.cVal}>{fmt.euro(s.material)}</Text>
+              <Text style={styles.cVal}>{fmt.euro(s.valor)}</Text>
             </View>
           ))}
           <View style={styles.totals}>
             <View style={styles.totalRow}>
-              <Text style={{ color: C.muted }}>Serviços</Text>
-              <Text>{formatEuro(somaServicos)}</Text>
+              <Text style={{ color: C.muted }}>{t("Serviços")}</Text>
+              <Text>{fmt.euro(somaServicos)}</Text>
             </View>
             <View style={styles.totalRow}>
-              <Text style={{ color: C.muted }}>Deslocação</Text>
-              <Text>{formatEuro(v.deslocacao)}</Text>
+              <Text style={{ color: C.muted }}>{t("Deslocação")}</Text>
+              <Text>{fmt.euro(v.deslocacao)}</Text>
             </View>
             <View style={styles.grandTotal}>
-              <Text>Total</Text>
-              <Text>{formatEuro(v.valor)}</Text>
+              <Text>{t("Total")}</Text>
+              <Text>{fmt.euro(v.valor)}</Text>
             </View>
           </View>
         </View>
@@ -192,11 +199,11 @@ export function OrdemServicoPDF({
         {/* Fotos — Antes e Depois lado a lado */}
         {(fotosAntes.length > 0 || fotosDepois.length > 0) && (
           <View style={styles.section} wrap={false}>
-            <Text style={styles.title}>Fotos</Text>
+            <Text style={styles.title}>{t("Fotos")}</Text>
             <View style={styles.fotosGrid}>
               {fotosAntes.length > 0 && (
                 <View style={styles.fotosCol}>
-                  <Text style={styles.fotoLabel}>ANTES</Text>
+                  <Text style={styles.fotoLabel}>{t("ANTES")}</Text>
                   <View style={styles.fotoRow}>
                     {fotosAntes.map((u, i) => (
                       <Image key={i} src={u} style={styles.foto} />
@@ -206,7 +213,7 @@ export function OrdemServicoPDF({
               )}
               {fotosDepois.length > 0 && (
                 <View style={styles.fotosCol}>
-                  <Text style={styles.fotoLabel}>DEPOIS</Text>
+                  <Text style={styles.fotoLabel}>{t("DEPOIS")}</Text>
                   <View style={styles.fotoRow}>
                     {fotosDepois.map((u, i) => (
                       <Image key={i} src={u} style={styles.foto} />
@@ -220,7 +227,7 @@ export function OrdemServicoPDF({
 
         {/* Assinatura */}
         <View style={styles.section} wrap={false}>
-          <Text style={styles.title}>Assinatura do cliente</Text>
+          <Text style={styles.title}>{t("Assinatura do cliente")}</Text>
           {assinaturaUrl ? (
             <Image src={assinaturaUrl} style={styles.assinatura} />
           ) : (

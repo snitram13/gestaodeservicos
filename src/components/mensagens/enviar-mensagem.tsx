@@ -55,15 +55,15 @@ export function EnviarMensagem({ clientes }: { clientes: ClienteOpt[] }) {
         <div className="grid gap-2">
           <Label>{t("Modelos")}</Label>
           <div className="flex flex-wrap gap-2">
-            {TEMPLATES_WHATSAPP.map((t) => (
+            {TEMPLATES_WHATSAPP.map((m) => (
               <Button
-                key={t.id}
+                key={m.id}
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => aplicarModelo(t.texto)}
+                onClick={() => aplicarModelo(t(m.texto))}
               >
-                {t.titulo}
+                {t(m.titulo)}
               </Button>
             ))}
           </div>

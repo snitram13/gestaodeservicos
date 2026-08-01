@@ -36,10 +36,10 @@ export default async function MensagensPage() {
       <div>
         <h3 className="mb-2 text-sm font-medium">{t("Modelos disponíveis")}</h3>
         <div className="grid gap-2 sm:grid-cols-2">
-          {TEMPLATES_WHATSAPP.map((t) => (
-            <Card key={t.id} className="gap-1 p-4">
-              <p className="font-medium">{t.titulo}</p>
-              <p className="text-muted-foreground text-sm">{t.texto}</p>
+          {TEMPLATES_WHATSAPP.map((m) => (
+            <Card key={m.id} className="gap-1 p-4">
+              <p className="font-medium">{t(m.titulo)}</p>
+              <p className="text-muted-foreground text-sm">{t(m.texto)}</p>
             </Card>
           ))}
         </div>

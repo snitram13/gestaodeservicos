@@ -7,8 +7,9 @@ import {
   View,
 } from "@react-pdf/renderer"
 
-import { formatEuro } from "@/lib/formatters/currency"
-import { formatData } from "@/lib/formatters/date"
+import type { Traduzir } from "@/lib/i18n/dicionarios"
+import type { Formatos } from "@/lib/formatos"
+
 import type {
   Cliente,
   Empresa,
@@ -88,6 +89,10 @@ const styles = StyleSheet.create({
 })
 
 type Props = {
+  /** Tradutor do idioma da empresa (o PDF vai para o cliente final). */
+  t: Traduzir
+  /** Formatadores no fuso/idioma da empresa (ver lib/formatos.ts). */
+  fmt: Pick<Formatos, "data" | "hora" | "euro">
   orcamento: Orcamento & {
     cliente: Cliente | null
     itens: OrcamentoItem[]
@@ -96,7 +101,7 @@ type Props = {
   logo?: string | null
 }
 
-export function OrcamentoPDF({ orcamento: o, config, logo = null }: Props) {
+export function OrcamentoPDF({ t, fmt, orcamento: o, config, logo = null }: Props) {
   const itens = [...o.itens].sort((a, b) => a.ordem - b.ordem)
 
   return (
@@ -122,19 +127,19 @@ export function OrcamentoPDF({ orcamento: o, config, logo = null }: Props) {
             </Text>
           </View>
           <View>
-            <Text style={styles.docTitle}>ORÇAMENTO</Text>
+            <Text style={styles.docTitle}>{t("ORÇAMENTO")}</Text>
             <Text style={styles.docMeta}>
               {`Nº ${o.numero}`}
               {"\n"}
-              {`Data: ${formatData(o.criadoEm)}`}
-              {o.validade ? `\nVálido até: ${formatData(o.validade)}` : ""}
+              {`Data: ${fmt.data(o.criadoEm)}`}
+              {o.validade ? `\nVálido até: ${fmt.data(o.validade)}` : ""}
             </Text>
           </View>
         </View>
 
         {/* Cliente */}
         <View style={styles.section}>
-          <Text style={styles.label}>PARA</Text>
+          <Text style={styles.label}>{t("PARA")}</Text>
           <Text style={{ fontFamily: "Helvetica-Bold" }}>
             {o.cliente?.nome ?? "—"}
           </Text>
@@ -154,7 +159,7 @@ export function OrcamentoPDF({ orcamento: o, config, logo = null }: Props) {
         {/* Local da obra */}
         {(o.morada || o.cidade) && (
           <View style={styles.section}>
-            <Text style={styles.label}>LOCAL DA OBRA</Text>
+            <Text style={styles.label}>{t("LOCAL DA OBRA")}</Text>
             <Text style={styles.desc}>
               {[o.morada, o.cidade].filter(Boolean).join(", ")}
             </Text>
@@ -167,35 +172,35 @@ export function OrcamentoPDF({ orcamento: o, config, logo = null }: Props) {
 
         {/* Tabela */}
         <View style={styles.th}>
-          <Text style={styles.cDesc}>Descrição</Text>
-          <Text style={styles.cQtd}>Qtd.</Text>
-          <Text style={styles.cPreco}>Preço un.</Text>
-          <Text style={styles.cTotal}>Total</Text>
+          <Text style={styles.cDesc}>{t("Descrição")}</Text>
+          <Text style={styles.cQtd}>{t("Qtd.")}</Text>
+          <Text style={styles.cPreco}>{t("Preço un.")}</Text>
+          <Text style={styles.cTotal}>{t("Total")}</Text>
         </View>
         {itens.map((it) => (
           <View style={styles.tr} key={it.id}>
             <Text style={styles.cDesc}>{it.descricao}</Text>
             <Text style={styles.cQtd}>{Number(it.quantidade)}</Text>
-            <Text style={styles.cPreco}>{formatEuro(it.precoUnit)}</Text>
-            <Text style={styles.cTotal}>{formatEuro(it.totalLinha)}</Text>
+            <Text style={styles.cPreco}>{fmt.euro(it.precoUnit)}</Text>
+            <Text style={styles.cTotal}>{fmt.euro(it.totalLinha)}</Text>
           </View>
         ))}
 
         {/* Totais */}
         <View style={styles.totals}>
           <View style={styles.totalRow}>
-            <Text style={{ color: C.muted }}>Subtotal</Text>
-            <Text>{formatEuro(o.subtotal)}</Text>
+            <Text style={{ color: C.muted }}>{t("Subtotal")}</Text>
+            <Text>{fmt.euro(o.subtotal)}</Text>
           </View>
           <View style={styles.totalRow}>
             <Text style={{ color: C.muted }}>
               {`IVA (${Number(o.taxaIva)}%)`}
             </Text>
-            <Text>{formatEuro(o.totalIva)}</Text>
+            <Text>{fmt.euro(o.totalIva)}</Text>
           </View>
           <View style={styles.grandTotal}>
-            <Text>Total</Text>
-            <Text>{formatEuro(o.total)}</Text>
+            <Text>{t("Total")}</Text>
+            <Text>{fmt.euro(o.total)}</Text>
           </View>
         </View>
 

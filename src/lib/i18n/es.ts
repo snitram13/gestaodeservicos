@@ -378,4 +378,39 @@ export const ES: Record<string, string> = {
   "Preenche a morada e a cidade automaticamente.": "Rellena la dirección y la ciudad automáticamente.",
   "Remover esta foto?": "¿Quitar esta foto?",
   "mantêm-se": "se mantienen",
+
+  /* Modelos de WhatsApp e PDFs -------------------------------------- */
+  "Confirmar agendamento":
+    "Confirmar la cita",
+  "Estou a caminho":
+    "Voy de camino",
+  "Orçamento enviado":
+    "Presupuesto enviado",
+  "Serviço concluído":
+    "Servicio finalizado",
+  "Pedir avaliação":
+    "Pedir valoración",
+  "Lembrete de pagamento":
+    "Recordatorio de pago",
+  "Bom dia {nome}! Confirmo o serviço para {data} às {hora} em {morada}. Com os melhores cumprimentos.":
+    "¡Buenos días {nome}! Le confirmo el servicio para el {data} a las {hora} en {morada}. Un cordial saludo.",
+  "Olá {nome}, estou a caminho. Chego dentro de alguns minutos. Obrigado!":
+    "Hola {nome}, voy de camino. Llego en unos minutos. ¡Gracias!",
+  "Olá {nome}, segue o orçamento para o serviço solicitado, no valor de {valor}. Fico a aguardar a sua confirmação. Obrigado!":
+    "Hola {nome}, le envío el presupuesto del servicio solicitado, por un importe de {valor}. Quedo a la espera de su confirmación. ¡Gracias!",
+  "Olá {nome}, o serviço foi concluído. Obrigado pela preferência! Para qualquer questão estou ao dispor.":
+    "Hola {nome}, el servicio ha quedado finalizado. ¡Gracias por confiar en nosotros! Quedo a su disposición para cualquier duda.",
+  "Olá {nome}, foi um gosto trabalhar consigo! Se ficou satisfeito com o serviço, agradeço que deixe uma avaliação. Muito obrigado!":
+    "Hola {nome}, ¡ha sido un placer trabajar con usted! Si ha quedado satisfecho con el servicio, le agradecería que dejara una valoración. ¡Muchas gracias!",
+  "Olá {nome}, deixo um lembrete do valor pendente de {valor}, referente ao serviço realizado. Obrigado!":
+    "Hola {nome}, le recuerdo el importe pendiente de {valor} por el servicio realizado. ¡Gracias!",
+  "ORÇAMENTO":
+    "PRESUPUESTO",
+  "PARA":
+    "PARA",
+  "ORDEM DE SERVIÇO":
+    "ORDEN DE TRABAJO",
+  "CLIENTE": "CLIENTE",
+  "SERVIÇOS": "SERVICIOS",
+  "DATA": "FECHA",
 }

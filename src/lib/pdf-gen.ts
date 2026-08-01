@@ -1,4 +1,6 @@
 import "server-only"
+import { getFormatos } from "@/lib/formatos"
+import { getT } from "@/lib/i18n"
 import { createElement } from "react"
 import { renderToBuffer } from "@react-pdf/renderer"
 import { and, eq } from "drizzle-orm"
@@ -49,10 +51,13 @@ export async function bufferOrcamento(
   const admin = createSupabaseAdminClient()
   const logo = await comoDataUri(admin, BUCKET_LOGO, config.logoPath)
 
+  const [t, fmt] = await Promise.all([getT(), getFormatos()])
   const element = createElement(OrcamentoPDF, {
     orcamento: o,
     config,
     logo,
+    t,
+    fmt,
   }) as Parameters<typeof renderToBuffer>[0]
   return { buffer: await renderToBuffer(element), numero: o.numero }
 }
@@ -80,10 +85,13 @@ export async function bufferOrdemServico(
     comoDataUri(admin, BUCKET_LOGO, config.logoPath),
   ])
 
+  const [t, fmt] = await Promise.all([getT(), getFormatos()])
   const element = createElement(OrdemServicoPDF, {
     visita: v,
     config,
     logo,
+    t,
+    fmt,
     fotosAntes: fotosAntes.filter((u): u is string => !!u),
     fotosDepois: fotosDepois.filter((u): u is string => !!u),
     assinaturaUrl,
