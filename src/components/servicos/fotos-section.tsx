@@ -2,11 +2,24 @@
 
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Camera, Loader2, Trash2 } from "lucide-react"
+import { Camera, ImagePlus, Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { apagarFoto, uploadFoto } from "@/actions/fotos"
 import { Button } from "@/components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
+/** Máximo de fotos por seleção (evita esperas enormes no telemóvel). */
+const MAX_POR_VEZ = 20
 
 export type FotoUI = {
   id: string
@@ -86,64 +99,129 @@ function Galeria({
   fotos: FotoUI[]
 }) {
   const router = useRouter()
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [loading, setLoading] = useState(false)
+  const camaraRef = useRef<HTMLInputElement>(null)
+  const galeriaRef = useRef<HTMLInputElement>(null)
+  const [progresso, setProgresso] = useState<{ feita: number; total: number } | null>(
+    null
+  )
+  const [aRemover, setARemover] = useState<FotoUI | null>(null)
+  const [aApagar, setAApagar] = useState(false)
+  const ocupado = progresso != null
 
-  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const original = e.target.files?.[0]
+  /** Envia as fotos uma a uma (o limite dos Server Actions é por pedido). */
+  async function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const escolhidas = Array.from(e.target.files ?? [])
     e.target.value = ""
-    if (!original) return
-    setLoading(true)
-    const file = await comprimir(original)
-    const fd = new FormData()
-    fd.set("visitaId", visitaId)
-    fd.set("tipo", tipo)
-    fd.set("file", file)
-    const res = await uploadFoto(fd)
-    setLoading(false)
-    if (!res.ok) {
-      toast.error("Não foi possível carregar", { description: res.message })
-      return
+    if (escolhidas.length === 0) return
+    const ficheiros = escolhidas.slice(0, MAX_POR_VEZ)
+    if (escolhidas.length > MAX_POR_VEZ) {
+      toast.warning(`Máximo ${MAX_POR_VEZ} fotos de cada vez.`)
     }
-    toast.success("Foto adicionada")
+
+    let enviadas = 0
+    let erro = ""
+    for (const [i, original] of ficheiros.entries()) {
+      setProgresso({ feita: i, total: ficheiros.length })
+      const file = await comprimir(original)
+      const fd = new FormData()
+      fd.set("visitaId", visitaId)
+      fd.set("tipo", tipo)
+      fd.set("file", file)
+      const res = await uploadFoto(fd)
+      if (res.ok) enviadas++
+      else erro = erro || res.message
+    }
+    setProgresso(null)
+
+    if (enviadas > 0) {
+      toast.success(
+        enviadas === 1 ? "Foto adicionada" : `${enviadas} fotos adicionadas`
+      )
+    }
+    const falhadas = ficheiros.length - enviadas
+    if (falhadas > 0) {
+      toast.error(
+        falhadas === 1
+          ? "Uma foto não carregou"
+          : `${falhadas} fotos não carregaram`,
+        { description: erro }
+      )
+    }
     router.refresh()
   }
 
-  async function remover(id: string) {
-    const res = await apagarFoto(id)
+  async function confirmarRemover() {
+    if (!aRemover) return
+    setAApagar(true)
+    const res = await apagarFoto(aRemover.id)
+    setAApagar(false)
     if (!res.ok) {
       toast.error("Não foi possível apagar", { description: res.message })
       return
     }
     toast.success("Foto removida")
+    setARemover(null)
     router.refresh()
   }
 
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between">
-        <p className="text-sm font-medium">{titulo}</p>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={loading}
-          onClick={() => inputRef.current?.click()}
-        >
-          {loading ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Camera className="size-4" />
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-medium">
+          {titulo}
+          {fotos.length > 0 && (
+            <span className="text-muted-foreground font-normal">
+              {" "}
+              ({fotos.length})
+            </span>
           )}
-          Adicionar
-        </Button>
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={ocupado}
+            onClick={() => camaraRef.current?.click()}
+          >
+            {ocupado ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Camera className="size-4" />
+            )}
+            {ocupado
+              ? `A enviar ${progresso.feita + 1}/${progresso.total}`
+              : "Câmara"}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={ocupado}
+            onClick={() => galeriaRef.current?.click()}
+            title="Escolher várias fotos"
+          >
+            <ImagePlus className="size-4" />
+            Galeria
+          </Button>
+        </div>
+        {/* Câmara: tira uma foto na hora. */}
         <input
-          ref={inputRef}
+          ref={camaraRef}
           type="file"
           accept="image/*"
           capture="environment"
           className="hidden"
-          onChange={onFile}
+          onChange={onFiles}
+        />
+        {/* Galeria: permite escolher várias de uma vez. */}
+        <input
+          ref={galeriaRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={onFiles}
         />
       </div>
       {fotos.length === 0 ? (
@@ -155,7 +233,7 @@ function Galeria({
           {fotos.map((f) => (
             <div
               key={f.id}
-              className="group relative aspect-square overflow-hidden rounded-lg border"
+              className="relative aspect-square overflow-hidden rounded-lg border"
             >
               {f.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -167,18 +245,56 @@ function Galeria({
               ) : (
                 <div className="bg-muted size-full" />
               )}
+              {/* Sempre visível: no telemóvel não há hover. */}
               <button
                 type="button"
-                onClick={() => remover(f.id)}
-                className="absolute top-1 right-1 rounded-md bg-black/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                onClick={() => setARemover(f)}
+                className="absolute top-1 right-1 rounded-md bg-black/60 p-1.5 text-white active:bg-black/80"
                 aria-label="Remover foto"
               >
-                <Trash2 className="size-3.5" />
+                <Trash2 className="size-4" />
               </button>
             </div>
           ))}
         </div>
       )}
+
+      <AlertDialog
+        open={aRemover != null}
+        onOpenChange={(v) => !v && setARemover(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover esta foto?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A foto é apagada definitivamente e deixa de aparecer na ordem de
+              serviço.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {aRemover?.url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={aRemover.url}
+              alt=""
+              className="mx-auto max-h-48 rounded-lg object-contain"
+            />
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={aApagar}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={aApagar}
+              onClick={(e) => {
+                e.preventDefault()
+                confirmarRemover()
+              }}
+            >
+              {aApagar && <Loader2 className="size-4 animate-spin" />}
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
