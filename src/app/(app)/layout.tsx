@@ -28,17 +28,19 @@ export default async function AppLayout({
     : temModulo(await getModulosAtuais(), MODULOS.ORDENS_SERVICO)
 
   return (
-    <AppShell
-      userEmail={user.email}
-      showAdmin={superAdmin}
-      temServicos={temServicos}
-    >
-      <IdiomaProvider idioma={idioma} pais={pais} dic={dic}>
+    // O provider tem de envolver o AppShell — a barra lateral, o topo e a barra
+    // do telemóvel também precisam de tradução.
+    <IdiomaProvider idioma={idioma} pais={pais} dic={dic}>
+      <AppShell
+        userEmail={user.email}
+        showAdmin={superAdmin}
+        temServicos={temServicos}
+      >
         <RotulosProvider temServicos={temServicos}>
           <AvisoAcesso />
           {children}
         </RotulosProvider>
-      </IdiomaProvider>
-    </AppShell>
+      </AppShell>
+    </IdiomaProvider>
   )
 }

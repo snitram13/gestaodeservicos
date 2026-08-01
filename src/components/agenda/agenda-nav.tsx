@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { useT } from "@/components/i18n/idioma-provider"
+import { getT } from "@/lib/i18n"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -12,7 +12,7 @@ const VISTAS: { v: Vista; label: string }[] = [
   { v: "mes", label: "Mês" },
 ]
 
-export function AgendaNav({
+export async function AgendaNav({
   vista,
   date,
   label,
@@ -23,7 +23,7 @@ export function AgendaNav({
   label: string
   nav: { anterior: string; seguinte: string; hoje: string }
 }) {
-  const t = useT()
+  const t = await getT()
   const href = (v: Vista, d: string) => `/agenda?view=${v}&date=${d}`
 
   return (

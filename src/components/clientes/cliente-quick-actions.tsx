@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { useT } from "@/components/i18n/idioma-provider"
+import { getT } from "@/lib/i18n"
 import { MapPin, MessageCircle, Phone, Plus } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -20,8 +20,8 @@ type Props = {
   temServicos?: boolean
 }
 
-export function ClienteQuickActions({ cliente, temServicos }: Props) {
-  const t = useT()
+export async function ClienteQuickActions({ cliente, temServicos }: Props) {
+  const t = await getT()
   const r = rotulosServico(!!temServicos)
   const itemCls = cn(
     buttonVariants({ variant: "outline" }),
