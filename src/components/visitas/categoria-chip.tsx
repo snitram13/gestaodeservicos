@@ -1,16 +1,16 @@
 import { CATEGORIA_META } from "@/lib/constants/categorias"
-import { useT } from "@/components/i18n/idioma-provider"
+import { getT } from "@/lib/i18n"
 import type { CategoriaServico } from "@/lib/constants/enums"
 import { cn } from "@/lib/utils"
 
-export function CategoriaChip({
+export async function CategoriaChip({
   categoria,
   className,
 }: {
   categoria: CategoriaServico
   className?: string
 }) {
-  const t = useT()
+  const t = await getT()
   const meta = CATEGORIA_META[categoria]
   const Icon = meta.icon
   return (
