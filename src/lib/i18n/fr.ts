@@ -546,4 +546,5 @@ export const FR: Record<string, string> = {
     "Demandez au client de signer ci-dessus avec le doigt.",
   "O período de acesso a esta conta terminou. Para voltar a usar a aplicação, contacte o administrador do sistema e regularize a mensalidade de {valor}/mês.":
     "La période d'accès de ce compte est terminée. Pour réutiliser l'application, contactez l'administrateur et régularisez l'abonnement de {valor}/mois.",
+  "{tipo} ({n})": "{tipo} ({n})",
 }

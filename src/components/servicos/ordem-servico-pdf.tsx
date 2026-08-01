@@ -173,7 +173,7 @@ export function OrdemServicoPDF({
               <Text style={styles.cDesc}>
                 {s.titulo}
                 {"  ·  "}
-                {CATEGORIA_META[s.categoria].label}
+                {t(CATEGORIA_META[s.categoria].label)}
               </Text>
               <Text style={styles.cVal}>{fmt.euro(s.maoDeObra)}</Text>
               <Text style={styles.cVal}>{fmt.euro(s.material)}</Text>

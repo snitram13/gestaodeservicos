@@ -133,7 +133,9 @@ export default async function VisitaDetailPage({
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Serviços ({servicos.length})</CardTitle>
+            <CardTitle>
+              {t("{tipo} ({n})", { tipo: r.Plural, n: servicos.length })}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {servicos.map((s) => (
@@ -142,7 +144,7 @@ export default async function VisitaDetailPage({
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{s.titulo}</p>
                   <p className="text-muted-foreground truncate text-sm">
-                    {CATEGORIA_META[s.categoria].label}
+                    {t(CATEGORIA_META[s.categoria].label)}
                     {s.descricao ? ` · ${s.descricao}` : ""}
                   </p>
                 </div>

@@ -540,4 +540,5 @@ export const ES: Record<string, string> = {
     "Pida al cliente que firme arriba con el dedo.",
   "O período de acesso a esta conta terminou. Para voltar a usar a aplicação, contacte o administrador do sistema e regularize a mensalidade de {valor}/mês.":
     "El periodo de acceso de esta cuenta ha terminado. Para volver a usar la aplicación, contacte con el administrador y regularice la cuota de {valor}/mes.",
+  "{tipo} ({n})": "{tipo} ({n})",
 }

@@ -90,10 +90,10 @@ export default async function ClienteDetailPage({
       <Tabs defaultValue="visitas" className="mt-2">
         <TabsList className="w-full">
           <TabsTrigger value="visitas">
-            {r.Plural} ({visitas.length})
+            {t("{tipo} ({n})", { tipo: r.Plural, n: visitas.length })}
           </TabsTrigger>
           <TabsTrigger value="orcamentos">
-            Orçamentos ({orcamentos.length})
+            {t("{tipo} ({n})", { tipo: t("Orçamentos"), n: orcamentos.length })}
           </TabsTrigger>
           <TabsTrigger value="info">Info</TabsTrigger>
         </TabsList>
